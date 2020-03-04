@@ -1,0 +1,11 @@
+h1. Changelog 1.3.x
+
+h2. " 1.3.0 (09/20/2018) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.3.0-ci-20180920-184243&_a=view
+
+h3. [Security]
+
+* Feature #12: Add security to keep unauthorized users out
+
+h3. [Remote Tools]
+
+* Feature #7: SCCM Remote control

@@ -1,0 +1,9 @@
+h1. Third Party Licenses
+
+h2. Apache log4net
+
+https://logging.apache.org/log4net/license.html
+
+h2. Newtonsoft Json.NET
+
+https://www.newtonsoft.com/store/license

@@ -1,0 +1,171 @@
+h1. User's Guide
+
+{{>toc}}
+
+&nbsp;
+
+h2. Introduction
+
+Welcome to the official user's guide. SysTool is a Microsoft Windows systems management application written using the .NET Framework WinForms API. It utilizes LDAP (Lightweight Directory Access Protocol) and WMI (Windows Management Instrumentation) to help streamline and automate many typical ad hoc systems administration tasks in a Windows Domain environment.
+
+In this guide you will find explanations for each of the application's features and walkthroughs with screenshots demonstrating how to utilize each one.
+
+&nbsp;
+
+h2. Installation
+
+To get started using SysTool the application binaries must first be installed locally. SysTool is made available for deployment on the City of Davenport's local network via a Microsoft package management solution called NuGet.
+
+On it's own NuGet is not enough for full software package deployment as Microsoft's implementation is targeted at developers who want to quickly install external libraries into their projects. Because of this it is necessary to extend Microsoft's base NuGet implementation in order to accommodate the potential deployment of the entire catalog of available Windows Applications.
+
+Currently the best available "extension" of the NuGet technology is implemented in a project known as "Chocolatey":https://chocolatey.org/. The Chocolatey command *@choco@* on Windows OS is analogous to *@apt@* on Debian/Ubuntu OS or *@brew@* on MacOS. It is simply a package manager that simplifies and automates the installation/uninstallation of software packages.
+
+*To install Chocolatey (https://chocolatey.org/install):*
+<pre><code class="PowerShell">
+PS > Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+</code></pre>
+
+*To install SysTool using Chocolatey:*
+<pre><code class="PowerShell">
+PS > choco install it-systemnfos3 -y -s "http://tfs/City%20of%20Davenport/_packaging/cod-nuget.release/nuget/v2" --pre
+</code></pre>
+
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Finstall.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Finstall.1.png&version=GBmaster&contentOnly=true&__v=5
+
+*To launch SysTool after installation, navigate to:*
+<pre>
+C:\IT\systemnfos3 > systemnfos3.exe
+</pre>
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Finstall.2.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Finstall.2.png&version=GBmaster&contentOnly=true&__v=5
+Note: Currently, no desktop or start menu icons are created during the installation script.
+
+&nbsp;
+
+h2. Upgrading
+
+SysTool will alert the user when a new version is available on the NuGet feed. The taskbar icon will begin to flash and the message "New Version Available: x.x.x-ci-xxxxxxxx-xxxxxx" will be shown in the status bar.
+
+After this notification has been received, the application will be ready to upgrade on the next launch. When the upgrade script runs it will forcefully close any open instances of SysTool before installing the update so make sure you are ready to close out of your session beforehand.
+
+To begin the upgrade process the program needs to be relaunched. The recommended way to do this is to simply click the "New" button as shown below:
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fupgrade.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fupgrade.1.png&version=GBmaster&contentOnly=true&__v=5
+
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fupgrade.2.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fupgrade.2.png&version=GBmaster&contentOnly=true&__v=5
+Note: As of "version 1.7.2":/projects/system-tool/wiki/Changelog_1_7#171-03132019 any loaded computer nodes will be automatically restored upon relaunch.
+
+&nbsp;
+
+h2. Controls
+
+h3. Search
+
+The search bar allows executing a simple text based query across all data loaded from LDAP at launch. The entirety of this data is stored in the search bar and the full listing can be accessed by clicking the drop down arrow:
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fsearch.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fsearch.1.png&version=GBmaster&contentOnly=true&__v=5
+
+When typing in the search bar a listing of directly matching computer names will drop down:
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fsearch.2.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fsearch.2.png&version=GBmaster&contentOnly=true&__v=5
+
+A connection can be made by simply selecting an item in the drop down list and hitting the *@Submit@* button. Alternatively you can type your search query and hit *@Submit@* to create a new *@Search Collection@* based on the search query. This collection will be a listing of all computers where *any* field contains the search text. For example if searching a user's name you may get matches based on the *@Description@*, *@Username@* or *@Display Name@* fields as shown in the image below:
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fsearch.3.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fsearch.3.png&version=GBmaster&contentOnly=true&__v=5
+
+Loading computer nodes from a *@Search Collection@* is as simple as double clicking or performing a *@Right Click > Get Info@*
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fsearch.4.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fsearch.4.png&version=GBmaster&contentOnly=true&__v=5
+
+h3. Computers Node
+
+This is the parent node where all computers are loaded. Every computer that is loaded here will be regularly "pinged" at a set interval to determine the *@Connection Status@* and *@Connection Speed@*.
+
+h4. Connection Status
+
+When a computer is loaded a WMI connection attempt is made to determine the *@Connection Status@*. The text color and style is then set accordingly:
+
+* %{color:green}Online and logged in%
+* _%{color:green}Online and logged in with reboot pending%_
+* %{color:lightgreen}Online and logged in but away from keyboard%
+* _%{color:lightgreen}Online and logged in but away from keyboard with reboot pending%_
+* %{color:lightgrey}Online and logged off%
+* _%{color:lightgrey}Online and logged off with reboot pending%_
+* %{color:red}Offline%
+* %{color:purple}Unknown status or error occurred during connection%
+* %{color:black}Currently active node%
+
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fcomputers-node.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fcomputers-node.1.png&version=GBmaster&contentOnly=true&__v=5
+
+h4. Computer Context Menu
+
+When an online computer node is right clicked a context menu appears with the following options:
+
+<pre>
+• Remove From List ............................ removes the computer node from the Resource Explorer
+• Remote Assistance............................ initiate a Microsoft Remote Assistance session on this host (msra.exe)
+• Remote Desktop .............................. initiate a Microsoft Remote Desktop session on this host (mstsc.exe)
+• Remote Control Viewer ....................... initiate a Microsoft Configuration Manager Remote Control Viewer session on this host (CmRcViewer.exe)
+• Remote Registry ............................. initiate a Registry Editor remote connection to this host (regedit.exe)
+• Hard Drive Share(s) ......................... browse to any shared hard drives on the host (explorer.exe)
+  • C:\
+  • E:\
+• PsExec ...................................... initiate a SysInternals PsExec remote command line session on this host (PsExec.exe and cmd.exe)
+• Computer Management ......................... initiate a Computer Management remote connection to this host (mmc.exe)
+• Remote Group Policy Editor .................. initiate a Local Group Policy Editor remote connection to this host (mmc.exe)
+• Set Description ............................. set the *@description@* attribute on the Microsoft Active Directory computer object corresponding to this host (LDAP)
+• Set Location ................................ set the *@physicalDeliveryOfficeName@* attribute on the Microsoft Active Directory computer object corresponding to this host (LDAP)
+• Change AD Status ............................ set the *@userAccountControl@* attribute on the Microsoft Active Directory computer object corresponding to this host (LDAP)
+  • Enable Computer
+  • Disable Computer
+• Toggle BitLocker ............................ enable or disable Microsoft BitLocker Drive Encryption on this host (WMI)
+• Remote Restart .............................. restart this host (WMI)
+• Remote Logoff ............................... logoff all logged in users on this host (WMI)
+</pre>
+
+h3. Computer Control
+
+The computer control loads whenever an online computer node is selected within the *@Resource Explorer@*. The user is then presented with a series of tabs useful for gathering info about and manipulating the node. As of "version 1.6.2":/projects/system-tool/wiki/Changelog_1_6#162-02012019 the option to *@Export@* all tab data is available in the right click context menu.
+
+h4. Basic Information Tab
+
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fbasic-tab.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fbasic-tab.1.png&version=GBmaster&contentOnly=true&__v=5
+
+h4. Advanced Information Tab
+
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fadvanced-tab.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fadvanced-tab.1.png&version=GBmaster&contentOnly=true&__v=5
+
+h4. Applications Tab
+
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fapplications-tab.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fapplications-tab.1.png&version=GBmaster&contentOnly=true&__v=5
+
+h4. Windows Updates Tab
+
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fwindows-updates-tab.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fwindows-updates-tab.1.png&version=GBmaster&contentOnly=true&__v=5
+
+h4. Printers Tab
+
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fprinters-tab.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fprinters-tab.1.png&version=GBmaster&contentOnly=true&__v=5
+
+h4. Profiles Tab
+
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fprofiles-tab.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fprofiles-tab.1.png&version=GBmaster&contentOnly=true&__v=5
+
+h4. Services Tab
+
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fservices-tab.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fservices-tab.1.png&version=GBmaster&contentOnly=true&__v=5
+
+h4. Processes Tab
+
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fprocesses-tab.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fprocesses-tab.1.png&version=GBmaster&contentOnly=true&__v=5
+
+h3. Status Strip
+
+The *@Status Strip@* can be found at the very bottom of the main SysTool window. This feature is available starting in "version 1.6.9":/projects/system-tool/wiki/Changelog_1_6#169-03122019
+
+!{width:400px}http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fstatus-strip.1.png&version=GBmaster&contentOnly=true&__v=5!:http://tfs/City%20of%20Davenport/cb384f67-9082-43cd-80fe-42b721f4b5b2/_api/_versioncontrol/itemContent?repositoryId=e8c04b41-f416-4b1b-b76b-832ce1507c52&path=%2FSysTool%2FUser+Guide%2Fstatus-strip.1.png&version=GBmaster&contentOnly=true&__v=5
+
+Here is a breakdown of the information displayed in the *@Status Strip@*
+
+<pre>
+A. Presently installed version number. This information is gathered from the .nuspec file found in the current working directory.
+B. Current date/time. This information is useful when submitting a bug involving an application crash/hang. If possible grab a screenshot so we can investigate any logged error messages that happened at that time.
+C. Number of presently connected/loaded computer nodes.
+D. CPU usage of the *current* SysTool instance only.
+E. Memory usage of the *current* SysTool instance only.
+F. How long the current instance of SysTool has been running in the following format - D:HH:MM:SS
+</pre>

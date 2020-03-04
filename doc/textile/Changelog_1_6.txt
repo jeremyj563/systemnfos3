@@ -1,0 +1,41 @@
+h1. Changelog 1.6.x
+
+h2. " 1.6.9 (03/12/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.6.9-ci-20190312-214901&_a=view
+
+h3. [UI]
+
+* Bug #38: Add StatusBar control
+
+h2. " 1.6.8 (03/07/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.6.8-ci-20190307-183926&_a=view
+
+h3. [Data Source]
+
+* Bug #37: Intermittent issue, loading incorrect computer tab object while correct computer is selected in combobox
+
+h2. " 1.6.7 (03/04/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.6.7-ci-20190304-220436&_a=view
+
+h3. [UI]
+
+* Bug #36: "Are you Sure?" Dialog Opens behind SysTool
+
+h2. " 1.6.4 (02/12/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.6.4-ci-20190212-160224&_a=view
+
+h3. [UI]
+
+* Bug #35: Program window size (not fixed)
+
+h2. " 1.6.3 (02/05/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.6.3-ci-20190205-142323&_a=view
+
+h3. [UI]
+
+* Feature #33: Add fields to Basic Information tab
+
+h3. [Data Source]
+
+* Feature #34: Auto refresh active directory data
+
+h2. " 1.6.2 (02/01/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.6.2-ci-20190201-230446&_a=view
+
+h3. [Export]
+
+* Feature #32: Ability to export data on all computer tabs

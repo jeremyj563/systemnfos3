@@ -1,0 +1,14 @@
+h1. Changelog 1.2.x
+
+h2. " 1.2.0 (09/12/2018) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.2.0-ci-20180912-172731&_a=view
+
+h3. [Import]
+
+* Bug #5: Import Machines function does not work
+
+h3. [UI]
+
+* Feature #4: Double click on computer name
+* Feature #3: Icon
+* Feature #2: Splash screen
+* Bug #1: Applications tab

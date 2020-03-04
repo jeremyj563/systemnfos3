@@ -1,0 +1,35 @@
+h1. Features
+
+* Manage systems using WMI and LDAP
+
+* Provides a searchable listing of all directory computers
+
+* Realtime connection availability status
+
+* Gather basic and advanced system information
+
+* Display and export info for:
+ • Applications
+ • Windows Updates
+ • Printers
+ • Profiles
+ • Services
+ • Processes
+
+* Initiate remote administration tools:
+ • Remote Assistance
+ • Remote Desktop
+ • Remote Control Viewer
+ • Remote Registry
+ • Admin Shares
+ • PsExec
+ • Computer Management
+ • Local Group Policy Editor
+ • Remote Restart
+ • Remote Logoff
+
+* Remotely manipulate Windows components:
+ • Printers
+ • Profiles
+ • Services
+ • Processes

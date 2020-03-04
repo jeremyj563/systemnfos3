@@ -1,0 +1,18 @@
+h1. SysTool
+
+{{>toc}}
+
+SysTool is a Microsoft Windows systems management application written using the .NET Framework WinForms API.
+
+h2. Documentation
+
+Read the docs!
+* [[Features]]
+* [[User's Guide]]
+* [[Developer's Guide]]
+
+h2. Other Resources
+
+* [[Changelog]]
+* [[Frequently Asked Questions]]
+* [[Third Party Licenses]]

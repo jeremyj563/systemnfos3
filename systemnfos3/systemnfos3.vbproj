@@ -1,0 +1,427 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{BC1EC11A-0D5C-4A3C-8CF4-925D08B5C82A}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <StartupObject>systemnfos3.My.MyApplication</StartupObject>
+    <RootNamespace>systemnfos3</RootNamespace>
+    <AssemblyName>systemnfos3</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <MyType>WindowsForms</MyType>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>systemnfos3.xml</DocumentationFile>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>systemnfos3.xml</DocumentationFile>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionExplicit>On</OptionExplicit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionCompare>Binary</OptionCompare>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionStrict>Off</OptionStrict>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionInfer>On</OptionInfer>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - Send To Server|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\x86\Debug - Send To Server\</OutputPath>
+    <DocumentationFile>systemnfos3.xml</DocumentationFile>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\systool.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\WMI\v1.0\Microsoft.Management.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Entity.Design" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Net">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+  </ItemGroup>
+  <ItemGroup>
+    <Import Include="Microsoft.VisualBasic" />
+    <Import Include="System" />
+    <Import Include="System.Collections" />
+    <Import Include="System.Collections.Generic" />
+    <Import Include="System.Data" />
+    <Import Include="System.DirectoryServices" />
+    <Import Include="System.Drawing" />
+    <Import Include="System.Diagnostics" />
+    <Import Include="System.Management" />
+    <Import Include="System.Windows.Forms" />
+    <Import Include="System.Linq" />
+    <Import Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Classes\NuGetSearchResult.vb" />
+    <Compile Include="Classes\TabExport\ApplicationInfo.vb" />
+    <Compile Include="Classes\Computer.vb" />
+    <Compile Include="Classes\DataUnit.vb" />
+    <Compile Include="Controllers\ProcessController.vb" />
+    <Compile Include="Classes\RemoteTools.vb" />
+    <Compile Include="Controllers\ServiceController.vb" />
+    <Compile Include="Controllers\CollectionController.vb" />
+    <Compile Include="Classes\LDAPContainer.vb" />
+    <Compile Include="Classes\Comparer.vb" />
+    <Compile Include="Classes\GarbageCollector.vb" />
+    <Compile Include="Classes\DataSourceSearcher.vb" />
+    <Compile Include="Classes\WMIManagement.vb" />
+    <Compile Include="Controls\ComputerControl.Designer.vb">
+      <DependentUpon>ComputerControl.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ComputerControl.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\CollectionOptionsControl.designer.vb">
+      <DependentUpon>CollectionOptionsControl.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\CollectionOptionsControl.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\QueryResultControl.Designer.vb">
+      <DependentUpon>QueryResultControl.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\QueryResultControl.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\TaskResultControl.Designer.vb">
+      <DependentUpon>TaskResultControl.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\TaskResultControl.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\CollectionControl.Designer.vb">
+      <DependentUpon>CollectionControl.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\CollectionControl.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\CustomActionsControl.Designer.vb">
+      <DependentUpon>CustomActionsControl.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\CustomActionsControl.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tabs\ProfileTab.Designer.vb">
+      <DependentUpon>ProfileTab.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Tabs\ProfileTab.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Tabs\AdvancedTab.Designer.vb">
+      <DependentUpon>AdvancedTab.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Tabs\AdvancedTab.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Tabs\ApplicationTab.Designer.vb">
+      <DependentUpon>ApplicationTab.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Tabs\ApplicationTab.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Tabs\MainTab.Designer.vb">
+      <DependentUpon>MainTab.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Tabs\MainTab.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Tabs\PrinterTab.Designer.vb">
+      <DependentUpon>PrinterTab.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Tabs\PrinterTab.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\QueryControl.Designer.vb">
+      <DependentUpon>QueryControl.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\QueryControl.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\TaskControl.Designer.vb">
+      <DependentUpon>TaskControl.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\TaskControl.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Tabs\ProcessesTab.Designer.vb">
+      <DependentUpon>ProcessesTab.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Tabs\ProcessesTab.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Tabs\ServicesTab.Designer.vb">
+      <DependentUpon>ServicesTab.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Tabs\ServicesTab.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Tabs\Tab.Designer.vb">
+      <DependentUpon>Tab.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Tabs\Tab.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Tabs\UpdatesTab.Designer.vb">
+      <DependentUpon>UpdatesTab.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Tabs\UpdatesTab.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Forms\CollectionNameForm.Designer.vb">
+      <DependentUpon>CollectionNameForm.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CollectionNameForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\LoadForm.Designer.vb">
+      <DependentUpon>LoadForm.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\LoadForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\MainForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\MainForm.Designer.vb">
+      <DependentUpon>MainForm.vb</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Classes\Collection.vb" />
+    <Compile Include="Classes\WMIQueryWork.vb" />
+    <Compile Include="Modules\Global.vb" />
+    <Compile Include="Modules\Extensions.vb" />
+    <Compile Include="My Project\AssemblyInfo.vb" />
+    <Compile Include="My Project\Application.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Application.myapp</DependentUpon>
+    </Compile>
+    <Compile Include="My Project\Resources.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="My Project\Settings.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="Classes\LDAPSearcher.vb" />
+    <Compile Include="Controllers\RegistryController.vb" />
+    <Compile Include="Controllers\WMIController.vb" />
+    <Compile Include="Classes\TabExport\ProcessInfo.vb" />
+    <Compile Include="Classes\TabExport\ServiceInfo.vb" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Controls\ComputerControl.resx">
+      <DependentUpon>ComputerControl.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\CollectionOptionsControl.resx">
+      <DependentUpon>CollectionOptionsControl.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\QueryControl.resx">
+      <DependentUpon>QueryControl.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\QueryResultControl.resx">
+      <DependentUpon>QueryResultControl.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\TaskControl.resx">
+      <DependentUpon>TaskControl.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\TaskResultControl.resx">
+      <DependentUpon>TaskResultControl.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\ControlRegistryCollections.resx">
+      <DependentUpon>CollectionControl.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\CustomActionsControl.resx">
+      <DependentUpon>CustomActionsControl.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CollectionNameForm.resx">
+      <DependentUpon>CollectionNameForm.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\LoadForm.resx">
+      <DependentUpon>LoadForm.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\MainForm.resx">
+      <DependentUpon>MainForm.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="My Project\Resources.resx">
+      <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.vb</LastGenOutput>
+      <CustomToolNamespace>My.Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="My Project\app.manifest" />
+    <None Include="My Project\Application.myapp">
+      <Generator>MyApplicationCodeGenerator</Generator>
+      <LastGenOutput>Application.Designer.vb</LastGenOutput>
+    </None>
+    <None Include="My Project\DataSources\System.Xml.Linq.XElement.datasource" />
+    <None Include="My Project\DataSources\systemnfos3.DellWarrantyService.AssetHeaderData.datasource" />
+    <None Include="My Project\DataSources\systemnfos3.DellWarrantyService.AssetServiceSoap.datasource" />
+    <None Include="My Project\DataSources\systemnfos3.DellWarrantyService.AssetServiceSoapChannel.datasource" />
+    <None Include="My Project\DataSources\systemnfos3.DellWarrantyService.AssetServiceSoapClient.datasource" />
+    <None Include="My Project\DataSources\systemnfos3.DellWarrantyService.EntitlementData.datasource" />
+    <None Include="My Project\DataSources\systemnfos3.DellWarrantyService.GetAssetInformationRequest.datasource" />
+    <None Include="My Project\DataSources\systemnfos3.DellWarrantyService.GetAssetInformationRequestBody.datasource" />
+    <None Include="My Project\DataSources\systemnfos3.DellWarrantyService.GetAssetInformationResponse.datasource" />
+    <None Include="My Project\DataSources\systemnfos3.DellWarrantyService.GetAssetInformationResponseBody.datasource" />
+    <None Include="My Project\DataSources\systemnfos3.My.MyApplication.datasource" />
+    <None Include="My Project\DataSources\systemnfos3.My.MySettings.datasource" />
+    <None Include="My Project\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <CustomToolNamespace>My</CustomToolNamespace>
+      <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+    </None>
+    <None Include="packages.config" />
+    <None Include="Resources\OnlineMachine.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\vista-logo-small.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\background-page-nomenu.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OfflineMachine.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\UnknownMachine.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\systemtoolPicture.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Toolpic.JPG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SystemToolLoadingScreen.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SystemToolPic29APR2014.JPG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Fire.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\systool.ico" />
+    <Content Include="Resources\systool_splash.png" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

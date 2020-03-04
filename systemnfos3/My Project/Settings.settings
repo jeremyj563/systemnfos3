@@ -1,0 +1,69 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="PsExecPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\ProgramData\chocolatey\lib\psexec\tools\PsExec.exe</Value>
+    </Setting>
+    <Setting Name="LDAPComputerFilter" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">(&amp;(!name=DUMMY)(name=*))</Value>
+    </Setting>
+    <Setting Name="LDAPEntryPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">LDAP://DC=jerlyd,DC=com</Value>
+    </Setting>
+    <Setting Name="RecentTasks" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="CustomActions" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="LogsRemotePath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">\\fs1\itfiles\logs</Value>
+    </Setting>
+    <Setting Name="LogsLocalPathWithoutSystemDrive" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">IT\Logs</Value>
+    </Setting>
+    <Setting Name="ITFolderLocalPathWithoutSystemDrive" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">IT</Value>
+    </Setting>
+    <Setting Name="RegistryPathCustomActions" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Software\SysTool3\Actions</Value>
+    </Setting>
+    <Setting Name="RegistryPathCollections" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Software\SysTool3\Collections</Value>
+    </Setting>
+    <Setting Name="RegistryPathQueries" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Software\SysTool3\Queries</Value>
+    </Setting>
+    <Setting Name="RegistryPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Software\SysTool3</Value>
+    </Setting>
+    <Setting Name="MainFormHeight" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">630</Value>
+    </Setting>
+    <Setting Name="MainFormWidth" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1030</Value>
+    </Setting>
+    <Setting Name="DomainName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">jerlyd.com</Value>
+    </Setting>
+    <Setting Name="ActiveComputers" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ActiveCollections" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="UpgradeScriptPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">\\fs1\itfiles\Software\SysTool\upgrade.ps1</Value>
+    </Setting>
+    <Setting Name="UserSettingsMigrateRequired" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="NuGetURI" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://tfs/City%20of%20Davenport/_packaging/9e1bb9d1-5fa5-4d46-93fc-b747c423d783/nuget/v3/</Value>
+    </Setting>
+    <Setting Name="NuGetPkgName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">it-systemnfos3</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

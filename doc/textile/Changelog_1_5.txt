@@ -1,0 +1,70 @@
+h1. Changelog 1.5.x
+
+h2. " 1.5.9 (01/24/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.5.9-ci-20190124-214030&_a=view
+
+h3. [Data Source]
+
+* Bug #26: Intermittent issue when selected an already added computer from Computers Resource TreeView branch
+
+h2. " 1.5.8 (01/18/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.5.8-ci-20190118-213629&_a=view
+
+h3. [Ping Monitor]
+
+* Bug #28: Please restore offline data functionality
+
+h2. " 1.5.7 (12/26/2018) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.5.7-ci-20181226-160838&_a=view
+
+h3. [UI]
+
+* Bug #25: Computers resource screen flickering
+* Bug #24: Enter To Submit Not Working Consistently
+* Feature #23: Non-pingable IP Address not supported
+
+h3. [Refactoring]
+
+* Feature #27: Replace all "ReDimmed" arrays with Lists
+
+h2. " 1.5.6 (12/03/2018) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.5.6-ci-20181203-211630&_a=view
+
+h3. [UI]
+
+* Feature #22: Add ability to sort data in SysAudit view
+
+h3. [Export]
+
+* Feature #19: Option to Export List of Applications
+
+h2. " 1.5.3 (11/20/2018) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.5.3-ci-20181120-171421&_a=view
+
+h3. [Ping Monitor]
+
+* Bug #21: Import computers issue
+
+h2. " 1.5.1 (11/13/2018) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.5.1-ci-20181113-234238&_a=view
+
+h3. [Stability]
+
+* Bug #18: High CPU usage
+
+h3. [Data Source]
+
+* Bug #14: Cannot search by telephone extension (last 4 numbers of Computer name)
+* Bug #13: Description Issue
+
+h3. [Logging]
+
+* Bug #11: EXCEPTION in Void LogWrite(System.String): The process cannot access the file
+
+h2. " 1.5.0 (11/13/2018) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.5.0-ci-20181113-195118&_a=view
+
+h3. [UI]
+
+* Feature #20: Feedback requested - SysAudit feature now effective in v1.5.0
+
+h3. [Search]
+
+* Bug #9: Error received with numeric search string
+
+h3. [Logging]
+
+* Bug #8: Does not launch

@@ -1,0 +1,21 @@
+h1. Changelog 1.4.x
+
+h2. " 1.4.4 (10/10/2018) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.4.3-ci-20181009-212821&_a=view
+
+h3. [Ping Monitor]
+
+* Bug #53: Throwing exceptions when calling Ping
+* Feature #54: Replace all TreeNode magic strings with NameOf([enum])
+
+h2. " 1.4.2 (10/09/2018) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.4.2-ci-20181009-140901&_a=view
+
+h3. [Deployment]
+
+* Feature #17: Make previous build always available
+* Feature #52: During install, save previous version
+
+h2. " 1.4.0 (09/24/2018) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.4.0-ci-20180924-211345&_a=view
+
+h3. [Logging]
+
+* Feature #51: Implement centralized logging

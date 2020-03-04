@@ -1,0 +1,68 @@
+h1. Changelog 1.7.x
+
+h2. " 1.7.9 (04/24/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.7.9-ci-20190424-192132&_a=view
+
+h3. [Async]
+
+* Bug #58: Forgot to check if Computer TreeNode Loader / BackgroundWorker is busy during MainForm.LoadAllComputerNodes()
+
+h3. [UI]
+
+* Bug #48: Search bar disappears intermittently
+
+h3. [Deployment]
+
+* Bug #57: Chocolatey install script should abort if process kill attempt fails
+
+h3. [Refactoring]
+
+* Bug #55: not responding
+
+h2. " 1.7.8 (04/22/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.7.8-ci-20190423-185414&_a=view
+
+h3. [Refactoring]
+
+* Bug #41: Returning null in RegistryController.GetKeyValues()
+
+h3. [UI]
+
+* Bug #38: Add StatusBar control
+* Bug #50: Bugs after UI invocation refactoring
+* Feature #56: Also display the hostname in the titlebar
+
+h2. " 1.7.7 (04/11/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.7.7-ci-20190411-194211&_a=view
+
+h3. [Stability]
+
+* Feature #47: Refactor all UI invocation calls
+
+h2. " 1.7.6 (04/09/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.7.6-ci-20190409-201854&_a=view
+
+h3. [Deployment]
+
+* Feature #46: Implement "update available" feature
+
+h2. " 1.7.4 (04/01/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.7.4-ci-20190328-232218&_a=view
+
+h3. [UI]
+
+* Bug #36: "Are you Sure?" Dialog Opens behind SysTool
+* Feature #45: Remove "Load All" computers node context menu once all computer nodes are loaded
+
+h2. " 1.7.2 (03/14/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.7.2-ci-20190314-154624&_a=view
+
+h3. [UI]
+
+* Feature #44: Add date-time status label to status strip
+
+h2. " 1.7.1 (03/13/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.7.1-ci-20190313-220225&_a=view
+
+h3. [Settings]
+
+* Feature #43: Restore loaded computer nodes from user settings
+
+h2. " 1.7.0 (03/13/2019) ":http://tfs/City%20of%20Davenport/it-systemnfos3/_packaging?feedName=cod-nuget.release&protocolType=NuGet&packageName=it-systemnfos3&packageVersion=1.7.0-ci-20190313-191120&_a=view
+
+h3. [UI]
+
+* Feature #42: Add current version to status strip

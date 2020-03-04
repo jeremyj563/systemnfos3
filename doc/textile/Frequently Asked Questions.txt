@@ -1,0 +1,19 @@
+h1. Frequently Asked Questions
+
+Q. *Who is responsible for this insanely awesome application?*
+A. Two equally awesome yet elusive individuals named Alan Rubilar and Bryan Pilger are cited within the code as being the original developers. However, upon close examination of the code it becomes obvious that a handful of devs worked on various bits and pieces. My best guess is a total of about 4 people had some involvement in the original project.
+
+Q. *Who is responsible for turning this awesome application into the current pile of !?#@ that it is?*
+A. Jeremy Johnson
+
+Q. *Who should I contact for support?*
+A. Ryan Fisher
+
+Q. *Is this project under active development?*
+A. As of April 22nd 2019, the answer is "yes".
+
+Q. *How can I help?*
+A. Please pray for the current developer. Ask God to please help him fix all of the current and future bugs so that Ryan Fisher continues to go through life as a sane person.
+
+Q. *Can we please have an actually helpful FAQ for SysTool someday?*
+A. ...since you asked nicely, yes.
