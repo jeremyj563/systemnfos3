@@ -19,22 +19,22 @@ Public NotInheritable Class LoadForm
     Private Async Sub Me_Load(sender As Object, e As EventArgs) Handles Me.Load
         Me.Text = "SysTool SplashScreen"
 
-        '' Prepare global logger
-        '[Global].LogMaintenance([Global].LogPath)
-        '[Global].SetLog4NetFileAppenderPath([Global].LogPath)
+        ' Prepare global logger
+        [Global].LogMaintenance([Global].LogPath)
+        [Global].SetLog4NetFileAppenderPath([Global].LogPath)
 
-        '' Create base registry keys if they don't already exist
-        'NewAppRegistryKey(RegistryHive.LocalMachine)
-        'NewAppRegistryKey(RegistryHive.CurrentUser)
+        ' Create base registry keys if they don't already exist
+        NewAppRegistryKey(RegistryHive.LocalMachine)
+        NewAppRegistryKey(RegistryHive.CurrentUser)
 
-        '' Execute the application upgrade script if an update is available
-        'UpgradeApp()
+        ' Execute the application upgrade script if an update is available
+        UpgradeApp()
 
-        '' Authenticate the current user
+        ' Authenticate the current user
         'AuthenticateCurrentUser()
 
-        '' Migrate user settings from previous version
-        'MigrateUserSettings()
+        ' Migrate user settings from previous version
+        MigrateUserSettings()
 
         ' User is authorized so begin loading data into the data source
         Await Task.Run(Sub() GetAllData())

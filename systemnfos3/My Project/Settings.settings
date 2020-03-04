@@ -9,7 +9,7 @@
       <Value Profile="(Default)">(&amp;(!name=DUMMY)(name=*))</Value>
     </Setting>
     <Setting Name="LDAPEntryPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">LDAP://DC=jerlyd,DC=com</Value>
+      <Value Profile="(Default)">LDAP://DC=HBC,DC=local</Value>
     </Setting>
     <Setting Name="RecentTasks" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
@@ -18,7 +18,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="LogsRemotePath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">\\fs1\itfiles\logs</Value>
+      <Value Profile="(Default)">\\hbcfs1\HBCShared\ITTeam\logs</Value>
     </Setting>
     <Setting Name="LogsLocalPathWithoutSystemDrive" Type="System.String" Scope="Application">
       <Value Profile="(Default)">IT\Logs</Value>
@@ -45,7 +45,7 @@
       <Value Profile="(Default)">1030</Value>
     </Setting>
     <Setting Name="DomainName" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">jerlyd.com</Value>
+      <Value Profile="(Default)">HBC.local</Value>
     </Setting>
     <Setting Name="ActiveComputers" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
@@ -54,7 +54,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="UpgradeScriptPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">\\fs1\itfiles\Software\SysTool\upgrade.ps1</Value>
+      <Value Profile="(Default)">\\hbcfs1\HBCShared\ITTeam\Software\SysTool\upgrade.ps1</Value>
     </Setting>
     <Setting Name="UserSettingsMigrateRequired" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

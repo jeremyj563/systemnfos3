@@ -77,7 +77,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("LDAP://DC=jerlyd,DC=com")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("LDAP://DC=HBC,DC=local")>  _
         Public ReadOnly Property LDAPEntryPath() As String
             Get
                 Return CType(Me("LDAPEntryPath"),String)
@@ -108,7 +108,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("\\fs1\itfiles\logs")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("\\hbcfs1\HBCShared\ITTeam\logs")>  _
         Public ReadOnly Property LogsRemotePath() As String
             Get
                 Return CType(Me("LogsRemotePath"),String)
@@ -195,7 +195,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("jerlyd.com")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("HBC.local")>  _
         Public ReadOnly Property DomainName() As String
             Get
                 Return CType(Me("DomainName"),String)
@@ -226,7 +226,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("\\fs1\itfiles\Software\SysTool\upgrade.ps1")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("\\hbcfs1\HBCShared\ITTeam\Software\SysTool\upgrade.ps1")>  _
         Public ReadOnly Property UpgradeScriptPath() As String
             Get
                 Return CType(Me("UpgradeScriptPath"),String)
