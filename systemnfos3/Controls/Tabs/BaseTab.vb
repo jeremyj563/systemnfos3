@@ -6,27 +6,29 @@ Public MustInherit Class BaseTab
     Inherits TabPage
 
 #Region " Public Properties "
-    Public Property OwnerTab As TabControl
     Public Property ComputerPanel As ComputerPanel
-    Public Property IsDisplayValidationNeeded As Boolean = True
-    Public Property TabWriterObjects As List(Of Object)
-    Public Property EnumWriterObjects As List(Of Object)
+    Public Property InitWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
 #End Region
 
 #Region " Private Properties "
+    Private Property OwnerTab As TabControl
     Private Property IsMainListViewCreated As Boolean = False
+    Private Property LoadingProgressBar As ProgressBar
+    Private Property SearchTextBox As TextBox
+    Private Property IsDisplayValidationNeeded As Boolean = True
 #End Region
 
-#Region " Friend Properties "
-    Friend Property LoadingProgressBar As ProgressBar
-    Friend Property ExportingProgressBar As ProgressBar
-    Friend Property CurrentListView As ListView
-    Friend Property LastSelectedListViewItem As ListViewItem = Nothing
-    Friend Property SearchTextBox As TextBox
+#Region " Protected Properties "
+    Protected Property TabWriterObjects As List(Of Object)
+    Protected Property EnumWriterObjects As List(Of Object)
+    Protected Property ExportingProgressBar As ProgressBar
+    Protected Property CurrentListView As ListView
+    Protected Property LastSelectedListViewItem As ListViewItem = Nothing
+#End Region
 
-    Friend InitWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
-    Friend WithEvents ExportWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True, .WorkerReportsProgress = True}
-    Friend WithEvents SelectionWorker As New BackgroundWorker()
+#Region " Protected Fields "
+    Protected WithEvents ExportWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True, .WorkerReportsProgress = True}
+    Protected WithEvents SelectionWorker As New BackgroundWorker()
 #End Region
 
 #Region " Constructors "
@@ -149,7 +151,7 @@ Public MustInherit Class BaseTab
         End If
     End Sub
 
-    Private Sub ListView_MouseUp(sender As Object, e As MouseEventArgs)
+    Private Sub CurrentListView_MouseUp(sender As Object, e As MouseEventArgs)
         If e.Button = Windows.Forms.MouseButtons.Right Then
             Dim listView As ListView = sender
             Dim menuStrip = Me.NewBaseMenuStrip(listView)
@@ -188,7 +190,7 @@ Public MustInherit Class BaseTab
             Me.IsMainListViewCreated = True
         End If
 
-        AddHandler listView.MouseUp, AddressOf ListView_MouseUp
+        AddHandler listView.MouseUp, AddressOf CurrentListView_MouseUp
 
         Return listView
     End Function
@@ -303,57 +305,6 @@ Public MustInherit Class BaseTab
         Return Me.SearchTextBox
     End Function
 
-    Protected Function NewProgressControl(labelText As String, ByRef progressBar As ProgressBar, style As ProgressBarStyle, ByRef worker As BackgroundWorker) As Control
-        ' Initialize "Progress" controls
-        Dim label As New Label() With
-            {
-                .TextAlign = ContentAlignment.MiddleCenter,
-                .Text = labelText,
-                .AutoSize = False,
-                .Height = 15,
-                .Width = 100,
-                .BackColor = Color.Transparent
-            }
-
-        ' Setting the properties for the progress bar
-        progressBar = New ProgressBar() With
-            {
-                .Style = style,
-                .Enabled = True,
-                .Height = 10,
-                .Width = 100
-            }
-
-        ' Setting the properties for the Cancel button
-        Dim cancelButton As New Button() With
-            {
-                .Text = "Cancel",
-                .Height = 30,
-                .Width = 100
-            }
-
-        AddHandler cancelButton.Click, AddressOf worker.CancelAsync
-
-        ' Setting the properties for the control that houses the progress bar and button
-        Dim progress As New Control()
-        With progress
-            .Height = progressBar.Height + cancelButton.Height + label.Height + 10
-            .Width = 110
-            .BackColor = Color.White
-            .InvokeAddControl(label)
-            .Controls(0).Location = New Point(5, 5)
-            .InvokeAddControl(progressBar)
-            .Controls(1).Location = New Point(5, 20)
-            .InvokeAddControl(cancelButton)
-            .Controls(2).Location = New Point(5, 30)
-        End With
-
-        ' Draw a border around the control when it is being painted on the screen
-        AddHandler progress.Paint, Sub(s, e) ControlPaint.DrawBorder(e.Graphics, progress.ClientRectangle, Color.LightGray, ButtonBorderStyle.Solid)
-
-        Return progress
-    End Function
-
     Protected Sub AddToCurrentMenuStrip(toolStripItem As ToolStripItem)
         Dim menuItems = Me.CurrentListView.ContextMenuStrip.Items
         Dim selectedCount = Me.CurrentListView.SelectedItems.Count
@@ -435,48 +386,6 @@ Public MustInherit Class BaseTab
         End If
 
         Return convertedDate
-    End Function
-
-    Protected Function IsDisplayValidated() As Boolean
-        ' Does checks to see whether a background worker can begin enumeration on a computer.
-
-        If Not Me.IsDisplayValidationNeeded Then
-            If Not Me.InitWorker.IsBusy Then
-                Return True
-            Else
-                Return False
-            End If
-        End If
-
-        If Me.ComputerPanel.OwnerForm.IsNodeSelected(Me.ComputerPanel) Then
-            If Me.Visible Then
-                If Me.ComputerPanel.ConnectionStatus = ComputerPanel.ConnectionStatuses.Online AndAlso Me.ComputerPanel.RespondsToPing() Then
-                    If Not Me.InitWorker.IsBusy AndAlso Me.ComputerPanel.LastSelectedTab IsNot Me Then
-                        Me.ComputerPanel.LastSelectedTab = Me
-                        Return True
-                    Else
-                        Return False
-                    End If
-                Else
-                    If Me.ComputerPanel.ConnectionStatus <> ComputerPanel.ConnectionStatuses.Online Then
-                        If Not Me.InitWorker.IsBusy AndAlso Me.ComputerPanel.LastSelectedTab IsNot Me Then
-                            Me.ComputerPanel.LastSelectedTab = Me
-                            Return True
-                        Else
-                            Return False
-                        End If
-                    Else
-                        Me.ComputerPanel.SetConnectionStatus(ComputerPanel.ConnectionStatuses.Offline)
-                        Return False
-                    End If
-
-                End If
-            Else
-                Return False
-            End If
-        Else
-            Return False
-        End If
     End Function
 
     Protected Sub ShowTabLoaderProgress()
@@ -599,57 +508,56 @@ Public MustInherit Class BaseTab
 #End Region
 
 #Region " Private Methods "
-    Private Sub BeginExportProcess()
-        ' Disable all tabs except the current one during the export process
-        Dim allTabPagesExceptCurrent As List(Of TabPage) = OwnerTab.TabPages _
-            .OfType(Of TabPage)() _
-            .Where(Function(TabPage) Not TabPage.Text = Me.Text) _
-            .ToList()
-
-        For Each tabPage In allTabPagesExceptCurrent
-            tabPage.Enabled = False
-        Next
-
-        ' Get information for setting the default export file name
-        Dim selectedComputerName As String = Me.ComputerPanel.OwnerForm.ResourceExplorer.SelectedNode.Text.Split(">")(1).Trim()
-        Dim selectedTabName As String = Me.ComputerPanel.LastSelectedTab.Text
-
-        ' Prompt the user to select export file location
-        Dim saveDialog As New SaveFileDialog() With
+    Private Function NewProgressControl(labelText As String, ByRef progressBar As ProgressBar, style As ProgressBarStyle, ByRef worker As BackgroundWorker) As Control
+        ' Initialize "Progress" controls
+        Dim label As New Label() With
             {
-                .InitialDirectory = "%UserProfile%",
-                .FileName = $"{selectedComputerName} - {selectedTabName}",
-                .Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
-                .RestoreDirectory = True
+                .TextAlign = ContentAlignment.MiddleCenter,
+                .Text = labelText,
+                .AutoSize = False,
+                .Height = 15,
+                .Width = 100,
+                .BackColor = Color.Transparent
             }
 
-        If saveDialog.ShowDialog() = DialogResult.OK Then
-            Try
-                ' The user chose the export file path. Now check if the file can safely be opened for writing.
-                saveDialog.OpenFile().Close()
+        ' Setting the properties for the progress bar
+        progressBar = New ProgressBar() With
+            {
+                .Style = style,
+                .Enabled = True,
+                .Height = 10,
+                .Width = 100
+            }
 
-                ' Display the exporting progress bar control
-                Dim exportProgress = NewProgressControl("Exporting...", Me.ExportingProgressBar, ProgressBarStyle.Continuous, Me.ExportWorker)
-                Me.CurrentListView.InvokeAddControl(exportProgress)
-                Me.CurrentListView.InvokeCenterControl()
+        ' Setting the properties for the Cancel button
+        Dim cancelButton As New Button() With
+            {
+                .Text = "Cancel",
+                .Height = 30,
+                .Width = 100
+            }
 
-                ' Delegate event handlers for the BackgroundWorker that will be performing the export.
-                ' The DoWork() handler is to be delegated in the derived tab object's constructor.
-                AddHandler Me.ExportWorker.ProgressChanged, AddressOf ExportWorker_ProgressChanged
-                AddHandler Me.ExportWorker.RunWorkerCompleted, Sub() ExportWorker_RunWorkerCompleted(exportProgress, allTabPagesExceptCurrent)
+        AddHandler cancelButton.Click, AddressOf worker.CancelAsync
 
-                ' Start the export BackgroundWorker
-                Me.ExportWorker.RunWorkerAsync(saveDialog.FileName)
-            Catch ex As Exception
-                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
-            End Try
-        Else
-            ' User canceled so enable the previously disabled tabs
-            For Each tabPage In allTabPagesExceptCurrent
-                tabPage.Enabled = True
-            Next
-        End If
-    End Sub
+        ' Setting the properties for the control that houses the progress bar and button
+        Dim progress As New Control()
+        With progress
+            .Height = progressBar.Height + cancelButton.Height + label.Height + 10
+            .Width = 110
+            .BackColor = Color.White
+            .InvokeAddControl(label)
+            .Controls(0).Location = New Point(5, 5)
+            .InvokeAddControl(progressBar)
+            .Controls(1).Location = New Point(5, 20)
+            .InvokeAddControl(cancelButton)
+            .Controls(2).Location = New Point(5, 30)
+        End With
+
+        ' Draw a border around the control when it is being painted on the screen
+        AddHandler progress.Paint, Sub(s, e) ControlPaint.DrawBorder(e.Graphics, progress.ClientRectangle, Color.LightGray, ButtonBorderStyle.Solid)
+
+        Return progress
+    End Function
 
     Private Function NewBaseMenuStrip(listView As ListView) As ContextMenuStrip
         Dim menuStrip As New ContextMenuStrip()
@@ -708,6 +616,100 @@ Public MustInherit Class BaseTab
 
     Private Function GetListViewItemText(item As ListViewItem) As String
         Return item.Text.Trim().ToUpper()
+    End Function
+
+    Private Sub BeginExportProcess()
+        ' Disable all tabs except the current one during the export process
+        Dim allTabPagesExceptCurrent As List(Of TabPage) = OwnerTab.TabPages _
+            .OfType(Of TabPage)() _
+            .Where(Function(TabPage) Not TabPage.Text = Me.Text) _
+            .ToList()
+
+        For Each tabPage In allTabPagesExceptCurrent
+            tabPage.Enabled = False
+        Next
+
+        ' Get information for setting the default export file name
+        Dim selectedComputerName As String = Me.ComputerPanel.OwnerForm.ResourceExplorer.SelectedNode.Text.Split(">")(1).Trim()
+        Dim selectedTabName As String = Me.ComputerPanel.LastSelectedTab.Text
+
+        ' Prompt the user to select export file location
+        Dim saveDialog As New SaveFileDialog() With
+            {
+                .InitialDirectory = "%UserProfile%",
+                .FileName = $"{selectedComputerName} - {selectedTabName}",
+                .Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+                .RestoreDirectory = True
+            }
+
+        If saveDialog.ShowDialog() = DialogResult.OK Then
+            Try
+                ' The user chose the export file path. Now check if the file can safely be opened for writing.
+                saveDialog.OpenFile().Close()
+
+                ' Display the exporting progress bar control
+                Dim exportProgress = NewProgressControl("Exporting...", Me.ExportingProgressBar, ProgressBarStyle.Continuous, Me.ExportWorker)
+                Me.CurrentListView.InvokeAddControl(exportProgress)
+                Me.CurrentListView.InvokeCenterControl()
+
+                ' Delegate event handlers for the BackgroundWorker that will be performing the export.
+                ' The DoWork() handler is to be delegated in the derived tab object's constructor.
+                AddHandler Me.ExportWorker.ProgressChanged, AddressOf ExportWorker_ProgressChanged
+                AddHandler Me.ExportWorker.RunWorkerCompleted, Sub() ExportWorker_RunWorkerCompleted(exportProgress, allTabPagesExceptCurrent)
+
+                ' Start the export BackgroundWorker
+                Me.ExportWorker.RunWorkerAsync(saveDialog.FileName)
+            Catch ex As Exception
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
+            End Try
+        Else
+            ' User canceled so enable the previously disabled tabs
+            For Each tabPage In allTabPagesExceptCurrent
+                tabPage.Enabled = True
+            Next
+        End If
+    End Sub
+
+    Private Function IsDisplayValidated() As Boolean
+        ' Does checks to see whether a background worker can begin enumeration on a computer.
+
+        If Not Me.IsDisplayValidationNeeded Then
+            If Not Me.InitWorker.IsBusy Then
+                Return True
+            Else
+                Return False
+            End If
+        End If
+
+        If Me.ComputerPanel.OwnerForm.IsNodeSelected(Me.ComputerPanel) Then
+            If Me.Visible Then
+                If Me.ComputerPanel.ConnectionStatus = ComputerPanel.ConnectionStatuses.Online AndAlso Me.ComputerPanel.RespondsToPing() Then
+                    If Not Me.InitWorker.IsBusy AndAlso Me.ComputerPanel.LastSelectedTab IsNot Me Then
+                        Me.ComputerPanel.LastSelectedTab = Me
+                        Return True
+                    Else
+                        Return False
+                    End If
+                Else
+                    If Me.ComputerPanel.ConnectionStatus <> ComputerPanel.ConnectionStatuses.Online Then
+                        If Not Me.InitWorker.IsBusy AndAlso Me.ComputerPanel.LastSelectedTab IsNot Me Then
+                            Me.ComputerPanel.LastSelectedTab = Me
+                            Return True
+                        Else
+                            Return False
+                        End If
+                    Else
+                        Me.ComputerPanel.SetConnectionStatus(ComputerPanel.ConnectionStatuses.Offline)
+                        Return False
+                    End If
+
+                End If
+            Else
+                Return False
+            End If
+        Else
+            Return False
+        End If
     End Function
 #End Region
 
