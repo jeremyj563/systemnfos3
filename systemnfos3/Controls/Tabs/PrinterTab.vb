@@ -28,7 +28,7 @@ Public Class PrinterTab
         ValidateWMI()
         ClearEnumeratorVars()
 
-        Me.PrinterInfoListView = NewBasicInfoListView(4)
+        Me.PrinterInfoListView = NewBaseListView(4)
         With Me.PrinterInfoListView
             .MultiSelect = True
             .Groups.Add(New ListViewGroup(NameOf(ListViewGroups.lsvgPR), ListViewGroups.lsvgPR))
@@ -143,7 +143,7 @@ Public Class PrinterTab
             Me.PrinterInfoListView.Items.AddRange(NewBaseListViewItems(Me.PrinterInfoListView, Me.TabWriterObjects.ToArray()))
         End If
 
-        AddHandler Me.MainListView.ContextMenuStripChanged, AddressOf AddToPrinterMenuStrip
+        AddHandler Me.CurrentListView.ContextMenuStripChanged, AddressOf AddToPrinterMenuStrip
         ShowListView(Me.PrinterInfoListView, Me)
     End Sub
 
@@ -158,13 +158,13 @@ Public Class PrinterTab
         AddToCurrentMenuStrip(New ToolStripSeparator)
         AddToCurrentMenuStrip(New ToolStripMenuItem("Create Printer Export File", Nothing, AddressOf NewPrinterCab))
 
-        Select Case Me.MainListView.SelectedItems.Count
+        Select Case Me.CurrentListView.SelectedItems.Count
 
             Case 1
                 ' One Printer is selected. Show All options. Ignore the Legends
-                If Me.MainListView.SelectedItems(0).Tag IsNot Nothing Then
+                If Me.CurrentListView.SelectedItems(0).Tag IsNot Nothing Then
                     AddToCurrentMenuStrip(New ToolStripSeparator)
-                    Select Case Me.MainListView.SelectedItems(0).Tag.Properties("CreationClassName").Value
+                    Select Case Me.CurrentListView.SelectedItems(0).Tag.Properties("CreationClassName").Value
                         Case "Win32_Printer"
                             AddToCurrentMenuStrip(New ToolStripMenuItem("Rename Printer", Nothing, AddressOf RenamePrinter))
                             AddToCurrentMenuStrip(New ToolStripMenuItem("Set as Default", Nothing, AddressOf SetDefaultPrinter))
@@ -185,7 +185,7 @@ Public Class PrinterTab
 
             Case Else
                 ' Multiple printers are selected. Only show the delete options
-                If Me.MainListView.SelectedItems.Count > 0 Then
+                If Me.CurrentListView.SelectedItems.Count > 0 Then
                     AddToCurrentMenuStrip(New ToolStripSeparator)
                     AddToCurrentMenuStrip(New ToolStripMenuItem("Delete Printer Objects", Nothing, AddressOf DeleteAnyPrinterType))
                     AddToCurrentMenuStrip(New ToolStripSeparator)
@@ -211,37 +211,37 @@ Public Class PrinterTab
     End Sub
 
     Private Sub RenamePrinter(sender As Object, e As EventArgs)
-        Dim printerRename As New RemoteTools(RemoteTools.RemoteTools.PrinterRename, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
+        Dim printerRename As New RemoteTools(RemoteTools.RemoteTools.PrinterRename, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(CurrentListView).Tag})
         AddHandler printerRename.WorkCompleted, AddressOf Me.InitWorker.RunWorkerAsync
         printerRename.BeginWork()
     End Sub
 
     Private Sub SetDefaultPrinter()
-        Dim printerSetDefault As New RemoteTools(RemoteTools.RemoteTools.PrinterSetDefault, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
+        Dim printerSetDefault As New RemoteTools(RemoteTools.RemoteTools.PrinterSetDefault, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(CurrentListView).Tag})
         AddHandler printerSetDefault.WorkCompleted, AddressOf Me.InitWorker.RunWorkerAsync
         printerSetDefault.BeginWork()
     End Sub
 
     Private Sub OpenPrinterQueue()
-        Dim printerOpenQueue As New RemoteTools(RemoteTools.RemoteTools.PrinterOpenQueue, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
+        Dim printerOpenQueue As New RemoteTools(RemoteTools.RemoteTools.PrinterOpenQueue, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(CurrentListView).Tag})
         printerOpenQueue.BeginWork()
     End Sub
 
     Private Sub OpenPrinterProperties()
-        Dim printerOpenProperties As New RemoteTools(RemoteTools.RemoteTools.PrinterOpenProperties, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
+        Dim printerOpenProperties As New RemoteTools(RemoteTools.RemoteTools.PrinterOpenProperties, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(CurrentListView).Tag})
         printerOpenProperties.BeginWork()
     End Sub
 
     Private Sub EditPrinterPort()
-        Dim printerEditPort As New RemoteTools(RemoteTools.RemoteTools.PrinterEditPort, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
+        Dim printerEditPort As New RemoteTools(RemoteTools.RemoteTools.PrinterEditPort, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(CurrentListView).Tag})
         AddHandler printerEditPort.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         printerEditPort.BeginWork()
     End Sub
 
     Private Sub DeleteAnyPrinterType(sender As Object, e As EventArgs)
-        If Me.MainListView.SelectedItems.Count > 0 Then
+        If Me.CurrentListView.SelectedItems.Count > 0 Then
             Dim printersToDelete As New List(Of ManagementObject)()
-            For Each printer As ListViewItem In Me.MainListView.SelectedItems
+            For Each printer As ListViewItem In Me.CurrentListView.SelectedItems
                 If printer.Tag Is Nothing Then Continue For
 
                 printersToDelete.Add(printer.Tag)

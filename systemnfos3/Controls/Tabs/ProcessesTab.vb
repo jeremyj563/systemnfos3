@@ -28,7 +28,7 @@ Public Class ProcessesTab
         ClearEnumeratorVars()
 
         Dim processInfoListView As New ListView()
-        processInfoListView = NewBasicInfoListView(2)
+        processInfoListView = NewBaseListView(2)
         processInfoListView.Groups.Add(New ListViewGroup(NameOf(ListViewGroups.lsvgPC), ListViewGroups.lsvgPC))
 
         For Each process As ManagementObject In Me.ComputerPanel.WMI.Query("SELECT Name,ProcessID,CreationDate FROM Win32_Process")
@@ -40,7 +40,7 @@ Public Class ProcessesTab
         Dim processesSplitContainer As SplitContainer = NewSplitContainer(Me.Width - 450, "Choose a process from the list to see more information")
 
         With processInfoListView
-            .Items.AddRange(NewBaseListViewItems(MainListView, TabWriterObjects.ToArray()))
+            .Items.AddRange(NewBaseListViewItems(CurrentListView, TabWriterObjects.ToArray()))
             .Sorting = SortOrder.Ascending
             .Sort()
         End With
@@ -48,7 +48,7 @@ Public Class ProcessesTab
         Dim processSearchTextBox As TextBox = NewSearchTextBox("Enter your process name search here")
         Me.InvokeClearControls()
         Me.InvokeAddControl(processesSplitContainer)
-        ShowListView(Me.MainListView, processesSplitContainer, Panels.Panel1)
+        ShowListView(Me.CurrentListView, processesSplitContainer, Panels.Panel1)
 
         AddHandler processInfoListView.ContextMenuStripChanged, AddressOf AddMenuStripOptions
 
@@ -59,7 +59,7 @@ Public Class ProcessesTab
     End Sub
 
     Private Sub FindProcessInformation()
-        Me.LastSelectedListViewItem = GetSelectedListViewItem(Me.MainListView)
+        Me.LastSelectedListViewItem = GetSelectedListViewItem(Me.CurrentListView)
 
         If Not MyBase.SelectionWorker.IsBusy Then
             MyBase.SelectionWorker.RunWorkerAsync()
@@ -71,11 +71,11 @@ Public Class ProcessesTab
 
         MyBase.TabWriterObjects = Nothing
 
-        Dim selectedItem As ListViewItem = GetSelectedListViewItem(Me.MainListView)
+        Dim selectedItem As ListViewItem = GetSelectedListViewItem(Me.CurrentListView)
 
         If selectedItem IsNot Nothing Then
             Dim process As ManagementObject = selectedItem.Tag
-            Dim processInfoListView As ListView = NewBasicInfoListView(1)
+            Dim processInfoListView As ListView = NewBaseListView(1)
             With processInfoListView.Groups
                 .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgPN), ListViewGroups.lsvgPN))
                 .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgPI), ListViewGroups.lsvgPI))
@@ -104,7 +104,7 @@ Public Class ProcessesTab
                 MyBase.NewTabWriterItem(" ", New ManagementObject, NameOf(ListViewGroups.lsvgNI))
             End If
 
-            If GetSelectedListViewItem(Me.MainListView) Is selectedItem Then
+            If GetSelectedListViewItem(Me.CurrentListView) Is selectedItem Then
                 ShowListView(processInfoListView, Me.Controls(0), Panels.Panel2)
             Else
                 SelectionWorker_DoWork(sender, e)
@@ -114,8 +114,8 @@ Public Class ProcessesTab
     End Sub
 
     Private Sub AddMenuStripOptions()
-        If Me.MainListView.SelectedItems.Count > 0 Then
-            Dim selectedItem As ManagementObject = GetSelectedListViewItem(MainListView).Tag
+        If Me.CurrentListView.SelectedItems.Count > 0 Then
+            Dim selectedItem As ManagementObject = GetSelectedListViewItem(CurrentListView).Tag
             Dim process As New ProcessController(Me.ComputerPanel.WMI)
 
             Select Case process.QueryProcessState(selectedItem.Properties("Name").Value)
@@ -131,13 +131,13 @@ Public Class ProcessesTab
     End Sub
 
     Private Sub StopProcess()
-        Dim processStop As New RemoteTools(RemoteTools.RemoteTools.ProcessStop, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
+        Dim processStop As New RemoteTools(RemoteTools.RemoteTools.ProcessStop, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(CurrentListView).Tag})
         AddHandler processStop.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         processStop.BeginWork()
     End Sub
 
     Private Sub StopAllProcesses()
-        Dim processes = New ProcessController(Me.ComputerPanel.WMI).GetProcesses(GetSelectedListViewItem(MainListView).Tag.Properties("Name").Value)
+        Dim processes = New ProcessController(Me.ComputerPanel.WMI).GetProcesses(GetSelectedListViewItem(CurrentListView).Tag.Properties("Name").Value)
         For Each process In processes
             Dim processStop As New RemoteTools(RemoteTools.RemoteTools.ProcessStop, Me.ComputerPanel, {process})
             AddHandler processStop.WorkCompleted, AddressOf InitWorker.RunWorkerAsync

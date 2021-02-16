@@ -34,7 +34,7 @@ Public Class ApplicationTab
         ClearEnumeratorVars()
 
         Dim appInfoListView As New ListView()
-        appInfoListView = NewBasicInfoListView(1)
+        appInfoListView = NewBaseListView(1)
         appInfoListView.Groups.Add(New ListViewGroup(NameOf(ListViewGroups.lsvgAN), ListViewGroups.lsvgAN))
 
         Dim x86Registry As New RegistryController(Me.ComputerPanel.WMI.X86Scope)
@@ -89,7 +89,7 @@ Public Class ApplicationTab
         searchTextBox.Location = New Point(0, Me.Height - 25)
 
         Me.InvokeAddControl(searchTextBox)
-        Me.UIThread(Sub() Me.MainListView.Focus())
+        Me.UIThread(Sub() Me.CurrentListView.Focus())
     End Sub
 
     Public Sub NewAppWriteItem(subject As String, body As Object, group As String)
@@ -107,16 +107,15 @@ Public Class ApplicationTab
     End Sub
 
     Private Sub InitWorker_DoWork(sender As Object, e As DoWorkEventArgs) Handles InitWorker.DoWork
-        If Me.ComputerPanel.WMI.X86Scope.IsConnected Then
-            Me.Controls(0).Controls(1).InvokeClearControls()
+        Dim selectedItem As ListViewItem = MyBase.GetSelectedListViewItem(MyBase.CurrentListView)
+
+        If selectedItem IsNot Nothing AndAlso MyBase.ComputerPanel.WMI.X86Scope.IsConnected Then
+            MyBase.Controls(0).Controls(1).InvokeClearControls()
 
             Me.EnumWriterApps = Nothing
 
-            Dim applicationListView = Me.MainListView
-            Dim selectedItem As ListViewItem = GetSelectedListViewItem(applicationListView)
-
-            Dim appInfoListView As ListView = NewBasicInfoListView(1)
-            With appInfoListView.Groups
+            Dim appListView As ListView = MyBase.NewBaseListView(1)
+            With appListView.Groups
                 .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgSN), ListViewGroups.lsvgSN))
                 .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgRK), ListViewGroups.lsvgRK))
                 .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgRI), ListViewGroups.lsvgRI))
@@ -128,40 +127,40 @@ Public Class ApplicationTab
 
             Try
                 Dim rawKeys As String() = selectedItem.SubItems(1).Text.Split("&")
-                Dim registry As RegistryController = Nothing
+                Dim keyPath = rawKeys(0)
+                Dim architecture = rawKeys(1)
+                Dim scope = Me.ComputerPanel.WMI.FindScope(architecture)
+                Dim registry = New RegistryController(scope)
 
-                If rawKeys(1) = "32" Then registry = New RegistryController(Me.ComputerPanel.WMI.X86Scope)
-                If rawKeys(1) = "64" Then registry = New RegistryController(Me.ComputerPanel.WMI.X64Scope)
+                Me.NewAppWriteItem(registry.GetKeyValue(keyPath, "DisplayName", RegistryController.RegistryKeyValueTypes.String), " ", NameOf(ListViewGroups.lsvgSN))
+                Me.NewAppWriteItem($"HKLM\{rawKeys(0)}", " ", NameOf(ListViewGroups.lsvgRK))
+                Me.NewAppWriteItem($"{rawKeys(1)}-bit Registry", " ", NameOf(ListViewGroups.lsvgRI))
 
-                NewAppWriteItem(registry.GetKeyValue(rawKeys(0), "DisplayName", RegistryController.RegistryKeyValueTypes.String), " ", NameOf(ListViewGroups.lsvgSN))
-                NewAppWriteItem($"HKLM\{rawKeys(0)}", " ", NameOf(ListViewGroups.lsvgRK))
-                NewAppWriteItem($"{rawKeys(1)}-bit Registry", " ", NameOf(ListViewGroups.lsvgRI))
-
-                Dim displayVersion As String = registry.GetKeyValue(rawKeys(0), "DisplayVersion", RegistryController.RegistryKeyValueTypes.String)
+                Dim displayVersion As String = registry.GetKeyValue(keyPath, "DisplayVersion", RegistryController.RegistryKeyValueTypes.String)
                 If Not String.IsNullOrWhiteSpace(displayVersion) Then
                     NewAppWriteItem(displayVersion, " ", NameOf(ListViewGroups.lsvgVI))
                 End If
 
-                Dim uninstallString As String = registry.GetKeyValue(rawKeys(0), "UninstallString", RegistryController.RegistryKeyValueTypes.String)
+                Dim uninstallString As String = registry.GetKeyValue(keyPath, "UninstallString", RegistryController.RegistryKeyValueTypes.String)
                 If Not String.IsNullOrWhiteSpace(uninstallString) Then
                     NewAppWriteItem(uninstallString, " ", NameOf(ListViewGroups.lsvgUS))
                 End If
 
-                Dim installDate As String = registry.GetKeyValue(rawKeys(0), "InstallDate", RegistryController.RegistryKeyValueTypes.String)
+                Dim installDate As String = registry.GetKeyValue(keyPath, "InstallDate", RegistryController.RegistryKeyValueTypes.String)
                 If Not String.IsNullOrWhiteSpace(installDate) Then NewAppWriteItem(installDate, " ", NameOf(ListViewGroups.lsvgID))
 
-                Dim installSource As String = registry.GetKeyValue(rawKeys(0), "InstallSource", RegistryController.RegistryKeyValueTypes.String)
+                Dim installSource As String = registry.GetKeyValue(keyPath, "InstallSource", RegistryController.RegistryKeyValueTypes.String)
                 If Not String.IsNullOrWhiteSpace(installSource) Then
                     NewAppWriteItem(installSource, " ", NameOf(ListViewGroups.lsvgIS))
                 End If
 
-                appInfoListView.Items.AddRange(NewBaseListViewItems(appInfoListView, Me.EnumWriterApps.ToArray()))
+                appListView.Items.AddRange(NewBaseListViewItems(appListView, Me.EnumWriterApps.ToArray()))
                 Me.Controls(0).Controls(1).InvokeClearControls()
 
-                If GetSelectedListViewItem(applicationListView) Is selectedItem Then
-                    ShowListView(appInfoListView, Me.Controls(0), Panels.Panel2)
+                If MyBase.GetSelectedListViewItem(MyBase.CurrentListView) Is selectedItem Then
+                    MyBase.ShowListView(appListView, Me.Controls(0), Panels.Panel2)
                 Else
-                    InitWorker_DoWork(sender, e)
+                    Me.InitWorker_DoWork(sender, e)
                 End If
 
             Catch ex As Exception
@@ -170,7 +169,7 @@ Public Class ApplicationTab
                 If Not Me.ComputerPanel.RespondsToPing() Then
                     Me.ComputerPanel.SetConnectionStatus(ComputerPanel.ConnectionStatuses.Offline)
                 Else
-                    ValidateWMI()
+                    MyBase.ValidateWMI()
                 End If
             End Try
         End If

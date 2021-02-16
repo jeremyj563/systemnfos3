@@ -5,10 +5,6 @@ Public Class RegistryController
 
     Private Property Scope As ManagementScope
 
-    ''' <summary>
-    ''' Connect to the local Windows Registry
-    ''' </summary>
-    ''' <remarks></remarks>
     Public Sub New()
         Dim options As New ConnectionOptions With
             {
@@ -26,21 +22,10 @@ Public Class RegistryController
         End With
     End Sub
 
-    ''' <summary>
-    ''' Use a premade ManagementScope from WMI to connect to a remote registry
-    ''' </summary>
-    ''' <param name="scope">Pass the premade WMI.RawWMI.RegistryProviders to connect to remote computers</param>
-    ''' <remarks></remarks>
     Public Sub New(scope As ManagementScope)
         Me.Scope = scope
     End Sub
 
-    ''' <summary>
-    ''' Connect to a remote registry using the computer name
-    ''' </summary>
-    ''' <param name="computerName">Name of the computer to connect to</param>
-    ''' <param name="architecture">Architecture of the registry to connect to</param>
-    ''' <remarks></remarks>
     Public Sub New(computerName As String, Optional architecture As RegistryArchitectures = RegistryArchitectures.x86)
         Dim options As New ConnectionOptions With
             {

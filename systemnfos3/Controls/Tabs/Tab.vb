@@ -15,7 +15,7 @@ Public MustInherit Class Tab
 
     Friend Property LoadingProgressBar As ProgressBar
     Friend Property ExportingProgressBar As ProgressBar
-    Friend Property MainListView As ListView
+    Friend Property CurrentListView As ListView
     Friend Property LastSelectedListViewItem As ListViewItem = Nothing
     Friend Property SearchTextBox As TextBox
 
@@ -35,8 +35,8 @@ Public MustInherit Class Tab
         Me.BackColor = Color.White
     End Sub
 
-    Public Function NewBasicInfoListView(columnsCount As Integer) As ListView
-        Dim basicInfo As New ListView() With
+    Public Function NewBaseListView(columnsCount As Integer) As ListView
+        Dim listView As New ListView() With
             {
                 .View = View.Details,
                 .Anchor = AnchorStyles.Left + AnchorStyles.Right + AnchorStyles.Bottom + AnchorStyles.Top,
@@ -48,18 +48,18 @@ Public MustInherit Class Tab
             }
 
         For i = 1 To columnsCount
-            basicInfo.Columns.Add(i)
+            listView.Columns.Add(i)
         Next
 
-        basicInfo.ContextMenuStrip = New ContextMenuStrip()
+        listView.ContextMenuStrip = New ContextMenuStrip()
         If Not Me.IsMainListViewCreated Then
-            Me.MainListView = basicInfo
+            Me.CurrentListView = listView
             Me.IsMainListViewCreated = True
         End If
 
-        AddHandler basicInfo.MouseUp, AddressOf NewBaseMenuStrip
+        AddHandler listView.MouseUp, AddressOf NewBaseMenuStrip
 
-        Return basicInfo
+        Return listView
     End Function
 
     Public Sub NewBaseMenuStrip(sender As Object, e As MouseEventArgs)
@@ -138,8 +138,8 @@ Public MustInherit Class Tab
 
                 ' Display the exporting progress bar control
                 Dim exportProgress = NewProgressControl("Exporting...", Me.ExportingProgressBar, ProgressBarStyle.Continuous, Me.ExportWorker)
-                Me.MainListView.InvokeAddControl(exportProgress)
-                Me.MainListView.InvokeCenterControl()
+                Me.CurrentListView.InvokeAddControl(exportProgress)
+                Me.CurrentListView.InvokeCenterControl()
 
                 ' Delegate event handlers for the BackgroundWorker that will be performing the export.
                 ' The DoWork() handler is to be delegated in the derived tab object's constructor.
@@ -166,7 +166,7 @@ Public MustInherit Class Tab
 
     Public Sub TabExportCompleted(exportingProgressBar As Control, allTabPagesExceptCurrent As List(Of TabPage))
         ' Remove the progress bar control from the user interface
-        Me.MainListView.InvokeRemoveControl(exportingProgressBar)
+        Me.CurrentListView.InvokeRemoveControl(exportingProgressBar)
 
         ' Enable the tabs that were disabled at the beginning of the export process
         For Each tabPage As TabPage In allTabPagesExceptCurrent
@@ -230,8 +230,8 @@ Public MustInherit Class Tab
     End Sub
 
     Public Sub AddToCurrentMenuStrip(toolStripItem As ToolStripItem)
-        Dim menuItems = Me.MainListView.ContextMenuStrip.Items
-        Dim selectedCount = Me.MainListView.SelectedItems.Count
+        Dim menuItems = Me.CurrentListView.ContextMenuStrip.Items
+        Dim selectedCount = Me.CurrentListView.SelectedItems.Count
 
         ' This will insert either above Copy, Refresh and seperator or above refresh
         Dim index As Integer = If(selectedCount > 0, menuItems.Count - 3, menuItems.Count - 1)
@@ -579,7 +579,7 @@ Public MustInherit Class Tab
         ' Sift through the Main ListView
         Dim searchStrings As New AutoCompleteStringCollection()
 
-        For Each item As ListViewItem In Me.MainListView.Items
+        For Each item As ListViewItem In Me.CurrentListView.Items
             searchStrings.Add(GetListViewItemText(item))
         Next
 
@@ -588,7 +588,7 @@ Public MustInherit Class Tab
         AddHandler searchTextBox.GotFocus, AddressOf ClearSearchBox
         AddHandler searchTextBox.TextChanged, AddressOf OnSearchBoxTextChanged
         AddHandler searchTextBox.KeyDown, AddressOf OnSearchBoxKeyDown
-        AddHandler Me.MainListView.KeyPress, AddressOf OnMainListViewKeyPress
+        AddHandler Me.CurrentListView.KeyPress, AddressOf OnMainListViewKeyPress
 
         Me.SearchTextBox = searchTextBox
 
@@ -607,9 +607,9 @@ Public MustInherit Class Tab
         If Not String.IsNullOrWhiteSpace(searchText) Then
             If searchText <> GetSearchBoxTag() Then
 
-                For Each item As ListViewItem In Me.MainListView.Items
+                For Each item As ListViewItem In Me.CurrentListView.Items
                     If GetListViewItemText(item).Contains(searchText) Then
-                        With Me.MainListView
+                        With Me.CurrentListView
                             .Items(item.Index).EnsureVisible()
                             .Items(item.Index).Selected = True
                             .Items(item.Index).Focused = True
@@ -625,24 +625,24 @@ Public MustInherit Class Tab
     Public Sub OnSearchBoxKeyDown(sender As Object, e As KeyEventArgs)
         If e.KeyCode = Keys.Up OrElse e.KeyCode = Keys.Down Then
 
-            If Me.MainListView.SelectedItems.Count > 0 Then
-                Dim selectedItem As ListViewItem = GetSelectedListViewItem(Me.MainListView)
+            If Me.CurrentListView.SelectedItems.Count > 0 Then
+                Dim selectedItem As ListViewItem = GetSelectedListViewItem(Me.CurrentListView)
 
                 Select Case e.KeyCode
                     Case Keys.Up
                         If selectedItem.Index > 0 Then
-                            Me.MainListView.Items(selectedItem.Index - 1).Selected = True
-                            Me.MainListView.Items(selectedItem.Index - 1).Focused = True
+                            Me.CurrentListView.Items(selectedItem.Index - 1).Selected = True
+                            Me.CurrentListView.Items(selectedItem.Index - 1).Focused = True
                         End If
 
                     Case Keys.Down
-                        If selectedItem.Index < Me.MainListView.Items.Count - 1 Then
-                            Me.MainListView.Items(selectedItem.Index + 1).Selected = True
-                            Me.MainListView.Items(selectedItem.Index + 1).Focused = True
+                        If selectedItem.Index < Me.CurrentListView.Items.Count - 1 Then
+                            Me.CurrentListView.Items(selectedItem.Index + 1).Selected = True
+                            Me.CurrentListView.Items(selectedItem.Index + 1).Focused = True
                         End If
                 End Select
 
-                Me.MainListView.Focus()
+                Me.CurrentListView.Focus()
             End If
         End If
     End Sub
@@ -692,7 +692,7 @@ Public MustInherit Class Tab
 
     Public Sub ClearEnumeratorVars()
         Me.TabWriterObjects = Nothing
-        Me.MainListView = Nothing
+        Me.CurrentListView = Nothing
         Me.IsMainListViewCreated = False
         Me.SearchTextBox = Nothing
     End Sub

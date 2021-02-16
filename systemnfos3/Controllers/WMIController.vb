@@ -20,6 +20,16 @@ Public NotInheritable Class WMIController
         Connect(computerName, scope, async)
     End Sub
 
+    Public Function FindScope(architecture As String) As ManagementScope
+        Select Case architecture
+            Case "32"
+                Return Me.X86Scope
+            Case "64"
+                Return Me.X64Scope
+        End Select
+        Return Nothing
+    End Function
+
     Public Sub Connect(computerName As String, scope As ManagementScopes, async As Boolean)
         Dim options As New ConnectionOptions With
             {
@@ -78,13 +88,6 @@ Public NotInheritable Class WMIController
         Return propertyValue
     End Function
 
-    ''' <summary>
-    ''' Used to return a collection of WMI properties.
-    ''' </summary>
-    ''' <param name="queryText">WQL Query for the search</param>
-    ''' <param name="scope">Provide specialized search scope for the query</param>
-    ''' <returns></returns>
-    ''' <remarks></remarks>
     Public Function Query(queryText As String, Optional scope As ManagementScope = Nothing) As ManagementObjectCollection
         If scope Is Nothing Then scope = Me.RegularScope
 

@@ -29,7 +29,7 @@ Public Class UpdatesTab
         ValidateWMI()
         ClearEnumeratorVars()
 
-        Me.UpdatesListView = NewBasicInfoListView(3)
+        Me.UpdatesListView = NewBaseListView(3)
         With Me.UpdatesListView.Groups
             .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgSU), ListViewGroups.lsvgSU))
             .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgUP), ListViewGroups.lsvgUP))
@@ -100,11 +100,11 @@ Public Class UpdatesTab
 
     Private Sub UpdateAddMenuStripHandler(sender As Object, e As EventArgs)
         ' Creates additional menu options on right click
-        If Me.MainListView.SelectedItems.Count > 0 Then
-            Dim update As ManagementBaseObject = Me.MainListView.SelectedItems(0).Tag
+        If Me.CurrentListView.SelectedItems.Count > 0 Then
+            Dim update As ManagementBaseObject = Me.CurrentListView.SelectedItems(0).Tag
             If update.Properties("Caption").Value IsNot Nothing OrElse Not String.IsNullOrWhiteSpace(update.Properties("Caption").Value) Then
                 Dim getInfoMenuItem As New ToolStripMenuItem("Get Info", Nothing, AddressOf DisplaySite)
-                getInfoMenuItem.Tag = GetSelectedListViewItem(MainListView).Tag.Properties("Caption").Value
+                getInfoMenuItem.Tag = GetSelectedListViewItem(CurrentListView).Tag.Properties("Caption").Value
                 AddToCurrentMenuStrip(getInfoMenuItem)
             Else
                 AddToCurrentMenuStrip(New ToolStripMenuItem("No Information Available"))

@@ -35,7 +35,7 @@ Public Class MainTab
 
         ClearEnumeratorVars()
 
-        Me.BasicInfoListView = NewBasicInfoListView(2)
+        Me.BasicInfoListView = NewBaseListView(2)
         With Me.BasicInfoListView.Groups
             ' Create the ListView Groups
             .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgOS), ListViewGroups.lsvgOS))

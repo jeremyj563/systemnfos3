@@ -28,7 +28,7 @@ Public Class ServicesTab
         ValidateWMI()
         ClearEnumeratorVars()
 
-        Dim serviceInfoListView As ListView = NewBasicInfoListView(3)
+        Dim serviceInfoListView As ListView = NewBaseListView(3)
         serviceInfoListView.Groups.Add(New ListViewGroup("lsvgSV", "Services"))
 
         For Each service As ManagementObject In ComputerPanel.WMI.Query("SELECT DisplayName, StartMode, State, Name FROM Win32_Service")
@@ -59,7 +59,7 @@ Public Class ServicesTab
     End Sub
 
     Private Sub FindServiceInfo()
-        Me.LastSelectedListViewItem = GetSelectedListViewItem(Me.MainListView)
+        Me.LastSelectedListViewItem = GetSelectedListViewItem(Me.CurrentListView)
 
         If Not SelectionWorker.IsBusy Then
             SelectionWorker.RunWorkerAsync()
@@ -71,9 +71,9 @@ Public Class ServicesTab
 
         MyBase.EnumWriterObjects = Nothing
 
-        Dim selectedItem As ListViewItem = GetSelectedListViewItem(Me.MainListView)
+        Dim selectedItem As ListViewItem = GetSelectedListViewItem(Me.CurrentListView)
         If selectedItem IsNot Nothing Then
-            Dim serviceInfoListView As ListView = NewBasicInfoListView(1)
+            Dim serviceInfoListView As ListView = NewBaseListView(1)
             With serviceInfoListView.Groups
                 .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgDN), ListViewGroups.lsvgDN))
                 .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgSN), ListViewGroups.lsvgSN))
@@ -122,7 +122,7 @@ Public Class ServicesTab
             Dim serviceSplitContainer As New SplitContainer()
             serviceSplitContainer.Orientation = Orientation.Horizontal
 
-            If GetSelectedListViewItem(Me.MainListView) Is selectedItem Then
+            If GetSelectedListViewItem(Me.CurrentListView) Is selectedItem Then
                 ShowListView(serviceInfoListView, Me.Controls(0), Panels.Panel2)
             Else
                 SelectionWorker_DoWork(sender, e)
@@ -131,8 +131,8 @@ Public Class ServicesTab
     End Sub
 
     Private Sub AddMenuStripOptions()
-        If MyBase.MainListView.SelectedItems.Count > 0 Then
-            Dim service As ManagementObject = GetSelectedListViewItem(MyBase.MainListView).Tag
+        If MyBase.CurrentListView.SelectedItems.Count > 0 Then
+            Dim service As ManagementObject = GetSelectedListViewItem(MyBase.CurrentListView).Tag
             Dim serviceController As New ServiceController(Me.ComputerPanel.WMI)
             Dim setStartupTypeMenuItem As New ToolStripMenuItem("Set Startup Type")
 
@@ -164,37 +164,37 @@ Public Class ServicesTab
     End Sub
 
     Private Sub SetServiceAuto()
-        Dim serviceSetAuto As New RemoteTools(RemoteTools.RemoteTools.ServiceSetAuto, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
+        Dim serviceSetAuto As New RemoteTools(RemoteTools.RemoteTools.ServiceSetAuto, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.CurrentListView).Tag})
         AddHandler serviceSetAuto.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         serviceSetAuto.BeginWork()
     End Sub
 
     Private Sub SetServiceManual()
-        Dim serviceSetManual As New RemoteTools(RemoteTools.RemoteTools.ServiceSetManual, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
+        Dim serviceSetManual As New RemoteTools(RemoteTools.RemoteTools.ServiceSetManual, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.CurrentListView).Tag})
         AddHandler serviceSetManual.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         serviceSetManual.BeginWork()
     End Sub
 
     Private Sub SetServiceDisable()
-        Dim serviceSetDisable As New RemoteTools(RemoteTools.RemoteTools.ServiceSetDisable, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
+        Dim serviceSetDisable As New RemoteTools(RemoteTools.RemoteTools.ServiceSetDisable, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.CurrentListView).Tag})
         AddHandler serviceSetDisable.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         serviceSetDisable.BeginWork()
     End Sub
 
     Private Sub StopService()
-        Dim serviceStop As New RemoteTools(RemoteTools.RemoteTools.ServiceStop, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
+        Dim serviceStop As New RemoteTools(RemoteTools.RemoteTools.ServiceStop, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.CurrentListView).Tag})
         AddHandler serviceStop.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         serviceStop.BeginWork()
     End Sub
 
     Private Sub StartService()
-        Dim serviceStart As New RemoteTools(RemoteTools.RemoteTools.ServiceStart, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
+        Dim serviceStart As New RemoteTools(RemoteTools.RemoteTools.ServiceStart, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.CurrentListView).Tag})
         AddHandler serviceStart.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         serviceStart.BeginWork()
     End Sub
 
     Private Sub RestartService()
-        Dim serviceRestart As New RemoteTools(RemoteTools.RemoteTools.ServiceRestart, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
+        Dim serviceRestart As New RemoteTools(RemoteTools.RemoteTools.ServiceRestart, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.CurrentListView).Tag})
         AddHandler serviceRestart.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         serviceRestart.BeginWork()
     End Sub

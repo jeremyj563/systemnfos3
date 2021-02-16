@@ -26,7 +26,7 @@ Public Class ProfileTab
         ValidateWMI()
         ClearEnumeratorVars()
 
-        Me.ProfileInfoListView = NewBasicInfoListView(3)
+        Me.ProfileInfoListView = NewBaseListView(3)
 
         ' Create the ListView Groups
         Me.ProfileInfoListView.Groups.Add(New ListViewGroup(NameOf(ListViewGroups.lsvgUS), ListViewGroups.lsvgUS))
@@ -48,9 +48,9 @@ Public Class ProfileTab
     Private Sub OnProfileMenuStripChanged(sender As Object, e As EventArgs)
         Dim sortMenuItem As New ToolStripMenuItem("Sort")
 
-        If Me.MainListView.SelectedItems.Count > 0 Then
+        If Me.CurrentListView.SelectedItems.Count > 0 Then
             Dim openProfileMenuItem As New ToolStripMenuItem("Open Profile", Nothing, AddressOf OpenProfile) With {
-                .Tag = Me.MainListView.SelectedItems(0).SubItems(2).Text
+                .Tag = Me.CurrentListView.SelectedItems(0).SubItems(2).Text
             }
 
             With sortMenuItem.DropDownItems
@@ -75,14 +75,14 @@ Public Class ProfileTab
     End Sub
 
     Private Sub OrderByName()
-        With Me.MainListView
+        With Me.CurrentListView
             .ListViewItemSorter = New Comparer(0, False, Comparer.SortTypes.Ascending)
             .Sort()
         End With
     End Sub
 
     Private Sub OrderByDate()
-        With Me.MainListView
+        With Me.CurrentListView
             .ListViewItemSorter = New Comparer(1, True, Comparer.SortTypes.Descending)
             .Sort()
         End With

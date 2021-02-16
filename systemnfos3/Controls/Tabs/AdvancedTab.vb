@@ -30,7 +30,7 @@ Public Class AdvancedTab
         ValidateWMI()
         ClearEnumeratorVars()
 
-        Me.advancedInfoListView = NewBasicInfoListView(2)
+        Me.advancedInfoListView = NewBaseListView(2)
         With Me.advancedInfoListView.Groups
             ' Create the ListView Groups
             .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgOS), ListViewGroups.lsvgOS))
