@@ -16,17 +16,16 @@
 
     Public Sub New(ldapData As SearchResult)
         Me.LDAPData = ldapData
-        SetProperties()
+        Me.SetProperties()
     End Sub
 
     Private Sub SetProperties()
-        SetNetworkAddressProperties()
+        Me.SetNetworkAddressProperties()
 
         Dim description = GetResultPropertyValue(Me.LDAPData.Properties("description"))
-
         Me.Value = GetResultPropertyValue(Me.LDAPData.Properties("name"))
-        Me.Description = If(String.IsNullOrEmpty(description), "Unknown", description)
-        Me.Display = String.Format("{0}  >  {1}", Me.Description, Me.Value)
+        Me.Description = If(String.IsNullOrWhiteSpace(description), "Unknown", description)
+        Me.Display = $"{Me.Description}  >  {Me.Value}"
         Me.UserName = GetResultPropertyValue(Me.LDAPData.Properties("uid"))
         Me.DisplayName = GetResultPropertyValue(Me.LDAPData.Properties("displayName"))
         Me.LastLogon = GetResultPropertyValue(Me.LDAPData.Properties("extensionAttribute1"))
@@ -39,30 +38,23 @@
         Dim networkAddress As String = GetResultPropertyValue(Me.LDAPData.Properties("networkAddress"))
         If Not String.IsNullOrWhiteSpace(networkAddress) Then
             Dim networkAddresses As String() = networkAddress.Split(",")
-            Me.IPAddress = networkAddresses(0)
-            If networkAddresses.Count = 2 Then
-                Me.MACAddress = networkAddresses(1)
+            Me.IPAddress = If(networkAddresses(0), String.Empty)
+            If networkAddresses.Count >= 2 Then
+                Me.MACAddress = If(networkAddresses(1), String.Empty)
             End If
         End If
-
-        If Me.IPAddress Is Nothing Then Me.IPAddress = String.Empty
-        If Me.MACAddress Is Nothing Then Me.MACAddress = String.Empty
     End Sub
 
     Private Function GetResultPropertyValue(properties As ResultPropertyValueCollection) As String
-        Dim retVal As String = String.Empty
-
-        If properties IsNot Nothing Then
-            If properties.Count > 0 Then
-                If properties(0).GetType().IsArray Then
-                    retVal = CType(properties(0), String())(0)
-                Else
-                    retVal = CType(properties(0), String)
-                End If
+        If properties IsNot Nothing AndAlso properties.Count > 0 Then
+            If properties(0).GetType().IsArray Then
+                Return CType(properties(0), String())(0)
+            Else
+                Return CType(properties(0), String)
             End If
         End If
 
-        Return retVal
+        Return String.Empty
     End Function
 
 End Class
