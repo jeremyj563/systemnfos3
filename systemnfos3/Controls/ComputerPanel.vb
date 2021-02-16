@@ -24,7 +24,7 @@ Public Class ComputerPanel
     Private Property RebootPending As Boolean = False
     Private Property ResolveIPAddress As Boolean = False
 
-    Friend Property LastSelectedTab As Tab = Nothing
+    Friend Property LastSelectedTab As BaseTab = Nothing
 
     Private pingLock As New Object
 
@@ -86,7 +86,7 @@ Public Class ComputerPanel
                                 Me.UserStatus = userStatus
                                 SetConnectionStatusColors(ConnectionStatuses.Online)
 
-                                If TypeOf LastSelectedTab Is MainTab AndAlso Not LastSelectedTab.InitWorker.IsBusy Then
+                                If TypeOf LastSelectedTab Is BasicTab AndAlso Not LastSelectedTab.InitWorker.IsBusy Then
                                     LastSelectedTab.InitWorker.RunWorkerAsync()
                                 End If
                             End If
@@ -626,7 +626,7 @@ Public Class ComputerPanel
             AddHandler mainTabControl.Selecting, AddressOf TabPage_Selecting
 
             ' Always add the main tab regardless of the connection status
-            mainTabControl.TabPages.AddRange(New TabPage() {New MainTab(mainTabControl, Me, status)})
+            mainTabControl.TabPages.AddRange(New TabPage() {New BasicTab(mainTabControl, Me, status)})
 
             ' Add all tabs for Online connection status
             If status = ConnectionStatuses.Online Then

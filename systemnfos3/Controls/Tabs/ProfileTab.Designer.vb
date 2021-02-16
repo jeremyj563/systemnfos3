@@ -1,5 +1,5 @@
 ﻿Partial Class ProfileTab
-    Inherits systemnfos3.Tab
+    Inherits systemnfos3.BaseTab
 
     <System.Diagnostics.DebuggerNonUserCode()> _
     Public Sub New(ByVal container As System.ComponentModel.IContainer)

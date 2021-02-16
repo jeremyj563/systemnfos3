@@ -204,10 +204,10 @@
     <Compile Include="Controls\Tabs\ApplicationTab.vb">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\Tabs\MainTab.Designer.vb">
-      <DependentUpon>MainTab.vb</DependentUpon>
+    <Compile Include="Controls\Tabs\BasicTab.Designer.vb">
+      <DependentUpon>BasicTab.vb</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Tabs\MainTab.vb">
+    <Compile Include="Controls\Tabs\BasicTab.vb">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\Tabs\PrinterTab.Designer.vb">
@@ -240,10 +240,10 @@
     <Compile Include="Controls\Tabs\ServicesTab.vb">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\Tabs\Tab.Designer.vb">
-      <DependentUpon>Tab.vb</DependentUpon>
+    <Compile Include="Controls\Tabs\BaseTab.Designer.vb">
+      <DependentUpon>BaseTab.vb</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Tabs\Tab.vb">
+    <Compile Include="Controls\Tabs\BaseTab.vb">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\Tabs\UpdatesTab.Designer.vb">

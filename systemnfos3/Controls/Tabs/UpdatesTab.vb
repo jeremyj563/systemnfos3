@@ -3,7 +3,7 @@ Imports System.Reflection
 Imports System.Text.RegularExpressions
 
 Public Class UpdatesTab
-    Inherits Tab
+    Inherits BaseTab
 
     Private Property UpdatesListView As ListView
 
@@ -59,10 +59,10 @@ Public Class UpdatesTab
             End Select
 
             If update.Properties("InstalledOn").Value = String.Empty Then
-                NewTabWriterItem(update.Properties("HotfixID").Value, New Object() {"1/1/1601", update.Properties("Caption").Value, update}, groupName)
+                AddTabWriterItem(update.Properties("HotfixID").Value, New Object() {"1/1/1601", update.Properties("Caption").Value, update}, groupName)
             ElseIf New Regex("^[a-zA-Z0-9]+$").IsMatch(update.Properties("HotFixID").Value) Then
 
-                NewTabWriterItem(update.Properties("HotfixID").Value, New Object() {update.Properties("InstalledOn").Value, update.Properties("Caption").Value, update}, groupName)
+                AddTabWriterItem(update.Properties("HotfixID").Value, New Object() {update.Properties("InstalledOn").Value, update.Properties("Caption").Value, update}, groupName)
             End If
         Next
 

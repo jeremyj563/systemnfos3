@@ -1,5 +1,5 @@
-﻿Partial Class MainTab
-    Inherits systemnfos3.Tab
+﻿Partial Class BaseTab
+    Inherits System.Windows.Forms.TabPage
 
     <System.Diagnostics.DebuggerNonUserCode()> _
     Public Sub New(ByVal container As System.ComponentModel.IContainer)
@@ -42,6 +42,7 @@
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
         components = New System.ComponentModel.Container()
+        Me.BackColor = Color.White
     End Sub
 
 End Class

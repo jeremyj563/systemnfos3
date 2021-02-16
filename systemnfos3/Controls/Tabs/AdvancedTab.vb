@@ -1,7 +1,7 @@
 ﻿Imports System.ComponentModel
 
 Public Class AdvancedTab
-    Inherits Tab
+    Inherits BaseTab
 
     Private Property advancedInfoListView As ListView
 
@@ -54,21 +54,21 @@ Public Class AdvancedTab
     End Sub
 
     Private Sub LoadBaseAdvancedInfo()
-        NewTabWriterItem("Name:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Caption FROM Win32_OperatingSystem"), "Caption"), NameOf(ListViewGroups.lsvgOS))
+        AddTabWriterItem("Name:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Caption FROM Win32_OperatingSystem"), "Caption"), NameOf(ListViewGroups.lsvgOS))
 
-        NewTabWriterItem("Service Pack:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT CSDVersion FROM Win32_OperatingSystem"), "CSDVersion"), NameOf(ListViewGroups.lsvgOS))
-        NewTabWriterItem("Architecture:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT AddressWidth FROM Win32_Processor"), "AddressWidth"), NameOf(ListViewGroups.lsvgOS))
-        NewTabWriterItem("OS Install Date:", ConvertDate(Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT InstallDate FROM Win32_OperatingSystem"), "InstallDate"), True), NameOf(ListViewGroups.lsvgOS))
-        NewTabWriterItem("Last Boot:", ConvertDate(Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT LastBootUpTime FROM Win32_OperatingSystem"), "LastBootUpTime"), True), NameOf(ListViewGroups.lsvgOS))
+        AddTabWriterItem("Service Pack:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT CSDVersion FROM Win32_OperatingSystem"), "CSDVersion"), NameOf(ListViewGroups.lsvgOS))
+        AddTabWriterItem("Architecture:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT AddressWidth FROM Win32_Processor"), "AddressWidth"), NameOf(ListViewGroups.lsvgOS))
+        AddTabWriterItem("OS Install Date:", ConvertDate(Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT InstallDate FROM Win32_OperatingSystem"), "InstallDate"), True), NameOf(ListViewGroups.lsvgOS))
+        AddTabWriterItem("Last Boot:", ConvertDate(Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT LastBootUpTime FROM Win32_OperatingSystem"), "LastBootUpTime"), True), NameOf(ListViewGroups.lsvgOS))
 
-        NewTabWriterItem("Manufacturer:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Manufacturer FROM Win32_ComputerSystem"), "Manufacturer"), NameOf(ListViewGroups.lsvgCM))
-        NewTabWriterItem("Model:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Model FROM Win32_ComputerSystem"), "Model"), NameOf(ListViewGroups.lsvgCM))
-        NewTabWriterItem("Serial Number:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT IdentifyingNumber FROM Win32_ComputerSystemProduct"), "IdentifyingNumber"), NameOf(ListViewGroups.lsvgCM))
-        NewTabWriterItem("Type:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_BIOS"), "Name"), NameOf(ListViewGroups.lsvgBI))
+        AddTabWriterItem("Manufacturer:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Manufacturer FROM Win32_ComputerSystem"), "Manufacturer"), NameOf(ListViewGroups.lsvgCM))
+        AddTabWriterItem("Model:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Model FROM Win32_ComputerSystem"), "Model"), NameOf(ListViewGroups.lsvgCM))
+        AddTabWriterItem("Serial Number:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT IdentifyingNumber FROM Win32_ComputerSystemProduct"), "IdentifyingNumber"), NameOf(ListViewGroups.lsvgCM))
+        AddTabWriterItem("Type:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_BIOS"), "Name"), NameOf(ListViewGroups.lsvgBI))
 
-        NewTabWriterItem("Version:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT SMBIOSBIOSVersion FROM Win32_BIOS"), "SMBIOSBIOSVersion"), NameOf(ListViewGroups.lsvgBI))
-        NewTabWriterItem("Type:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_Processor"), "Name"), NameOf(ListViewGroups.lsvgCP))
-        NewTabWriterItem("Cores:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT NumberOfCores FROM Win32_Processor"), "NumberOfCores"), NameOf(ListViewGroups.lsvgCP))
+        AddTabWriterItem("Version:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT SMBIOSBIOSVersion FROM Win32_BIOS"), "SMBIOSBIOSVersion"), NameOf(ListViewGroups.lsvgBI))
+        AddTabWriterItem("Type:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_Processor"), "Name"), NameOf(ListViewGroups.lsvgCP))
+        AddTabWriterItem("Cores:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT NumberOfCores FROM Win32_Processor"), "NumberOfCores"), NameOf(ListViewGroups.lsvgCP))
     End Sub
 
     Private Sub LoadNetInterfaceInstances()
@@ -84,14 +84,14 @@ Public Class AdvancedTab
             Me.advancedInfoListView.Groups.Add(NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount, $"{ListViewGroups.lsvgNI} ({adapterName})")
 
             For index = 0 To instance.GetPropertyValue("IPAddress").Length - 1
-                NewTabWriterItem("IP Address:", instance.GetPropertyValue("IPAddress")(index), NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount)
+                AddTabWriterItem("IP Address:", instance.GetPropertyValue("IPAddress")(index), NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount)
             Next
 
-            NewTabWriterItem("MAC Address:", instance.Properties("MACAddress").Value, NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount)
+            AddTabWriterItem("MAC Address:", instance.Properties("MACAddress").Value, NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount)
 
             If instance.GetPropertyValue("DefaultIPGateway") IsNot Nothing Then
                 For index = 0 To instance.GetPropertyValue("DefaultIPGateway").Length - 1
-                    NewTabWriterItem("Default Gateway:", instance.GetPropertyValue("DefaultIPGateway")(index), NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount)
+                    AddTabWriterItem("Default Gateway:", instance.GetPropertyValue("DefaultIPGateway")(index), NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount)
                 Next
             End If
         Next
@@ -109,10 +109,10 @@ Public Class AdvancedTab
             Dim driveLetter As String = hddInterface.Properties("Name").Value
             Me.advancedInfoListView.Groups.Add(New ListViewGroup(NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount, $"{ListViewGroups.lsvgHD} ({driveLetter})"))
 
-            NewTabWriterItem("Volume Name:", hddInterface.Properties("VolumeName").Value, NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount)
-            NewTabWriterItem("Serial Number:", hddInterface.Properties("VolumeSerialNumber").Value, NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount)
-            NewTabWriterItem("Total Space (GBs):", Math.Round(hddInterface.Properties("Size").Value / (1024 ^ 3), 2), NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount)
-            NewTabWriterItem("Free Space (GBs):", Math.Round(hddInterface.Properties("FreeSpace").Value / (1024 ^ 3), 2), NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount)
+            AddTabWriterItem("Volume Name:", hddInterface.Properties("VolumeName").Value, NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount)
+            AddTabWriterItem("Serial Number:", hddInterface.Properties("VolumeSerialNumber").Value, NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount)
+            AddTabWriterItem("Total Space (GBs):", Math.Round(hddInterface.Properties("Size").Value / (1024 ^ 3), 2), NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount)
+            AddTabWriterItem("Free Space (GBs):", Math.Round(hddInterface.Properties("FreeSpace").Value / (1024 ^ 3), 2), NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount)
         Next
     End Sub
 
@@ -131,14 +131,14 @@ Public Class AdvancedTab
             Dim capacity As Long = memoryInterface.Properties("Capacity").Value / 1073741824
             Me.advancedInfoListView.Groups.Add(NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount, $"{ListViewGroups.lsvgMI} {memoryInterfaceCount}")
 
-            NewTabWriterItem("Capacity:", $"{capacity} GB(s)", NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
-            NewTabWriterItem("Speed:", $"{memoryInterface.Properties("Speed").Value} MHz", NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
-            NewTabWriterItem("Serial Number:", memoryInterface.Properties("SerialNumber").Value, NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
-            NewTabWriterItem("Part Number:", memoryInterface.Properties("PartNumber").Value, NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
+            AddTabWriterItem("Capacity:", $"{capacity} GB(s)", NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
+            AddTabWriterItem("Speed:", $"{memoryInterface.Properties("Speed").Value} MHz", NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
+            AddTabWriterItem("Serial Number:", memoryInterface.Properties("SerialNumber").Value, NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
+            AddTabWriterItem("Part Number:", memoryInterface.Properties("PartNumber").Value, NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
             totalCapacity += capacity
         Next
 
-        NewTabWriterItem("Total Memory Capacity:", $"{totalCapacity} GB(s)", NameOf(ListViewGroups.lsvgMI))
+        AddTabWriterItem("Total Memory Capacity:", $"{totalCapacity} GB(s)", NameOf(ListViewGroups.lsvgMI))
     End Sub
 
     Private Sub ExportAdvancedInfo(sender As Object, e As DoWorkEventArgs)

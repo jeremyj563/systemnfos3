@@ -1,7 +1,7 @@
 ﻿Imports System.ComponentModel
 
 Public Class ServicesTab
-    Inherits Tab
+    Inherits BaseTab
 
     Public Sub New(ownerTab As TabControl, computerPanel As ComputerPanel)
         MyBase.New(ownerTab, computerPanel)
@@ -34,7 +34,7 @@ Public Class ServicesTab
         For Each service As ManagementObject In ComputerPanel.WMI.Query("SELECT DisplayName, StartMode, State, Name FROM Win32_Service")
             If MyBase.UserCancellationPending() Then Exit Sub
 
-            NewTabWriterItem(service.Properties("DisplayName").Value, New Object() {service.Properties("StartMode").Value, service.Properties(ListViewGroups.lsvgST).Value, service}, "lsvgSV")
+            AddTabWriterItem(service.Properties("DisplayName").Value, New Object() {service.Properties("StartMode").Value, service.Properties(ListViewGroups.lsvgST).Value, service}, "lsvgSV")
         Next
 
         With serviceInfoListView
@@ -90,14 +90,14 @@ Public Class ServicesTab
             Dim services = Me.ComputerPanel.WMI.Query(queryText)
             If services IsNot Nothing Then
                 For Each service As ManagementObject In services
-                    MyBase.NewEnumWriterItem(service.Properties("DisplayName").Value, service, NameOf(ListViewGroups.lsvgDN))
-                    MyBase.NewEnumWriterItem(service.Properties("Name").Value, service, NameOf(ListViewGroups.lsvgSN))
-                    MyBase.NewEnumWriterItem(service.Properties("StartMode").Value, service, NameOf(ListViewGroups.lsvgSM))
-                    MyBase.NewEnumWriterItem(service.Properties("State").Value, service, NameOf(ListViewGroups.lsvgST))
+                    MyBase.AddEnumWriterItem(service.Properties("DisplayName").Value, service, NameOf(ListViewGroups.lsvgDN))
+                    MyBase.AddEnumWriterItem(service.Properties("Name").Value, service, NameOf(ListViewGroups.lsvgSN))
+                    MyBase.AddEnumWriterItem(service.Properties("StartMode").Value, service, NameOf(ListViewGroups.lsvgSM))
+                    MyBase.AddEnumWriterItem(service.Properties("State").Value, service, NameOf(ListViewGroups.lsvgST))
 
                     Dim description As String = service.Properties("Description").Value
                     If Not String.IsNullOrWhiteSpace(description) Then
-                        MyBase.NewEnumWriterItem(description, service, NameOf(ListViewGroups.lsvgDE))
+                        MyBase.AddEnumWriterItem(description, service, NameOf(ListViewGroups.lsvgDE))
                     End If
 
                     Dim dependentServices As String() = New ServiceController(Me.ComputerPanel.WMI).CheckDependentServices(service.Properties("Name").Value)
@@ -105,14 +105,14 @@ Public Class ServicesTab
                         For Each dependentService As String In dependentServices
                             If Not String.IsNullOrWhiteSpace(dependentService) Then
                                 Dim managementObjects = Me.ComputerPanel.WMI.Query($"SELECT DisplayName FROM Win32_Service WHERE Name = '{dependentService}'")
-                                MyBase.NewEnumWriterItem(Me.ComputerPanel.WMI.GetPropertyValue(managementObjects, "DisplayName"), service, NameOf(ListViewGroups.lsvgDS))
+                                MyBase.AddEnumWriterItem(Me.ComputerPanel.WMI.GetPropertyValue(managementObjects, "DisplayName"), service, NameOf(ListViewGroups.lsvgDS))
                             End If
                         Next
                     End If
-                    MyBase.NewEnumWriterItem(service.Properties("PathName").Value, service, NameOf(ListViewGroups.lsvgPN))
+                    MyBase.AddEnumWriterItem(service.Properties("PathName").Value, service, NameOf(ListViewGroups.lsvgPN))
 
                     If New ServiceController(Me.ComputerPanel.WMI).QueryState(service.Properties("Name").Value) = ServiceController.ServiceState.Running Then
-                        MyBase.NewEnumWriterItem(service.Properties("ProcessID").Value, service, NameOf(ListViewGroups.lsvgPI))
+                        MyBase.AddEnumWriterItem(service.Properties("ProcessID").Value, service, NameOf(ListViewGroups.lsvgPI))
                     End If
                 Next
             End If

@@ -3,7 +3,7 @@ Imports System.Reflection
 Imports Microsoft.Win32
 
 Public Class PrinterTab
-    Inherits Tab
+    Inherits BaseTab
 
     Private Property PrinterInfoListView As ListView
     Private Property DefaultPrinter As String() = Nothing
@@ -91,19 +91,19 @@ Public Class PrinterTab
         Dim printers As ManagementObjectCollection = ComputerPanel.WMI.Query("SELECT Name, PortName, PrintProcessor, PrintJobDataType, CreationClassName FROM Win32_Printer")
         If printers IsNot Nothing AndAlso printers.Count > 0 Then
             Try
-                NewTabWriterItem("Printer Name:", New String() {"Printer Port Name:", "Print Processor:", "Data Type:", "LEGEND"}, NameOf(ListViewGroups.lsvgPR))
+                AddTabWriterItem("Printer Name:", New String() {"Printer Port Name:", "Print Processor:", "Data Type:", "LEGEND"}, NameOf(ListViewGroups.lsvgPR))
                 For Each printer As ManagementBaseObject In printers
                     If MyBase.UserCancellationPending() Then Exit Sub
 
                     If Me.DefaultPrinter IsNot Nothing AndAlso printer.Properties("name").Value = Me.DefaultPrinter(0) Then
-                        NewTabWriterItem($"{printer.Properties("Name").Value} (Default Printer)", New Object() {printer.Properties("PortName").Value, printer.Properties("PrintProcessor").Value, printer.Properties("PrintJobDataType").Value, printer}, NameOf(ListViewGroups.lsvgPR))
+                        AddTabWriterItem($"{printer.Properties("Name").Value} (Default Printer)", New Object() {printer.Properties("PortName").Value, printer.Properties("PrintProcessor").Value, printer.Properties("PrintJobDataType").Value, printer}, NameOf(ListViewGroups.lsvgPR))
                     Else
-                        NewTabWriterItem(printer.Properties("Name").Value, New Object() {printer.Properties("PortName").Value, printer.Properties("PrintProcessor").Value, printer.Properties("PrintJobDataType").Value, printer}, NameOf(ListViewGroups.lsvgPR))
+                        AddTabWriterItem(printer.Properties("Name").Value, New Object() {printer.Properties("PortName").Value, printer.Properties("PrintProcessor").Value, printer.Properties("PrintJobDataType").Value, printer}, NameOf(ListViewGroups.lsvgPR))
                     End If
                 Next
             Catch ex As Exception
                 LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
-                NewTabWriterItem("Error:", New Object() {ex.Message, "LEGEND"}, NameOf(ListViewGroups.lsvgPR))
+                AddTabWriterItem("Error:", New Object() {ex.Message, "LEGEND"}, NameOf(ListViewGroups.lsvgPR))
             End Try
         End If
 
@@ -111,15 +111,15 @@ Public Class PrinterTab
         Dim printerDrivers As ManagementObjectCollection = ComputerPanel.WMI.Query("SELECT Name, DriverPath, CreationClassName FROM Win32_PrinterDriver")
         If printerDrivers IsNot Nothing AndAlso printerDrivers.Count > 0 Then
             Try
-                NewTabWriterItem("Driver Name:", New String() {"Driver Path:", "LEGEND"}, NameOf(ListViewGroups.lsvgPD))
+                AddTabWriterItem("Driver Name:", New String() {"Driver Path:", "LEGEND"}, NameOf(ListViewGroups.lsvgPD))
                 For Each driver As ManagementBaseObject In printerDrivers
                     If MyBase.UserCancellationPending() Then Exit Sub
 
-                    NewTabWriterItem(driver.Properties("Name").Value, New Object() {driver.Properties("DriverPath").Value, driver}, NameOf(ListViewGroups.lsvgPD))
+                    AddTabWriterItem(driver.Properties("Name").Value, New Object() {driver.Properties("DriverPath").Value, driver}, NameOf(ListViewGroups.lsvgPD))
                 Next
             Catch ex As Exception
                 LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
-                NewTabWriterItem("Error:", New Object() {ex.Message, "LEGEND"}, NameOf(ListViewGroups.lsvgPD))
+                AddTabWriterItem("Error:", New Object() {ex.Message, "LEGEND"}, NameOf(ListViewGroups.lsvgPD))
             End Try
         End If
 
@@ -127,15 +127,15 @@ Public Class PrinterTab
         Dim tcpIPPorts As ManagementObjectCollection = ComputerPanel.WMI.Query("SELECT Name, HostAddress, PortNumber, CreationClassName FROM Win32_TCPIPPrinterPort")
         If tcpIPPorts IsNot Nothing AndAlso tcpIPPorts.Count > 0 Then
             Try
-                NewTabWriterItem("Port Name:", New String() {"Host Address:", "Port Number:", "LEGEND"}, NameOf(ListViewGroups.lsvgPO))
+                AddTabWriterItem("Port Name:", New String() {"Host Address:", "Port Number:", "LEGEND"}, NameOf(ListViewGroups.lsvgPO))
                 For Each port As ManagementBaseObject In tcpIPPorts
                     If MyBase.UserCancellationPending() Then Exit Sub
 
-                    NewTabWriterItem(port.Properties("Name").Value, New Object() {port.Properties("HostAddress").Value, port.Properties("PortNumber").Value, port}, NameOf(ListViewGroups.lsvgPO))
+                    AddTabWriterItem(port.Properties("Name").Value, New Object() {port.Properties("HostAddress").Value, port.Properties("PortNumber").Value, port}, NameOf(ListViewGroups.lsvgPO))
                 Next
             Catch ex As Exception
                 LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
-                NewTabWriterItem("Error:", New Object() {ex.Message, "LEGEND"}, NameOf(ListViewGroups.lsvgPO))
+                AddTabWriterItem("Error:", New Object() {ex.Message, "LEGEND"}, NameOf(ListViewGroups.lsvgPO))
             End Try
         End If
 

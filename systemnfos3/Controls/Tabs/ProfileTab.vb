@@ -3,7 +3,7 @@ Imports System.IO
 Imports System.Reflection
 
 Public Class ProfileTab
-    Inherits Tab
+    Inherits BaseTab
 
     Private Property ProfileInfoListView As ListView
 
@@ -34,7 +34,7 @@ Public Class ProfileTab
         For Each user In Directory.GetDirectories($"\\{Me.ComputerPanel.Computer.ConnectionString}\C$\Users")
             If MyBase.UserCancellationPending() Then Exit Sub
 
-            NewTabWriterItem(New DirectoryInfo(user).Name, New String() {New DirectoryInfo(user).LastAccessTime, user}, NameOf(ListViewGroups.lsvgUS))
+            AddTabWriterItem(New DirectoryInfo(user).Name, New String() {New DirectoryInfo(user).LastAccessTime, user}, NameOf(ListViewGroups.lsvgUS))
         Next
 
         ' Add Items into ListView

@@ -1,7 +1,7 @@
 ﻿Imports System.ComponentModel
 
 Public Class ProcessesTab
-    Inherits Tab
+    Inherits BaseTab
 
     Public Sub New(ownerTab As TabControl, computerPanel As ComputerPanel)
         MyBase.New(ownerTab, computerPanel)
@@ -34,7 +34,7 @@ Public Class ProcessesTab
         For Each process As ManagementObject In Me.ComputerPanel.WMI.Query("SELECT Name,ProcessID,CreationDate FROM Win32_Process")
             If MyBase.UserCancellationPending() Then Exit Sub
 
-            NewTabWriterItem(process.Properties("Name").Value, New Object() {process.Properties("ProcessID").Value, process}, NameOf(ListViewGroups.lsvgPC))
+            AddTabWriterItem(process.Properties("Name").Value, New Object() {process.Properties("ProcessID").Value, process}, NameOf(ListViewGroups.lsvgPC))
         Next
 
         Dim processesSplitContainer As SplitContainer = NewSplitContainer(Me.Width - 450, "Choose a process from the list to see more information")
@@ -86,14 +86,14 @@ Public Class ProcessesTab
 
             Dim queryText = $"SELECT Name, ProcessID, CreationDate, ThreadCount, CommandLine FROM Win32_Process WHERE ProcessID = '{process.Properties("ProcessID").Value}'"
             For Each proc In Me.ComputerPanel.WMI.Query(queryText)
-                MyBase.NewTabWriterItem(proc.Properties("Name").Value, proc, NameOf(ListViewGroups.lsvgPN))
-                MyBase.NewTabWriterItem(proc.Properties("ProcessID").Value, proc, NameOf(ListViewGroups.lsvgPI))
-                MyBase.NewTabWriterItem(proc.Properties("CreationDate").Value, proc, NameOf(ListViewGroups.lsvgCD))
-                MyBase.NewTabWriterItem(proc.Properties("ThreadCount").Value, proc, NameOf(ListViewGroups.lsvgTC))
-                MyBase.NewTabWriterItem(proc.Properties("CommandLine").Value, proc, NameOf(ListViewGroups.lsvgCL))
+                MyBase.AddTabWriterItem(proc.Properties("Name").Value, proc, NameOf(ListViewGroups.lsvgPN))
+                MyBase.AddTabWriterItem(proc.Properties("ProcessID").Value, proc, NameOf(ListViewGroups.lsvgPI))
+                MyBase.AddTabWriterItem(proc.Properties("CreationDate").Value, proc, NameOf(ListViewGroups.lsvgCD))
+                MyBase.AddTabWriterItem(proc.Properties("ThreadCount").Value, proc, NameOf(ListViewGroups.lsvgTC))
+                MyBase.AddTabWriterItem(proc.Properties("CommandLine").Value, proc, NameOf(ListViewGroups.lsvgCL))
 
                 If New ProcessController(Me.ComputerPanel.WMI).QueryProcessState(proc.Properties("Name").Value) = ProcessController.ProcessCondition.SingleRunning Then
-                    NewEnumWriterItem(proc.Properties("ProcessID").Value, proc, NameOf(ListViewGroups.lsvgPN))
+                    AddEnumWriterItem(proc.Properties("ProcessID").Value, proc, NameOf(ListViewGroups.lsvgPN))
                 End If
             Next
 
@@ -101,7 +101,7 @@ Public Class ProcessesTab
                 processInfoListView.Items.AddRange(NewBaseListViewItems(processInfoListView, MyBase.TabWriterObjects.ToArray()))
             Else
                 processInfoListView.Groups.Add(New ListViewGroup(NameOf(ListViewGroups.lsvgNI), ListViewGroups.lsvgNI))
-                MyBase.NewTabWriterItem(" ", New ManagementObject, NameOf(ListViewGroups.lsvgNI))
+                MyBase.AddTabWriterItem(" ", New ManagementObject, NameOf(ListViewGroups.lsvgNI))
             End If
 
             If GetSelectedListViewItem(Me.CurrentListView) Is selectedItem Then

@@ -2,7 +2,7 @@
 Imports System.ComponentModel
 
 Public Class ApplicationTab
-    Inherits Tab
+    Inherits BaseTab
 
     Private Property EnumWriterApps As List(Of Object)
     Private WithEvents InitWorker As New BackgroundWorker()
@@ -48,7 +48,7 @@ Public Class ApplicationTab
                 Continue For
             End If
 
-            NewTabWriterItem(displayName, $"Software\Microsoft\Windows\CurrentVersion\Uninstall\{keyValue}&32", NameOf(ListViewGroups.lsvgAN))
+            AddTabWriterItem(displayName, $"Software\Microsoft\Windows\CurrentVersion\Uninstall\{keyValue}&32", NameOf(ListViewGroups.lsvgAN))
         Next
 
         If Me.ComputerPanel.WMI.X64Scope.IsConnected Then
@@ -63,7 +63,7 @@ Public Class ApplicationTab
                     Continue For
                 End If
 
-                NewTabWriterItem(displayName, $"Software\Microsoft\Windows\CurrentVersion\Uninstall\{keyValue}&64", NameOf(ListViewGroups.lsvgAN))
+                AddTabWriterItem(displayName, $"Software\Microsoft\Windows\CurrentVersion\Uninstall\{keyValue}&64", NameOf(ListViewGroups.lsvgAN))
             Next
         End If
 
