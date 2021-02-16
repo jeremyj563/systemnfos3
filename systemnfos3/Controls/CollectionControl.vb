@@ -8,9 +8,9 @@ Public Class CollectionControl
     Public Property OwnerNode As TreeNode
 
     Private Property CollectionListView As ListView
-    Private Property BackgroundThread As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
+    Private Property InitWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
     Private Property RegistryKey As String
-    Private Property BoundData As BindingSource
+    Private Property BindingSource As BindingSource
     Private Property SavedInRegsitry As Boolean = False
     Private Property Searcher As DataSourceSearcher
 
@@ -35,10 +35,10 @@ Public Class CollectionControl
         Me.OwnerNode = ownerNode
         Me.Searcher = searcher
 
-        AddHandler Me.BackgroundThread.DoWork, AddressOf EnumerateSearcherComputers
+        AddHandler Me.InitWorker.DoWork, AddressOf EnumerateSearcherComputers
     End Sub
 
-    Public Sub New(ownerForm As MainForm, collectionRegistryKey As String, boundData As BindingSource)
+    Public Sub New(ownerForm As MainForm, collectionRegistryKey As String, bindingSource As BindingSource)
         ' Constructor for existing collections stored in the Registry
 
         ' This call is required by the designer.
@@ -46,10 +46,10 @@ Public Class CollectionControl
 
         Me.OwnerForm = ownerForm
         Me.RegistryKey = collectionRegistryKey
-        Me.BoundData = boundData
+        Me.BindingSource = bindingSource
         Me.SavedInRegsitry = True
 
-        AddHandler Me.BackgroundThread.DoWork, AddressOf EnumerateRegistryComputers
+        AddHandler Me.InitWorker.DoWork, AddressOf EnumerateRegistryComputers
     End Sub
 
 #End Region
@@ -57,11 +57,11 @@ Public Class CollectionControl
 #Region " Collection Enumeration "
 
     Public Sub BeginEnumeration()
-        If Me.BackgroundThread.IsBusy Then
-            Me.BackgroundThread.CancelAsync()
+        If Me.InitWorker.IsBusy Then
+            Me.InitWorker.CancelAsync()
         End If
 
-        Me.BackgroundThread.RunWorkerAsync()
+        Me.InitWorker.RunWorkerAsync()
     End Sub
 
     Private Sub EnumerateSearcherComputers()
@@ -100,7 +100,7 @@ Public Class CollectionControl
         Dim computerNames As String() = New RegistryController().GetKeyValues(collectionRegistryKeyPath, RegistryHive.CurrentUser)
 
         For Each computerName In computerNames
-            Me.Searcher = New DataSourceSearcher(computerName, Me.BoundData)
+            Me.Searcher = New DataSourceSearcher(computerName, Me.BindingSource)
             Dim computer As Computer = Searcher.GetComputer()
             If computer IsNot Nothing Then
                 Dim listViewItem As New ListViewItem(computer.Value)

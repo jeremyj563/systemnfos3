@@ -7,12 +7,12 @@ Public Class ProfileTab
 
     Private Property ProfileInfoListView As ListView
 
-    Public Sub New(ownerTab As TabControl, computerContext As ComputerControl)
-        MyBase.New(ownerTab, computerContext)
+    Public Sub New(ownerTab As TabControl, computerPanel As ComputerPanel)
+        MyBase.New(ownerTab, computerPanel)
 
         Me.Text = "Profiles"
-        AddHandler LoaderBackgroundThread.DoWork, AddressOf InitializeProfileTab
-        AddHandler ExportBackgroundThread.DoWork, AddressOf ExportProfileInfo
+        AddHandler InitWorker.DoWork, AddressOf InitializeProfileTab
+        AddHandler ExportWorker.DoWork, AddressOf ExportProfileInfo
     End Sub
 
     Private Structure ListViewGroups
@@ -31,7 +31,7 @@ Public Class ProfileTab
         ' Create the ListView Groups
         Me.ProfileInfoListView.Groups.Add(New ListViewGroup(NameOf(ListViewGroups.lsvgUS), ListViewGroups.lsvgUS))
 
-        For Each user As String In Directory.GetDirectories(String.Format("\\{0}\C$\Users", Me.ComputerContext.Computer.ConnectionString))
+        For Each user As String In Directory.GetDirectories(String.Format("\\{0}\C$\Users", Me.ComputerPanel.Computer.ConnectionString))
             If MyBase.UserCancellationPending() Then Exit Sub
 
             NewTabWriterItem(New DirectoryInfo(user).Name, New String() {New DirectoryInfo(user).LastAccessTime, user}, NameOf(ListViewGroups.lsvgUS))
@@ -93,7 +93,7 @@ Public Class ProfileTab
                 Process.Start(sender.tag)
             Else
                 Dim message = String.Format("Unable to locate the requested location: {0}", sender.tag)
-                Me.ComputerContext.WriteMessage(message, Color.Red)
+                Me.ComputerPanel.WriteMessage(message, Color.Red)
             End If
         Catch ex As Exception
             LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))

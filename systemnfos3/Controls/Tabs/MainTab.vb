@@ -5,16 +5,16 @@ Public Class MainTab
     Inherits Tab
 
     Private Property BasicInfoListView As ListView
-    Private Property ConnectionStatus As ComputerControl.ConnectionStatuses
+    Private Property ConnectionStatus As ComputerPanel.ConnectionStatuses
     Private Property RunOnlyOnce As Boolean = False
 
-    Public Sub New(ownerTab As TabControl, computerContext As ComputerControl, connectionStatus As ComputerControl.ConnectionStatuses)
-        MyBase.New(ownerTab, computerContext)
+    Public Sub New(ownerTab As TabControl, computerPanel As ComputerPanel, connectionStatus As ComputerPanel.ConnectionStatuses)
+        MyBase.New(ownerTab, computerPanel)
 
         Me.Text = "Basic Information"
         Me.ConnectionStatus = connectionStatus
-        AddHandler MyBase.LoaderBackgroundThread.DoWork, AddressOf Me.InitializeMainTab
-        AddHandler MyBase.ExportBackgroundThread.DoWork, AddressOf Me.ExportBasicInfo
+        AddHandler MyBase.InitWorker.DoWork, AddressOf Me.InitializeMainTab
+        AddHandler MyBase.ExportWorker.DoWork, AddressOf Me.ExportBasicInfo
     End Sub
 
     Private Structure ListViewGroups
@@ -29,7 +29,7 @@ Public Class MainTab
         Me.InvokeClearControls()
         ShowTabLoaderProgress()
 
-        If Me.ConnectionStatus = ComputerControl.ConnectionStatuses.Online Then
+        If Me.ConnectionStatus = ComputerPanel.ConnectionStatuses.Online Then
             MyBase.ValidateWMI()
         End If
 
@@ -46,7 +46,7 @@ Public Class MainTab
         End With
 
         Select Case Me.ConnectionStatus
-            Case ComputerControl.ConnectionStatuses.Online
+            Case ComputerPanel.ConnectionStatuses.Online
                 LoadOnlineStatusComputers()
             Case Else
                 LoadOtherStatusComputers()
@@ -59,26 +59,26 @@ Public Class MainTab
     End Sub
 
     Private Sub LoadOnlineStatusComputers()
-        NewTabWriterItem("Operating System Name:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT Caption FROM Win32_OperatingSystem"), "Caption"), NameOf(ListViewGroups.lsvgOS))
-        NewTabWriterItem("Architecture:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT AddressWidth FROM Win32_Processor"), "AddressWidth"), NameOf(ListViewGroups.lsvgOS))
-        NewTabWriterItem("Model:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT Model FROM Win32_ComputerSystem"), "Model"), NameOf(ListViewGroups.lsvgCI))
-        NewTabWriterItem("Serial Number:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT IdentifyingNumber FROM Win32_ComputerSystemProduct"), "IdentifyingNumber"), NameOf(ListViewGroups.lsvgCI))
+        NewTabWriterItem("Operating System Name:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Caption FROM Win32_OperatingSystem"), "Caption"), NameOf(ListViewGroups.lsvgOS))
+        NewTabWriterItem("Architecture:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT AddressWidth FROM Win32_Processor"), "AddressWidth"), NameOf(ListViewGroups.lsvgOS))
+        NewTabWriterItem("Model:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Model FROM Win32_ComputerSystem"), "Model"), NameOf(ListViewGroups.lsvgCI))
+        NewTabWriterItem("Serial Number:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT IdentifyingNumber FROM Win32_ComputerSystemProduct"), "IdentifyingNumber"), NameOf(ListViewGroups.lsvgCI))
 
-        If Me.ComputerContext.Computer.ActiveDirectoryContainer.LastLogonExtensionAttribute IsNot Nothing Then
-            NewTabWriterItem("Last Logon:", Me.ComputerContext.Computer.ActiveDirectoryContainer.LastLogonExtensionAttribute, NameOf(ListViewGroups.lsvgCI))
+        If Me.ComputerPanel.Computer.ActiveDirectoryContainer.LastLogonExtensionAttribute IsNot Nothing Then
+            NewTabWriterItem("Last Logon:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.LastLogonExtensionAttribute, NameOf(ListViewGroups.lsvgCI))
         End If
 
-        If Me.ComputerContext.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName IsNot Nothing Then
-            NewTabWriterItem("Location:", Me.ComputerContext.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName, NameOf(ListViewGroups.lsvgCI))
+        If Me.ComputerPanel.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName IsNot Nothing Then
+            NewTabWriterItem("Location:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName, NameOf(ListViewGroups.lsvgCI))
         End If
 
-        NewTabWriterItem("Distinguished Name:", Me.ComputerContext.Computer.ActiveDirectoryContainer.GetAttribute("distinguishedName"), NameOf(ListViewGroups.lsvgCI))
+        NewTabWriterItem("Distinguished Name:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("distinguishedName"), NameOf(ListViewGroups.lsvgCI))
 
-        If Convert.ToBoolean(Me.ComputerContext.Computer.ActiveDirectoryContainer.GetAttribute("userAccountControl") And 2) Then
+        If Convert.ToBoolean(Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("userAccountControl") And 2) Then
             NewTabWriterItem("Container Status:", "Disabled", NameOf(ListViewGroups.lsvgCI))
             If Not Me.RunOnlyOnce Then
                 Dim message = "NOTE: Computer is Disabled. Contact Imaging for assistance."
-                Me.ComputerContext.WriteMessage(message, Color.OrangeRed)
+                Me.ComputerPanel.WriteMessage(message, Color.OrangeRed)
             End If
         Else
             NewTabWriterItem("Container Status:", "Enabled", NameOf(ListViewGroups.lsvgCI))
@@ -92,39 +92,39 @@ Public Class MainTab
 
     Private Sub LoadOtherStatusComputers()
         ' Code for loading offline/degraded/slow status computers
-        NewTabWriterItem("Operating System Name:", Me.ComputerContext.Computer.ActiveDirectoryContainer.GetAttribute("OperatingSystem"), NameOf(ListViewGroups.lsvgOS))
-        NewTabWriterItem("Model:", Me.ComputerContext.Computer.ActiveDirectoryContainer.GetAttribute("info"), NameOf(ListViewGroups.lsvgCI))
-        NewTabWriterItem("Serial Number:", Me.ComputerContext.Computer.ActiveDirectoryContainer.GetAttribute("carLicense"), NameOf(ListViewGroups.lsvgCI))
+        NewTabWriterItem("Operating System Name:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("OperatingSystem"), NameOf(ListViewGroups.lsvgOS))
+        NewTabWriterItem("Model:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("info"), NameOf(ListViewGroups.lsvgCI))
+        NewTabWriterItem("Serial Number:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("carLicense"), NameOf(ListViewGroups.lsvgCI))
 
-        Dim lastLogon As String = Me.ComputerContext.Computer.ActiveDirectoryContainer.LastLogonExtensionAttribute
+        Dim lastLogon As String = Me.ComputerPanel.Computer.ActiveDirectoryContainer.LastLogonExtensionAttribute
         If Not String.IsNullOrWhiteSpace(lastLogon) Then
             NewTabWriterItem("Last Logon:", lastLogon, NameOf(ListViewGroups.lsvgCI))
         End If
 
-        If Me.ComputerContext.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName IsNot Nothing Then
-            NewTabWriterItem("Location:", Me.ComputerContext.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName, NameOf(ListViewGroups.lsvgCI))
+        If Me.ComputerPanel.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName IsNot Nothing Then
+            NewTabWriterItem("Location:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName, NameOf(ListViewGroups.lsvgCI))
         End If
 
-        If Convert.ToBoolean(Me.ComputerContext.Computer.ActiveDirectoryContainer.GetAttribute("userAccountControl") And 2) Then
+        If Convert.ToBoolean(Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("userAccountControl") And 2) Then
             NewTabWriterItem("Container Status:", "Disabled", NameOf(ListViewGroups.lsvgCI))
 
             If Not Me.RunOnlyOnce Then
                 Dim message = "NOTE: Computer is Disabled. Contact Imaging for assistance."
-                Me.ComputerContext.WriteMessage(message, Color.OrangeRed)
+                Me.ComputerPanel.WriteMessage(message, Color.OrangeRed)
             End If
         Else
             NewTabWriterItem("Container Status:", "Enabled", NameOf(ListViewGroups.lsvgCI))
         End If
 
-        NewTabWriterItem("Distinguished Name:", Me.ComputerContext.Computer.ActiveDirectoryContainer.GetAttribute("distinguishedName"), NameOf(ListViewGroups.lsvgCI))
+        NewTabWriterItem("Distinguished Name:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("distinguishedName"), NameOf(ListViewGroups.lsvgCI))
 
-        Dim networkAddresses As String = Me.ComputerContext.Computer.ActiveDirectoryContainer.GetAttribute("networkAddress")
+        Dim networkAddresses As String = Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("networkAddress")
         If Not String.IsNullOrWhiteSpace(networkAddresses) AndAlso networkAddresses.Split(",").Length > 0 Then
             NewTabWriterItem("IP Address:", networkAddresses.Split(",")(0), NameOf(ListViewGroups.lsvgNI))
             NewTabWriterItem("MAC Address:", networkAddresses.Split(",")(1), NameOf(ListViewGroups.lsvgNI))
         End If
 
-        Dim uid As Object = Me.ComputerContext.Computer.ActiveDirectoryContainer.GetAttribute("uid")
+        Dim uid As Object = Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("uid")
         If uid IsNot Nothing Then
             Dim user As New LDAPContainer("user", "sAMAccountName", uid)
             NewTabWriterItem("Username:", user.GetAttribute("sAMAccountName"), NameOf(ListViewGroups.lsvgUI))
@@ -140,9 +140,9 @@ Public Class MainTab
     End Sub
 
     Private Sub LoadTPMInstances()
-        If Me.ComputerContext.WMI.TPMScope.IsConnected Then
+        If Me.ComputerPanel.WMI.TPMScope.IsConnected Then
             Try
-                Dim tpm As New ManagementClass(Me.ComputerContext.WMI.TPMScope, Me.ComputerContext.WMI.TPMScope.Path, New ObjectGetOptions)
+                Dim tpm As New ManagementClass(Me.ComputerPanel.WMI.TPMScope, Me.ComputerPanel.WMI.TPMScope.Path, New ObjectGetOptions)
                 Dim tpmInstances = tpm.GetInstances()
 
                 If tpmInstances IsNot Nothing AndAlso tpmInstances.Count > 0 Then
@@ -179,14 +179,14 @@ Public Class MainTab
     End Sub
 
     Private Sub LoadBitLockerInstances()
-        If Me.ComputerContext.WMI.BitLockerScope.IsConnected Then
+        If Me.ComputerPanel.WMI.BitLockerScope.IsConnected Then
             Try
-                Dim bitLocker As ManagementClass = New ManagementClass(Me.ComputerContext.WMI.BitLockerScope, Me.ComputerContext.WMI.BitLockerScope.Path, New ObjectGetOptions)
+                Dim bitLocker As ManagementClass = New ManagementClass(Me.ComputerPanel.WMI.BitLockerScope, Me.ComputerPanel.WMI.BitLockerScope.Path, New ObjectGetOptions)
                 Dim bitLockerInstances = bitLocker.GetInstances()
 
                 If bitLockerInstances IsNot Nothing AndAlso bitLockerInstances.Count > 0 Then
                     Dim queryText = "SELECT DeviceID FROM Win32_Volume WHERE BootVolume = 1 AND DriveType = 3"
-                    Dim bootDeviceID As String = Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query(queryText), "DeviceID")
+                    Dim bootDeviceID As String = Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query(queryText), "DeviceID")
 
                     For Each bitLockerInstance As ManagementObject In bitLockerInstances
                         If MyBase.UserCancellationPending() Then Exit Sub
@@ -241,7 +241,7 @@ Public Class MainTab
 
     Private Sub LoadNetAdapterInstances()
         Dim queryText = String.Format("SELECT Description, IPAddress, MACAddress, DefaultIPGateway FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{0}'", My.Settings.DomainName)
-        Dim networkAdapters As ManagementObjectCollection = Me.ComputerContext.WMI.Query(queryText)
+        Dim networkAdapters As ManagementObjectCollection = Me.ComputerPanel.WMI.Query(queryText)
 
         If networkAdapters IsNot Nothing Then
             Dim count As Integer = 0
@@ -262,18 +262,18 @@ Public Class MainTab
 
     Private Sub LoadLoggedOnUser()
         ' Find out who is logged into a computer
-        Dim registry As RegistryController = New RegistryController(Me.ComputerContext.WMI.X86Scope)
+        Dim registry As RegistryController = New RegistryController(Me.ComputerPanel.WMI.X86Scope)
         Dim userName As String = Nothing
 
         ' Check to see if explorer.exe is open.
-        Dim explorerQueryResult As String = Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT Name FROM Win32_Process WHERE Name = ""explorer.exe"""), "Name")
+        Dim explorerQueryResult As String = Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_Process WHERE Name = ""explorer.exe"""), "Name")
 
         ' If explorer is open then...
         If Not String.IsNullOrWhiteSpace(explorerQueryResult) AndAlso explorerQueryResult.ToUpper() = "EXPLORER.EXE" Then
             ' A user is logged in
-            Me.ComputerContext.UserLoggedOn = True
+            Me.ComputerPanel.UserLoggedOn = True
             ' What does WMI say the logged in user is?
-            userName = Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT UserName FROM Win32_ComputerSystem"), "UserName")
+            userName = Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT UserName FROM Win32_ComputerSystem"), "UserName")
 
             ' If WMI says there is an error getting the username then...
             If String.IsNullOrWhiteSpace(userName) Then
@@ -293,8 +293,8 @@ Public Class MainTab
                             ' But if the registry says nothing then
                             If String.IsNullOrWhiteSpace(userName) Then
                                 ' I give up... best guess is the last person that logged in is the current user. We can grab that name from AD since we record it there.
-                                If Me.ComputerContext.Computer.ActiveDirectoryContainer.GetAttribute("uid") IsNot Nothing Then
-                                    NewTabWriterItem("Current User:", Me.ComputerContext.Computer.ActiveDirectoryContainer.GetAttribute("uid"), NameOf(ListViewGroups.lsvgUI))
+                                If Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("uid") IsNot Nothing Then
+                                    NewTabWriterItem("Current User:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("uid"), NameOf(ListViewGroups.lsvgUI))
                                 End If
                             Else
                                 ' If the registry gives me an answer, then I know who is logged in
@@ -308,15 +308,15 @@ Public Class MainTab
                 NewTabWriterItem("Current User:", userName, NameOf(ListViewGroups.lsvgUI))
             End If
         Else
-            Me.ComputerContext.UserLoggedOn = False
+            Me.ComputerPanel.UserLoggedOn = False
         End If
 
         ' Since a user is logged in
-        If Me.ComputerContext.UserLoggedOn Then
+        If Me.ComputerPanel.UserLoggedOn Then
             ' I will let the technician know
             NewTabWriterItem("Logged On:", "Yes", NameOf(ListViewGroups.lsvgUI))
 
-            Dim logonUI As String = Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT Name FROM Win32_Process WHERE Name = ""logonui.exe"""), "Name")
+            Dim logonUI As String = Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_Process WHERE Name = ""logonui.exe"""), "Name")
             If Not String.IsNullOrWhiteSpace(logonUI) AndAlso logonUI.ToUpper() = "LOGONUI.EXE" Then
                 NewTabWriterItem("Away From Keyboard:", "Yes", NameOf(ListViewGroups.lsvgUI))
             Else
@@ -325,7 +325,7 @@ Public Class MainTab
         Else
             ' OR since a user is not logged in...
             ' Lets get the last logged in username from ldap
-            userName = Me.ComputerContext.Computer.ActiveDirectoryContainer.GetAttribute("uid")
+            userName = Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("uid")
 
             If Not String.IsNullOrWhiteSpace(userName) Then
                 NewTabWriterItem("Last Logged In User:", userName, NameOf(ListViewGroups.lsvgUI))
@@ -345,7 +345,7 @@ Public Class MainTab
 
             Dim user As New LDAPContainer("user", "sAMAccountName", userName)
             NewTabWriterItem("Display Name:", user.GetAttribute("displayName"), NameOf(ListViewGroups.lsvgUI))
-            NewTabWriterItem("Last Logon:", Me.ComputerContext.Computer.ActiveDirectoryContainer.LastLogonExtensionAttribute, NameOf(ListViewGroups.lsvgUI))
+            NewTabWriterItem("Last Logon:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.LastLogonExtensionAttribute, NameOf(ListViewGroups.lsvgUI))
             NewTabWriterItem("Phone Number:", user.GetAttribute("telephoneNumber"), NameOf(ListViewGroups.lsvgUI))
             NewTabWriterItem("Location:", user.GetAttribute("streetAddress"), NameOf(ListViewGroups.lsvgUI))
             NewTabWriterItem("Office Symbol:", user.GetAttribute("physicalDeliveryOfficeName"), NameOf(ListViewGroups.lsvgUI))

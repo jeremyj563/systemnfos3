@@ -178,7 +178,7 @@ Public Class TaskResultControl
 
     Private Sub GetInfo()
         For Each item As ListViewItem In Me.ResultsListView.SelectedItems
-            Dim searcher As New DataSourceSearcher(item.Text, Me.OwnerForm.BoundData)
+            Dim searcher As New DataSourceSearcher(item.Text, Me.OwnerForm.BindingSource)
             Dim results As List(Of Computer) = searcher.GetComputers()
 
             If results IsNot Nothing Then

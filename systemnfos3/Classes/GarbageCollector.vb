@@ -4,7 +4,7 @@ Imports System.ComponentModel
 Public Class GarbageCollector
 
     Private Property GarbageCan As List(Of Object)
-    Private Property GarbageLock As New Object
+    Private garbageLock As New Object
 
     Public Sub New()
         Me.GarbageCan = Nothing
@@ -12,7 +12,7 @@ Public Class GarbageCollector
 
     Public WriteOnly Property AddToGarbage
         Set(Value)
-            SyncLock Me.GarbageLock
+            SyncLock garbageLock
                 If Me.GarbageCan Is Nothing Then
                     Me.GarbageCan = New List(Of Object)()
                 End If
@@ -23,26 +23,26 @@ Public Class GarbageCollector
     End Property
 
     Public Sub DisposeAsync()
-        Dim garbageCollectionWorker As New BackgroundWorker()
-        AddHandler garbageCollectionWorker.DoWork, AddressOf CollectGarbage
-        AddHandler garbageCollectionWorker.RunWorkerCompleted, Sub() DisposeGarbage(garbageCollectionWorker)
+        Dim worker As New BackgroundWorker()
+        AddHandler worker.DoWork, AddressOf CollectGarbage
+        AddHandler worker.RunWorkerCompleted, Sub() DisposeGarbage(worker)
 
-        garbageCollectionWorker.RunWorkerAsync()
+        worker.RunWorkerAsync()
     End Sub
 
     Private Sub CollectGarbage()
-        SyncLock Me.GarbageLock
+        SyncLock garbageLock
             If Me.GarbageCan IsNot Nothing Then
                 For index As Integer = 0 To Me.GarbageCan.Count - 1
-                    If Me.GarbageCan(index) IsNot Nothing AndAlso TypeOf Me.GarbageCan(index) Is ComputerControl Then
+                    If Me.GarbageCan(index) IsNot Nothing AndAlso TypeOf Me.GarbageCan(index) Is ComputerPanel Then
                         Try
-                            Dim trashItem As ComputerControl = Me.GarbageCan(index)
-                            With trashItem.LoaderBackgroundThread
+                            Dim panel As ComputerPanel = Me.GarbageCan(index)
+                            With panel.InitWorker
                                 .CancelAsync()
                                 .Dispose()
                             End With
 
-                            trashItem.UIThread(Sub() trashItem.Dispose())
+                            panel.UIThread(Sub() panel.Dispose())
 
                             Me.GarbageCan(index) = Nothing
                         Catch ex As InvalidOperationException
@@ -57,12 +57,12 @@ Public Class GarbageCollector
         End SyncLock
     End Sub
 
-    Private Sub DisposeGarbage(garbageCollectionWorker As BackgroundWorker)
-        SyncLock GarbageLock
+    Private Sub DisposeGarbage(worker As BackgroundWorker)
+        SyncLock garbageLock
             Me.GarbageCan = Nothing
         End SyncLock
 
-        garbageCollectionWorker.Dispose()
+        worker.Dispose()
     End Sub
 
 End Class

@@ -5,12 +5,12 @@ Public Class AdvancedTab
 
     Private Property advancedInfoListView As ListView
 
-    Public Sub New(ownerTab As TabControl, computerContext As ComputerControl)
-        MyBase.New(ownerTab, computerContext)
+    Public Sub New(ownerTab As TabControl, computerPanel As ComputerPanel)
+        MyBase.New(ownerTab, computerPanel)
 
         Me.Text = "Advanced Information"
-        AddHandler MyBase.LoaderBackgroundThread.DoWork, AddressOf Me.InitializeAdvancedTab
-        AddHandler MyBase.ExportBackgroundThread.DoWork, AddressOf Me.ExportAdvancedInfo
+        AddHandler MyBase.InitWorker.DoWork, AddressOf Me.InitializeAdvancedTab
+        AddHandler MyBase.ExportWorker.DoWork, AddressOf Me.ExportAdvancedInfo
     End Sub
 
     Private Structure ListViewGroups
@@ -54,28 +54,28 @@ Public Class AdvancedTab
     End Sub
 
     Private Sub LoadBaseAdvancedInfo()
-        NewTabWriterItem("Name:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT Caption FROM Win32_OperatingSystem"), "Caption"), NameOf(ListViewGroups.lsvgOS))
+        NewTabWriterItem("Name:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Caption FROM Win32_OperatingSystem"), "Caption"), NameOf(ListViewGroups.lsvgOS))
 
-        NewTabWriterItem("Service Pack:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT CSDVersion FROM Win32_OperatingSystem"), "CSDVersion"), NameOf(ListViewGroups.lsvgOS))
-        NewTabWriterItem("Architecture:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT AddressWidth FROM Win32_Processor"), "AddressWidth"), NameOf(ListViewGroups.lsvgOS))
-        NewTabWriterItem("OS Install Date:", ConvertDate(Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT InstallDate FROM Win32_OperatingSystem"), "InstallDate"), True), NameOf(ListViewGroups.lsvgOS))
-        NewTabWriterItem("Last Boot:", ConvertDate(Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT LastBootUpTime FROM Win32_OperatingSystem"), "LastBootUpTime"), True), NameOf(ListViewGroups.lsvgOS))
+        NewTabWriterItem("Service Pack:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT CSDVersion FROM Win32_OperatingSystem"), "CSDVersion"), NameOf(ListViewGroups.lsvgOS))
+        NewTabWriterItem("Architecture:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT AddressWidth FROM Win32_Processor"), "AddressWidth"), NameOf(ListViewGroups.lsvgOS))
+        NewTabWriterItem("OS Install Date:", ConvertDate(Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT InstallDate FROM Win32_OperatingSystem"), "InstallDate"), True), NameOf(ListViewGroups.lsvgOS))
+        NewTabWriterItem("Last Boot:", ConvertDate(Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT LastBootUpTime FROM Win32_OperatingSystem"), "LastBootUpTime"), True), NameOf(ListViewGroups.lsvgOS))
 
-        NewTabWriterItem("Manufacturer:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT Manufacturer FROM Win32_ComputerSystem"), "Manufacturer"), NameOf(ListViewGroups.lsvgCM))
-        NewTabWriterItem("Model:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT Model FROM Win32_ComputerSystem"), "Model"), NameOf(ListViewGroups.lsvgCM))
-        NewTabWriterItem("Serial Number:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT IdentifyingNumber FROM Win32_ComputerSystemProduct"), "IdentifyingNumber"), NameOf(ListViewGroups.lsvgCM))
-        NewTabWriterItem("Type:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT Name FROM Win32_BIOS"), "Name"), NameOf(ListViewGroups.lsvgBI))
+        NewTabWriterItem("Manufacturer:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Manufacturer FROM Win32_ComputerSystem"), "Manufacturer"), NameOf(ListViewGroups.lsvgCM))
+        NewTabWriterItem("Model:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Model FROM Win32_ComputerSystem"), "Model"), NameOf(ListViewGroups.lsvgCM))
+        NewTabWriterItem("Serial Number:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT IdentifyingNumber FROM Win32_ComputerSystemProduct"), "IdentifyingNumber"), NameOf(ListViewGroups.lsvgCM))
+        NewTabWriterItem("Type:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_BIOS"), "Name"), NameOf(ListViewGroups.lsvgBI))
 
-        NewTabWriterItem("Version:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT SMBIOSBIOSVersion FROM Win32_BIOS"), "SMBIOSBIOSVersion"), NameOf(ListViewGroups.lsvgBI))
-        NewTabWriterItem("Type:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT Name FROM Win32_Processor"), "Name"), NameOf(ListViewGroups.lsvgCP))
-        NewTabWriterItem("Cores:", Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query("SELECT NumberOfCores FROM Win32_Processor"), "NumberOfCores"), NameOf(ListViewGroups.lsvgCP))
+        NewTabWriterItem("Version:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT SMBIOSBIOSVersion FROM Win32_BIOS"), "SMBIOSBIOSVersion"), NameOf(ListViewGroups.lsvgBI))
+        NewTabWriterItem("Type:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_Processor"), "Name"), NameOf(ListViewGroups.lsvgCP))
+        NewTabWriterItem("Cores:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT NumberOfCores FROM Win32_Processor"), "NumberOfCores"), NameOf(ListViewGroups.lsvgCP))
     End Sub
 
     Private Sub LoadNetInterfaceInstances()
         ' Network Interfaces
         Me.advancedInfoListView.Groups.Add(NameOf(ListViewGroups.lsvgNI), ListViewGroups.lsvgNI)
         Dim networkInterfaceCount As Integer = 0
-        For Each networkInterface As ManagementBaseObject In Me.ComputerContext.WMI.Query(String.Format("SELECT Description, IPAddress, MACAddress, DefaultIPGateway FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{0}'", My.Settings.DomainName))
+        For Each networkInterface As ManagementBaseObject In Me.ComputerPanel.WMI.Query(String.Format("SELECT Description, IPAddress, MACAddress, DefaultIPGateway FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{0}'", My.Settings.DomainName))
             If MyBase.UserCancellationPending() Then Exit Sub
 
             networkInterfaceCount += 1
@@ -101,7 +101,7 @@ Public Class AdvancedTab
         ' Hard Disk Interfaces
         Me.advancedInfoListView.Groups.Add(NameOf(ListViewGroups.lsvgHD), ListViewGroups.lsvgHD)
         Dim hddInterfaceCount As Integer = 0
-        For Each hddInterface As ManagementBaseObject In Me.ComputerContext.WMI.Query("SELECT Name, FreeSpace, Size, VolumeSerialNumber, VolumeName FROM Win32_LogicalDisk WHERE DriveType = 3")
+        For Each hddInterface As ManagementBaseObject In Me.ComputerPanel.WMI.Query("SELECT Name, FreeSpace, Size, VolumeSerialNumber, VolumeName FROM Win32_LogicalDisk WHERE DriveType = 3")
             If MyBase.UserCancellationPending() Then Exit Sub
 
             hddInterfaceCount += 1
@@ -123,7 +123,7 @@ Public Class AdvancedTab
         Dim memoryInterfaceCount As Integer = 0
         Dim totalCapacity As Long = 0
 
-        For Each memoryInterface As ManagementBaseObject In Me.ComputerContext.WMI.Query("SELECT Capacity, Speed, SerialNumber, PartNumber FROM Win32_PhysicalMemory")
+        For Each memoryInterface As ManagementBaseObject In Me.ComputerPanel.WMI.Query("SELECT Capacity, Speed, SerialNumber, PartNumber FROM Win32_PhysicalMemory")
             If MyBase.UserCancellationPending() Then Exit Sub
 
             memoryInterfaceCount += 1

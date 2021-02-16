@@ -3,12 +3,12 @@
 Public Class ProcessesTab
     Inherits Tab
 
-    Public Sub New(ownerTab As TabControl, computerContext As ComputerControl)
-        MyBase.New(ownerTab, computerContext)
+    Public Sub New(ownerTab As TabControl, computerPanel As ComputerPanel)
+        MyBase.New(ownerTab, computerPanel)
 
         Me.Text = "Processes"
-        AddHandler LoaderBackgroundThread.DoWork, AddressOf InitializeProcessesTab
-        AddHandler ExportBackgroundThread.DoWork, AddressOf ExportProcessInfo
+        AddHandler InitWorker.DoWork, AddressOf InitializeProcessesTab
+        AddHandler ExportWorker.DoWork, AddressOf ExportProcessInfo
     End Sub
 
     Private Structure ListViewGroups
@@ -31,7 +31,7 @@ Public Class ProcessesTab
         processInfoListView = NewBasicInfoListView(2)
         processInfoListView.Groups.Add(New ListViewGroup(NameOf(ListViewGroups.lsvgPC), ListViewGroups.lsvgPC))
 
-        For Each process As ManagementObject In Me.ComputerContext.WMI.Query("SELECT Name,ProcessID,CreationDate FROM Win32_Process")
+        For Each process As ManagementObject In Me.ComputerPanel.WMI.Query("SELECT Name,ProcessID,CreationDate FROM Win32_Process")
             If MyBase.UserCancellationPending() Then Exit Sub
 
             NewTabWriterItem(process.Properties("Name").Value, New Object() {process.Properties("ProcessID").Value, process}, NameOf(ListViewGroups.lsvgPC))
@@ -61,12 +61,12 @@ Public Class ProcessesTab
     Private Sub FindProcessInformation()
         Me.LastSelectedListViewItem = GetSelectedListViewItem(Me.MainListView)
 
-        If Not MyBase.SelectionBackgroundThread.IsBusy Then
-            MyBase.SelectionBackgroundThread.RunWorkerAsync()
+        If Not MyBase.SelectionWorker.IsBusy Then
+            MyBase.SelectionWorker.RunWorkerAsync()
         End If
     End Sub
 
-    Private Sub SelectionBackgroundThread_DoWork(sender As Object, e As DoWorkEventArgs) Handles SelectionBackgroundThread.DoWork
+    Private Sub SelectionWorker_DoWork(sender As Object, e As DoWorkEventArgs) Handles SelectionWorker.DoWork
         Me.Controls(0).Controls(1).InvokeClearControls()
 
         MyBase.TabWriterObjects = Nothing
@@ -84,14 +84,14 @@ Public Class ProcessesTab
                 .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgCL), ListViewGroups.lsvgCL))
             End With
 
-            For Each proc As ManagementObject In Me.ComputerContext.WMI.Query(String.Format("SELECT Name, ProcessID, CreationDate, ThreadCount, CommandLine FROM Win32_Process WHERE ProcessID = ""{0}""", process.Properties("ProcessID").Value))
+            For Each proc As ManagementObject In Me.ComputerPanel.WMI.Query(String.Format("SELECT Name, ProcessID, CreationDate, ThreadCount, CommandLine FROM Win32_Process WHERE ProcessID = ""{0}""", process.Properties("ProcessID").Value))
                 MyBase.NewTabWriterItem(proc.Properties("Name").Value, proc, NameOf(ListViewGroups.lsvgPN))
                 MyBase.NewTabWriterItem(proc.Properties("ProcessID").Value, proc, NameOf(ListViewGroups.lsvgPI))
                 MyBase.NewTabWriterItem(proc.Properties("CreationDate").Value, proc, NameOf(ListViewGroups.lsvgCD))
                 MyBase.NewTabWriterItem(proc.Properties("ThreadCount").Value, proc, NameOf(ListViewGroups.lsvgTC))
                 MyBase.NewTabWriterItem(proc.Properties("CommandLine").Value, proc, NameOf(ListViewGroups.lsvgCL))
 
-                If New ProcessController(Me.ComputerContext.WMI).QueryProcessState(proc.Properties("Name").Value) = ProcessController.ProcessCondition.SingleRunning Then
+                If New ProcessController(Me.ComputerPanel.WMI).QueryProcessState(proc.Properties("Name").Value) = ProcessController.ProcessCondition.SingleRunning Then
                     NewEnumWriterItem(proc.Properties("ProcessID").Value, proc, NameOf(ListViewGroups.lsvgPN))
                 End If
             Next
@@ -106,7 +106,7 @@ Public Class ProcessesTab
             If GetSelectedListViewItem(Me.MainListView) Is selectedItem Then
                 ShowListView(processInfoListView, Me.Controls(0), Panels.Panel2)
             Else
-                SelectionBackgroundThread_DoWork(sender, e)
+                SelectionWorker_DoWork(sender, e)
             End If
 
         End If
@@ -115,7 +115,7 @@ Public Class ProcessesTab
     Private Sub AddMenuStripOptions()
         If Me.MainListView.SelectedItems.Count > 0 Then
             Dim selectedItem As ManagementObject = GetSelectedListViewItem(MainListView).Tag
-            Dim process As New ProcessController(Me.ComputerContext.WMI)
+            Dim process As New ProcessController(Me.ComputerPanel.WMI)
 
             Select Case process.QueryProcessState(selectedItem.Properties("Name").Value)
                 Case ProcessController.ProcessCondition.SingleRunning
@@ -130,16 +130,16 @@ Public Class ProcessesTab
     End Sub
 
     Private Sub StopProcess()
-        Dim processStop As New RemoteTools(RemoteTools.RemoteTools.ProcessStop, Me.ComputerContext, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
-        AddHandler processStop.WorkCompleted, AddressOf LoaderBackgroundThread.RunWorkerAsync
+        Dim processStop As New RemoteTools(RemoteTools.RemoteTools.ProcessStop, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
+        AddHandler processStop.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         processStop.BeginWork()
     End Sub
 
     Private Sub StopAllProcesses()
-        Dim processes = New ProcessController(Me.ComputerContext.WMI).GetProcesses(GetSelectedListViewItem(MainListView).Tag.Properties("Name").Value)
+        Dim processes = New ProcessController(Me.ComputerPanel.WMI).GetProcesses(GetSelectedListViewItem(MainListView).Tag.Properties("Name").Value)
         For Each process In processes
-            Dim processStop As New RemoteTools(RemoteTools.RemoteTools.ProcessStop, Me.ComputerContext, {process})
-            AddHandler processStop.WorkCompleted, AddressOf LoaderBackgroundThread.RunWorkerAsync
+            Dim processStop As New RemoteTools(RemoteTools.RemoteTools.ProcessStop, Me.ComputerPanel, {process})
+            AddHandler processStop.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
             processStop.BeginWork()
         Next
     End Sub
@@ -147,7 +147,7 @@ Public Class ProcessesTab
     Private Sub ExportProcessInfo(sender As Object, e As DoWorkEventArgs)
         ' Query the host's WMI provider for a collection of Win32_Process objects
         Dim queryText = "SELECT Name, ProcessID, CreationDate, ThreadCount, CommandLine FROM Win32_Process"
-        Dim processes = Me.ComputerContext.WMI.Query(queryText).Cast(Of ManagementObject)()
+        Dim processes = Me.ComputerPanel.WMI.Query(queryText).Cast(Of ManagementObject)()
 
         ' Get the total count of objects for calcuating progress
         Dim processesCount As Integer = processes.Count
@@ -158,7 +158,7 @@ Public Class ProcessesTab
         ' Create a list of ProcessInfo objects from the raw tab data
         Dim processInfos As New List(Of ProcessInfo)
         For index As Integer = 0 To processesCount - 1
-            If MyBase.ExportBackgroundThread.CancellationPending Then Exit For
+            If MyBase.ExportWorker.CancellationPending Then Exit For
 
             processInfos.Add(New ProcessInfo With
             {
@@ -169,7 +169,7 @@ Public Class ProcessesTab
                 .CommandLine = processes(index).Properties("CommandLine").Value
             })
 
-            MyBase.ExportBackgroundThread.ReportProgress(100 * (index / processesCount))
+            MyBase.ExportWorker.ReportProgress(100 * (index / processesCount))
         Next
 
         ' Write the list out to the CSV file chosen by the user in the base class Tab.BeginExportProcess()

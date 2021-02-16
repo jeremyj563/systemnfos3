@@ -222,7 +222,7 @@ Public Class QueryResultControl
 
     Private Sub GetInfo()
         For Each listViewItem As ListViewItem In Me.ResultsListView.SelectedItems
-            Dim searcher As New DataSourceSearcher(listViewItem.Text, Me.OwnerForm.BoundData)
+            Dim searcher As New DataSourceSearcher(listViewItem.Text, Me.OwnerForm.BindingSource)
 
             Dim results As List(Of Computer) = searcher.GetComputers()
             If results IsNot Nothing Then

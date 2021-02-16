@@ -28,13 +28,13 @@ Public NotInheritable Class LoadForm
         NewAppRegistryKey(RegistryHive.CurrentUser)
 
         ' Execute the application upgrade script if an update is available
-        UpgradeApp()
+        'UpgradeApp()
 
         ' Authenticate the current user
         'AuthenticateCurrentUser()
 
         ' Migrate user settings from previous version
-        MigrateUserSettings()
+        'MigrateUserSettings()
 
         ' User is authorized so begin loading data into the data source
         Await Task.Run(Sub() GetAllData())
@@ -162,11 +162,9 @@ Public NotInheritable Class LoadForm
     End Sub
 
     Private Sub GetLDAPComputers()
-        Dim searcher As New LDAPSearcher()
-
-        Using searchResults = searcher.GetAllComputerResults()
+        Using searchResults = LDAPSearcher.GetAllComputerResults()
             If searchResults IsNot Nothing Then
-                Me.LastChangedLDAPTime = searcher.GetLastChangedTime(searchResults)
+                Me.LastChangedLDAPTime = LDAPSearcher.GetLastChangedTime(searchResults)
 
                 For Each result As SearchResult In searchResults
                     Me.DataSource.Add(New Computer(result))
@@ -234,7 +232,7 @@ Public NotInheritable Class LoadForm
     End Sub
 
     Private Sub SetOpacity(value As Integer)
-        Me.UIThread(Sub() Me.Opacity = value / 100)
+        Me.Opacity = value / 100
     End Sub
 
     Private Sub Me_MouseDown(sender As Object, e As MouseEventArgs) Handles Me.MouseDown

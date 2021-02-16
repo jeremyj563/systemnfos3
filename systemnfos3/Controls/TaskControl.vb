@@ -127,7 +127,7 @@ Public Class TaskControl
     End Sub
 
     Private Sub GetInfo()
-        Dim searcher As New DataSourceSearcher(Me.CollectionsTreeView.SelectedNode.Text, Me.OwnerForm.BoundData)
+        Dim searcher As New DataSourceSearcher(Me.CollectionsTreeView.SelectedNode.Text, Me.OwnerForm.BindingSource)
 
         Dim searchResults As List(Of Computer) = searcher.GetComputers()
         If searchResults IsNot Nothing Then

@@ -5,7 +5,7 @@ Imports System.Reflection
 Imports Microsoft.Win32
 Imports systemnfos3.WMIController
 
-Public Class ComputerControl
+Public Class ComputerPanel
     Public Property OwnerForm As MainForm
     Public Property OwnerNode As TreeNode
     Public Property IsLoaded As Boolean
@@ -17,8 +17,7 @@ Public Class ComputerControl
     Public Property Timeout As Integer = 20
     Public Property IsMassImport As Boolean = False
     Public Property UseRandomTimeoutForMassImport As Boolean = False
-    Public Property LoaderBackgroundThread As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
-    Public Property PingLock As New Object
+    Public Property InitWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
     Public Property UserLoggedOn As Boolean = False
 
     Private Property ForceFullOnlineMode As Boolean = False
@@ -26,6 +25,8 @@ Public Class ComputerControl
     Private Property ResolveIPAddress As Boolean = False
 
     Friend Property LastSelectedTab As Tab = Nothing
+
+    Private pingLock As New Object
 
     Public Sub New(computer As Computer, ownerForm As MainForm, ownerNode As TreeNode)
         ' This call is required by the designer.
@@ -37,7 +38,7 @@ Public Class ComputerControl
 
         Me.IsLoaded = False
 
-        AddHandler Me.LoaderBackgroundThread.DoWork, AddressOf LoadComputer
+        AddHandler Me.InitWorker.DoWork, AddressOf LoadComputer
     End Sub
 
 #Region " Misc "
@@ -47,21 +48,21 @@ Public Class ComputerControl
         If color = Nothing Then color = Color.Black
 
         If Me.IsHandleCreated Then
-            Me.UIThread(Sub()
-                            With Me.StatusRichTextBox
-                                .SelectionStart = .Text.Length
-                                .SelectionColor = color
-                                .AppendText(String.Format("({0}): {1}{2}", Now, message, Environment.NewLine))
-                                .SelectionColor = .ForeColor
-                                .SelectionStart = .Text.Length
-                                .ScrollToCaret()
-                            End With
-                        End Sub)
+            Me.StatusRichTextBox.UIThread(Sub()
+                                              With Me.StatusRichTextBox
+                                                  .SelectionStart = .Text.Length
+                                                  .SelectionColor = color
+                                                  .AppendText(String.Format("({0}): {1}{2}", Now, message, Environment.NewLine))
+                                                  .SelectionColor = .ForeColor
+                                                  .SelectionStart = .Text.Length
+                                                  .ScrollToCaret()
+                                              End With
+                                          End Sub)
         End If
     End Sub
 
     Public Sub ReportConnectionStatus()
-        SyncLock PingLock
+        SyncLock pingLock
             Me.Timeout = 10
             Me.IsMassImport = False
 
@@ -85,8 +86,8 @@ Public Class ComputerControl
                                 Me.UserStatus = userStatus
                                 SetConnectionStatusColors(ConnectionStatuses.Online)
 
-                                If TypeOf LastSelectedTab Is MainTab AndAlso Not LastSelectedTab.LoaderBackgroundThread.IsBusy Then
-                                    LastSelectedTab.LoaderBackgroundThread.RunWorkerAsync()
+                                If TypeOf LastSelectedTab Is MainTab AndAlso Not LastSelectedTab.InitWorker.IsBusy Then
+                                    LastSelectedTab.InitWorker.RunWorkerAsync()
                                 End If
                             End If
                         Else
@@ -115,7 +116,7 @@ Public Class ComputerControl
     End Sub
 
     Private Sub RemoveOwnerNode()
-        SyncLock Me.PingLock
+        SyncLock pingLock
             Dim garbageCollector As New GarbageCollector With {.AddToGarbage = Me}
 
             Me.UIThread(Sub() Me.OwnerNode.Remove())
@@ -140,8 +141,8 @@ Public Class ComputerControl
     Private Sub LoadFullOnline()
         Me.ForceFullOnlineMode = True
 
-        If Not Me.LoaderBackgroundThread.IsBusy Then
-            Me.LoaderBackgroundThread.RunWorkerAsync()
+        If Not Me.InitWorker.IsBusy Then
+            Me.InitWorker.RunWorkerAsync()
         End If
     End Sub
 
@@ -284,7 +285,7 @@ Public Class ComputerControl
 
     Public Function RespondsToPing() As Boolean
         Try
-            If Not Me.LoaderBackgroundThread.CancellationPending AndAlso Not String.IsNullOrWhiteSpace(Me.Computer.Value) Then
+            If Not Me.InitWorker.CancellationPending AndAlso Not String.IsNullOrWhiteSpace(Me.Computer.Value) Then
                 Dim ipAddress As IPAddress = Dns.GetHostAddresses(Me.Computer.Value).FirstOrDefault()
                 If ipAddress IsNot Nothing Then
                     Dim ping As New Ping()

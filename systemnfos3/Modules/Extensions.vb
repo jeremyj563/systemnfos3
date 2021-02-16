@@ -264,23 +264,19 @@ Module ControlExtensions
     ' Source: https://www.codeproject.com/Articles/37642/Avoiding-InvokeRequired
     ' More info: http://www.interact-sw.co.uk/iangblog/2004/04/20/whatlocks
 
-    '<Extension()>
-    'Public Sub UIThreadBeginInvoke(control As Control, code As Action)
-    '    If control.InvokeRequired Then
-    '        control.BeginInvoke(code)
-    '    Else
-    '        code.Invoke()
-    '    End If
-    'End Sub
+    <Extension()>
+    Public Sub UIThread(control As Control, action As Action)
+        If control.InvokeRequired Then
+            control.SafeInvoke(action)
+        Else
+            action.SafeInvoke(control)
+        End If
+    End Sub
 
     <Extension()>
-    Public Sub UIThread(control As Control, code As Action)
-        If Not control.IsDisposed Then
-            If control.InvokeRequired Then
-                control.Invoke(code)
-            Else
-                code.Invoke()
-            End If
+    Public Sub SafeInvoke(control As Control, action As Action)
+        If Not control.IsDisposed AndAlso Not control.Disposing Then
+            control.Invoke(action)
         End If
     End Sub
 
@@ -316,4 +312,15 @@ Module ControlExtensions
 
 End Module
 
+#End Region
+
+#Region "ActionExtensions"
+Module ActionExtensions
+    <Extension()>
+    Public Sub SafeInvoke(action As Action, control As Control)
+        If Not control.IsDisposed AndAlso Not control.Disposing Then
+            action.Invoke()
+        End If
+    End Sub
+End Module
 #End Region

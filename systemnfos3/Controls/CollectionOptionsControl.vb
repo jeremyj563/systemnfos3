@@ -10,7 +10,7 @@ Public Class CollectionOptionsControl
     Private Property RegistryContext As New RegistryController
     Private Property ComputerNamesToAdd As List(Of String)
 
-    Private WithEvents BackgroundThread As New BackgroundWorker
+    Private WithEvents InitWorker As New BackgroundWorker
 
     Public Sub New(ownerForm As MainForm)
         InitializeComponent()
@@ -158,7 +158,7 @@ Public Class CollectionOptionsControl
 
             Me.StatusLabel.Text = "Importing..."
 
-            With Me.BackgroundThread
+            With Me.InitWorker
                 .WorkerReportsProgress = True
                 .WorkerSupportsCancellation = True
                 .RunWorkerAsync()
@@ -166,7 +166,7 @@ Public Class CollectionOptionsControl
         End If
     End Sub
 
-    Private Sub BackgroundThread_DoWork(sender As Object, e As DoWorkEventArgs) Handles BackgroundThread.DoWork
+    Private Sub InitWorker_DoWork(sender As Object, e As DoWorkEventArgs) Handles InitWorker.DoWork
         Try
             For Each computerName As String In Me.ComputerNamesToAdd
                 computerName = computerName.Replace(ControlChars.Tab, String.Empty).Trim()
@@ -185,7 +185,7 @@ Public Class CollectionOptionsControl
         End Try
     End Sub
 
-    Private Sub BackgroundThread_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles BackgroundThread.RunWorkerCompleted
+    Private Sub InitWorker_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles InitWorker.RunWorkerCompleted
         AddToCollectionListView(Me.ComputerNamesToAdd)
         Me.ComputerNamesToAdd.Clear()
         Me.StatusLabel.Text = "Import complete"
@@ -197,7 +197,7 @@ Public Class CollectionOptionsControl
 
     Private Sub GetInfo()
         For Each listViewItem As ListViewItem In ComputerStatusListView.SelectedItems
-            Dim searcher As New DataSourceSearcher(listViewItem.Text, Me.OwnerForm.BoundData)
+            Dim searcher As New DataSourceSearcher(listViewItem.Text, Me.OwnerForm.BindingSource)
             Dim searchResults As List(Of Computer) = searcher.GetComputers()
             If searchResults IsNot Nothing Then
                 Me.OwnerForm.UserInputComboBox.SelectedItem = searchResults.First()

@@ -6,7 +6,7 @@ Public MustInherit Class Tab
     Inherits TabPage
 
     Public Property OwnerTab As TabControl
-    Public Property ComputerContext As ComputerControl
+    Public Property ComputerPanel As ComputerPanel
     Public Property IsDisplayValidationNeeded As Boolean = True
     Public Property TabWriterObjects As List(Of Object)
     Public Property EnumWriterObjects As List(Of Object)
@@ -19,14 +19,14 @@ Public MustInherit Class Tab
     Friend Property LastSelectedListViewItem As ListViewItem = Nothing
     Friend Property SearchTextBox As TextBox
 
-    Friend LoaderBackgroundThread As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
-    Friend WithEvents ExportBackgroundThread As New BackgroundWorker() With {.WorkerSupportsCancellation = True, .WorkerReportsProgress = True}
-    Friend WithEvents SelectionBackgroundThread As New BackgroundWorker()
+    Friend InitWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
+    Friend WithEvents ExportWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True, .WorkerReportsProgress = True}
+    Friend WithEvents SelectionWorker As New BackgroundWorker()
 
-    Public Sub New(ownerTab As TabControl, computerContext As ComputerControl)
-        ' Setting the ComputerContext to its sender is required before control initialization
+    Public Sub New(ownerTab As TabControl, computerPanel As ComputerPanel)
+        ' Setting the ComputerPanel to its sender is required before control initialization
         ' That is because the VisibleChanged events fire off before the control is loaded, causing validation errors.
-        Me.ComputerContext = computerContext
+        Me.ComputerPanel = computerPanel
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -100,7 +100,7 @@ Public MustInherit Class Tab
 
             ' Add context menu items that should always be available
             menuStrip.Items.Add("Export All", Nothing, AddressOf BeginExportProcess)
-            menuStrip.Items.Add("Refresh", Nothing, AddressOf LoaderBackgroundThread.RunWorkerAsync)
+            menuStrip.Items.Add("Refresh", Nothing, AddressOf InitWorker.RunWorkerAsync)
 
             AddHandler listView.ContextMenuStrip.Closed, AddressOf listView.ContextMenuStrip.Dispose
             listView.ContextMenuStrip = menuStrip
@@ -119,8 +119,8 @@ Public MustInherit Class Tab
         Next
 
         ' Get information for setting the default export file name
-        Dim selectedComputerName As String = Me.ComputerContext.OwnerForm.ResourceExplorer.SelectedNode.Text.Split(">")(1).Trim()
-        Dim selectedTabName As String = Me.ComputerContext.LastSelectedTab.Text
+        Dim selectedComputerName As String = Me.ComputerPanel.OwnerForm.ResourceExplorer.SelectedNode.Text.Split(">")(1).Trim()
+        Dim selectedTabName As String = Me.ComputerPanel.LastSelectedTab.Text
 
         ' Prompt the user to select export file location
         Dim saveDialog As New SaveFileDialog() With
@@ -137,17 +137,17 @@ Public MustInherit Class Tab
                 saveDialog.OpenFile().Close()
 
                 ' Display the exporting progress bar control
-                Dim exportProgress = NewProgressControl("Exporting...", Me.ExportingProgressBar, ProgressBarStyle.Continuous, Me.ExportBackgroundThread)
+                Dim exportProgress = NewProgressControl("Exporting...", Me.ExportingProgressBar, ProgressBarStyle.Continuous, Me.ExportWorker)
                 Me.MainListView.InvokeAddControl(exportProgress)
                 Me.MainListView.InvokeCenterControl()
 
                 ' Delegate event handlers for the BackgroundWorker that will be performing the export.
                 ' The DoWork() handler is to be delegated in the derived tab object's constructor.
-                AddHandler Me.ExportBackgroundThread.ProgressChanged, AddressOf TabExportReportProgress
-                AddHandler Me.ExportBackgroundThread.RunWorkerCompleted, Sub() TabExportCompleted(exportProgress, allTabPagesExceptCurrent)
+                AddHandler Me.ExportWorker.ProgressChanged, AddressOf TabExportReportProgress
+                AddHandler Me.ExportWorker.RunWorkerCompleted, Sub() TabExportCompleted(exportProgress, allTabPagesExceptCurrent)
 
                 ' Start the export BackgroundWorker
-                Me.ExportBackgroundThread.RunWorkerAsync(saveDialog.FileName)
+                Me.ExportWorker.RunWorkerAsync(saveDialog.FileName)
             Catch ex As Exception
                 LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
             End Try
@@ -197,7 +197,7 @@ Public MustInherit Class Tab
 
             ' With each iteration loop through all listview groups
             For Each group As ListViewGroup In listView.Groups
-                If Me.ExportBackgroundThread.CancellationPending Then Exit For
+                If Me.ExportWorker.CancellationPending Then Exit For
 
                 If group.Items.Count > index Then
                     Dim currentItem = group.Items(index)
@@ -211,14 +211,14 @@ Public MustInherit Class Tab
 
                         ' Report progress to the background worker
                         currentEntryCount += 1
-                        Me.ExportBackgroundThread.ReportProgress(100 * (currentEntryCount / totalEntriesCount))
+                        Me.ExportWorker.ReportProgress(100 * (currentEntryCount / totalEntriesCount))
                     End If
                 End If
             Next
 
             ' Add the fully populated row to the datatable
             dataTable.Rows.Add(row)
-            If Me.ExportBackgroundThread.CancellationPending Then
+            If Me.ExportWorker.CancellationPending Then
                 Exit For
             End If
         Next
@@ -376,7 +376,7 @@ Public MustInherit Class Tab
 
     Public Sub Me_VisibleChanged(sender As Object, e As EventArgs) Handles Me.VisibleChanged
         If IsDisplayValidated() Then
-            Me.LoaderBackgroundThread.RunWorkerAsync()
+            Me.InitWorker.RunWorkerAsync()
         End If
     End Sub
 
@@ -384,32 +384,32 @@ Public MustInherit Class Tab
         ' Does checks to see whether a background worker can begin enumeration on a computer.
 
         If Not Me.IsDisplayValidationNeeded Then
-            If Not Me.LoaderBackgroundThread.IsBusy Then
+            If Not Me.InitWorker.IsBusy Then
                 Return True
             Else
                 Return False
             End If
         End If
 
-        If Me.ComputerContext.OwnerForm.IsNodeSelected(Me.ComputerContext) Then
+        If Me.ComputerPanel.OwnerForm.IsNodeSelected(Me.ComputerPanel) Then
             If Me.Visible Then
-                If Me.ComputerContext.ConnectionStatus = ComputerControl.ConnectionStatuses.Online AndAlso Me.ComputerContext.RespondsToPing() Then
-                    If Not Me.LoaderBackgroundThread.IsBusy AndAlso Me.ComputerContext.LastSelectedTab IsNot Me Then
-                        Me.ComputerContext.LastSelectedTab = Me
+                If Me.ComputerPanel.ConnectionStatus = ComputerPanel.ConnectionStatuses.Online AndAlso Me.ComputerPanel.RespondsToPing() Then
+                    If Not Me.InitWorker.IsBusy AndAlso Me.ComputerPanel.LastSelectedTab IsNot Me Then
+                        Me.ComputerPanel.LastSelectedTab = Me
                         Return True
                     Else
                         Return False
                     End If
                 Else
-                    If Me.ComputerContext.ConnectionStatus <> ComputerControl.ConnectionStatuses.Online Then
-                        If Not Me.LoaderBackgroundThread.IsBusy AndAlso Me.ComputerContext.LastSelectedTab IsNot Me Then
-                            Me.ComputerContext.LastSelectedTab = Me
+                    If Me.ComputerPanel.ConnectionStatus <> ComputerPanel.ConnectionStatuses.Online Then
+                        If Not Me.InitWorker.IsBusy AndAlso Me.ComputerPanel.LastSelectedTab IsNot Me Then
+                            Me.ComputerPanel.LastSelectedTab = Me
                             Return True
                         Else
                             Return False
                         End If
                     Else
-                        Me.ComputerContext.SetConnectionStatus(ComputerControl.ConnectionStatuses.Offline)
+                        Me.ComputerPanel.SetConnectionStatus(ComputerPanel.ConnectionStatuses.Offline)
                         Return False
                     End If
 
@@ -476,18 +476,18 @@ Public MustInherit Class Tab
     End Function
 
     Public Sub ShowTabLoaderProgress()
-        Dim loaderProgress = NewProgressControl("Loading...", Me.LoadingProgressBar, ProgressBarStyle.Marquee, Me.LoaderBackgroundThread)
+        Dim loaderProgress = NewProgressControl("Loading...", Me.LoadingProgressBar, ProgressBarStyle.Marquee, Me.InitWorker)
         Me.InvokeAddControl(loaderProgress)
         Me.InvokeCenterControl()
     End Sub
 
     Public Function UserCancellationPending() As Boolean
-        If Me.LoaderBackgroundThread.CancellationPending Then
-            Me.ComputerContext.WriteMessage("Stopping loading process!", Color.Red)
+        If Me.InitWorker.CancellationPending Then
+            Me.ComputerPanel.WriteMessage("Stopping loading process!", Color.Red)
             Me.InvokeClearControls()
 
             Dim reloadButton As New Button() With {.Width = 100, .Text = "Reload..."}
-            AddHandler reloadButton.Click, AddressOf Me.LoaderBackgroundThread.RunWorkerAsync
+            AddHandler reloadButton.Click, AddressOf Me.InitWorker.RunWorkerAsync
             Me.InvokeAddControl(reloadButton)
             Me.InvokeCenterControl()
 
@@ -505,32 +505,32 @@ Public MustInherit Class Tab
         Dim item As ListViewItem = Nothing
 
         Me.UIThread(Sub()
-                              If listView.SelectedItems.Count > 0 Then
-                                  item = listView.SelectedItems(0)
-                              End If
-                          End Sub)
+                        If listView.SelectedItems.Count > 0 Then
+                            item = listView.SelectedItems(0)
+                        End If
+                    End Sub)
 
         Return item
     End Function
 
     Public Sub ValidateWMI()
         Try
-            Dim wmiInstance = Me.ComputerContext.WMI.Query("SELECT LastBootUpTime FROM Win32_OperatingSystem")
-            Dim lastBootUpTime As String = Me.ComputerContext.WMI.GetPropertyValue(wmiInstance, "LastBootUpTime")
+            Dim wmiInstance = Me.ComputerPanel.WMI.Query("SELECT LastBootUpTime FROM Win32_OperatingSystem")
+            Dim lastBootUpTime As String = Me.ComputerPanel.WMI.GetPropertyValue(wmiInstance, "LastBootUpTime")
             Dim convertedLastBootUpTime As String = ConvertDate(lastBootUpTime, includeTime:=True)
 
-            If Me.ComputerContext.WMI.ConnectedTime < convertedLastBootUpTime Then
-                Me.ComputerContext.WMI.Connect(Me.ComputerContext.Computer.Value, WMIController.ManagementScopes.All, async:=False)
+            If Me.ComputerPanel.WMI.ConnectedTime < convertedLastBootUpTime Then
+                Me.ComputerPanel.WMI.Connect(Me.ComputerPanel.Computer.Value, WMIController.ManagementScopes.All, async:=False)
             End If
 
         Catch ex As Exception
             LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
 
             Try
-                Me.ComputerContext.WMI.Connect(Me.ComputerContext.Computer.Value, WMIController.ManagementScopes.All, async:=False)
+                Me.ComputerPanel.WMI.Connect(Me.ComputerPanel.Computer.Value, WMIController.ManagementScopes.All, async:=False)
             Catch exc As Exception
                 LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), exc.Message))
-                Me.ComputerContext.SetConnectionStatus(ComputerControl.ConnectionStatuses.Offline)
+                Me.ComputerPanel.SetConnectionStatus(ComputerPanel.ConnectionStatuses.Offline)
             End Try
         End Try
     End Sub
@@ -696,7 +696,7 @@ Public MustInherit Class Tab
 
     Public Sub Me_PreviewKeyDown(sender As Object, e As PreviewKeyDownEventArgs) Handles Me.PreviewKeyDown
         If e.KeyCode = Keys.F5 Then
-            Me.LoaderBackgroundThread.RunWorkerAsync()
+            Me.InitWorker.RunWorkerAsync()
         End If
     End Sub
 

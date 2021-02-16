@@ -5,14 +5,14 @@ Public Class ApplicationTab
     Inherits Tab
 
     Private Property EnumWriterApps As List(Of Object)
-    Private WithEvents AppBackgroundThread As New BackgroundWorker()
+    Private WithEvents InitWorker As New BackgroundWorker()
 
-    Public Sub New(ownerTab As TabControl, computerContext As ComputerControl)
-        MyBase.New(ownerTab, computerContext)
+    Public Sub New(ownerTab As TabControl, computerPanel As ComputerPanel)
+        MyBase.New(ownerTab, computerPanel)
 
         Me.Text = "Applications"
-        AddHandler MyBase.LoaderBackgroundThread.DoWork, AddressOf Me.InitializeAppsTab
-        AddHandler MyBase.ExportBackgroundThread.DoWork, AddressOf Me.ExportAppInfo
+        AddHandler MyBase.InitWorker.DoWork, AddressOf Me.InitializeAppsTab
+        AddHandler MyBase.ExportWorker.DoWork, AddressOf Me.ExportAppInfo
     End Sub
 
     Private Structure ListViewGroups
@@ -37,7 +37,7 @@ Public Class ApplicationTab
         appInfoListView = NewBasicInfoListView(1)
         appInfoListView.Groups.Add(New ListViewGroup(NameOf(ListViewGroups.lsvgAN), ListViewGroups.lsvgAN))
 
-        Dim x86Registry As New RegistryController(Me.ComputerContext.WMI.X86Scope)
+        Dim x86Registry As New RegistryController(Me.ComputerPanel.WMI.X86Scope)
         For Each keyValue In x86Registry.GetKeyValues("Software\Microsoft\Windows\CurrentVersion\Uninstall")
             If MyBase.UserCancellationPending() Then Exit Sub
 
@@ -51,8 +51,8 @@ Public Class ApplicationTab
             NewTabWriterItem(displayName, String.Format("Software\Microsoft\Windows\CurrentVersion\Uninstall\{0}&32", keyValue), NameOf(ListViewGroups.lsvgAN))
         Next
 
-        If Me.ComputerContext.WMI.X64Scope.IsConnected Then
-            Dim x64Registry As New RegistryController(Me.ComputerContext.WMI.X64Scope)
+        If Me.ComputerPanel.WMI.X64Scope.IsConnected Then
+            Dim x64Registry As New RegistryController(Me.ComputerPanel.WMI.X64Scope)
             For Each keyValue In x64Registry.GetKeyValues("Software\Microsoft\Windows\CurrentVersion\Uninstall")
                 If MyBase.UserCancellationPending() Then Exit Sub
 
@@ -101,13 +101,13 @@ Public Class ApplicationTab
     End Sub
 
     Private Sub GetAppInformation()
-        If Not Me.AppBackgroundThread.IsBusy Then
-            Me.AppBackgroundThread.RunWorkerAsync()
+        If Not Me.InitWorker.IsBusy Then
+            Me.InitWorker.RunWorkerAsync()
         End If
     End Sub
 
-    Private Sub AppBackgroundThread_DoWork(sender As Object, e As DoWorkEventArgs) Handles AppBackgroundThread.DoWork
-        If Me.ComputerContext.WMI.X86Scope.IsConnected Then
+    Private Sub InitWorker_DoWork(sender As Object, e As DoWorkEventArgs) Handles InitWorker.DoWork
+        If Me.ComputerPanel.WMI.X86Scope.IsConnected Then
             Me.Controls(0).Controls(1).InvokeClearControls()
 
             Me.EnumWriterApps = Nothing
@@ -130,8 +130,8 @@ Public Class ApplicationTab
                 Dim rawKeys As String() = selectedItem.SubItems(1).Text.Split("&")
                 Dim registry As RegistryController = Nothing
 
-                If rawKeys(1) = "32" Then registry = New RegistryController(Me.ComputerContext.WMI.X86Scope)
-                If rawKeys(1) = "64" Then registry = New RegistryController(Me.ComputerContext.WMI.X64Scope)
+                If rawKeys(1) = "32" Then registry = New RegistryController(Me.ComputerPanel.WMI.X86Scope)
+                If rawKeys(1) = "64" Then registry = New RegistryController(Me.ComputerPanel.WMI.X64Scope)
 
                 NewAppWriteItem(registry.GetKeyValue(rawKeys(0), "DisplayName", RegistryController.RegistryKeyValueTypes.String), " ", NameOf(ListViewGroups.lsvgSN))
                 NewAppWriteItem(String.Format("HKLM\{0}", rawKeys(0)), " ", NameOf(ListViewGroups.lsvgRK))
@@ -161,14 +161,14 @@ Public Class ApplicationTab
                 If GetSelectedListViewItem(applicationListView) Is selectedItem Then
                     ShowListView(appInfoListView, Me.Controls(0), Panels.Panel2)
                 Else
-                    AppBackgroundThread_DoWork(sender, e)
+                    InitWorker_DoWork(sender, e)
                 End If
 
             Catch ex As Exception
                 LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
 
-                If Not Me.ComputerContext.RespondsToPing() Then
-                    Me.ComputerContext.SetConnectionStatus(ComputerControl.ConnectionStatuses.Offline)
+                If Not Me.ComputerPanel.RespondsToPing() Then
+                    Me.ComputerPanel.SetConnectionStatus(ComputerPanel.ConnectionStatuses.Offline)
                 Else
                     ValidateWMI()
                 End If
@@ -186,15 +186,15 @@ Public Class ApplicationTab
         ' Create a list of ApplicationInfo objects from the raw tab data
         Dim applicationInfos As New List(Of ApplicationInfo)
         For index As Integer = 0 To tabWriterObjectsCount - 1
-            If MyBase.ExportBackgroundThread.CancellationPending Then Exit For
+            If MyBase.ExportWorker.CancellationPending Then Exit For
 
             Dim appKeyPathAndArchitecture As String() = MyBase.TabWriterObjects(index)(2).ToString().Split("&")
             Dim appKeyPath As String = appKeyPathAndArchitecture(0)
             Dim appArchitecture As String = appKeyPathAndArchitecture(1)
 
             Dim registry As New RegistryController()
-            If appArchitecture = "32" Then registry = New RegistryController(ComputerContext.WMI.X86Scope)
-            If appArchitecture = "64" Then registry = New RegistryController(ComputerContext.WMI.X64Scope)
+            If appArchitecture = "32" Then registry = New RegistryController(ComputerPanel.WMI.X86Scope)
+            If appArchitecture = "64" Then registry = New RegistryController(ComputerPanel.WMI.X64Scope)
 
             applicationInfos.Add(New ApplicationInfo() With
                 {
@@ -207,7 +207,7 @@ Public Class ApplicationTab
                     .InstallSource = registry.GetKeyValue(appKeyPath, "InstallSource", RegistryController.RegistryKeyValueTypes.String)
                 })
 
-            MyBase.ExportBackgroundThread.ReportProgress(100 * (index / tabWriterObjectsCount))
+            MyBase.ExportWorker.ReportProgress(100 * (index / tabWriterObjectsCount))
         Next
 
         ' Write the list out to the CSV file chosen by the user in the base class Tab.BeginExportProcess()

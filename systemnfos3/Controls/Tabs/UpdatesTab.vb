@@ -7,12 +7,12 @@ Public Class UpdatesTab
 
     Private Property UpdatesListView As ListView
 
-    Public Sub New(ownerTab As TabControl, computerContext As ComputerControl)
-        MyBase.New(ownerTab, computerContext)
+    Public Sub New(ownerTab As TabControl, computerPanel As ComputerPanel)
+        MyBase.New(ownerTab, computerPanel)
 
         Me.Text = "Windows Updates"
-        AddHandler LoaderBackgroundThread.DoWork, AddressOf UpdatePageEnumerator
-        AddHandler ExportBackgroundThread.DoWork, AddressOf UpdateInfoExport
+        AddHandler InitWorker.DoWork, AddressOf UpdatePageEnumerator
+        AddHandler ExportWorker.DoWork, AddressOf UpdateInfoExport
     End Sub
 
     Private Structure ListViewGroups
@@ -38,7 +38,7 @@ Public Class UpdatesTab
             .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgOT), ListViewGroups.lsvgOT))
         End With
 
-        Dim updates As ManagementObjectCollection = Me.ComputerContext.WMI.Query("SELECT HotfixID, InstalledOn, Caption, Description FROM Win32_QuickFixEngineering")
+        Dim updates As ManagementObjectCollection = Me.ComputerPanel.WMI.Query("SELECT HotfixID, InstalledOn, Caption, Description FROM Win32_QuickFixEngineering")
         For Each update As ManagementBaseObject In updates
             If MyBase.UserCancellationPending() Then Exit Sub
 

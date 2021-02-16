@@ -67,8 +67,8 @@
                         If xNode.Name = NameOf(Nodes.RootNode) Then Return 0
                         If xNode.Parent.Name <> NameOf(Nodes.Computers) Then Return 0
 
-                        Dim xComputer As ComputerControl = CType(xNode.Tag, ComputerControl)
-                        Dim yComputer As ComputerControl = CType(yNode.Tag, ComputerControl)
+                        Dim xComputer As ComputerPanel = CType(xNode.Tag, ComputerPanel)
+                        Dim yComputer As ComputerPanel = CType(yNode.Tag, ComputerPanel)
 
                         If xComputer Is Nothing OrElse yComputer Is Nothing Then Return 0
 

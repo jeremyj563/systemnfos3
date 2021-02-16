@@ -8,12 +8,12 @@ Public Class PrinterTab
     Private Property PrinterInfoListView As ListView
     Private Property DefaultPrinter As String() = Nothing
 
-    Public Sub New(ownerTab As TabControl, computerContext As ComputerControl)
-        MyBase.New(ownerTab, computerContext)
+    Public Sub New(ownerTab As TabControl, computerPanel As ComputerPanel)
+        MyBase.New(ownerTab, computerPanel)
 
         Me.Text = "Printers"
-        AddHandler MyBase.LoaderBackgroundThread.DoWork, AddressOf Me.InitializePrinterTab
-        AddHandler MyBase.ExportBackgroundThread.DoWork, AddressOf Me.ExportPrinterInfo
+        AddHandler MyBase.InitWorker.DoWork, AddressOf Me.InitializePrinterTab
+        AddHandler MyBase.ExportWorker.DoWork, AddressOf Me.ExportPrinterInfo
     End Sub
 
     Private Structure ListViewGroups
@@ -39,9 +39,9 @@ Public Class PrinterTab
         ' Find the default printer
         Me.DefaultPrinter = Nothing
         Dim currentUserRegistryKey As String = Nothing
-        Dim registry As New RegistryController(ComputerContext.WMI.X86Scope)
+        Dim registry As New RegistryController(ComputerPanel.WMI.X86Scope)
 
-        Select Case ComputerContext.UserLoggedOn
+        Select Case ComputerPanel.UserLoggedOn
 
             Case "True"
                 Try
@@ -87,7 +87,7 @@ Public Class PrinterTab
         End If
 
         ' Create the Legend for Printers
-        Dim printers As ManagementObjectCollection = ComputerContext.WMI.Query("SELECT Name, PortName, PrintProcessor, PrintJobDataType, CreationClassName FROM Win32_Printer")
+        Dim printers As ManagementObjectCollection = ComputerPanel.WMI.Query("SELECT Name, PortName, PrintProcessor, PrintJobDataType, CreationClassName FROM Win32_Printer")
         If printers IsNot Nothing AndAlso printers.Count > 0 Then
             Try
                 NewTabWriterItem("Printer Name:", New String() {"Printer Port Name:", "Print Processor:", "Data Type:", "LEGEND"}, NameOf(ListViewGroups.lsvgPR))
@@ -107,7 +107,7 @@ Public Class PrinterTab
         End If
 
         ' Create the legend for Printer Drivers
-        Dim printerDrivers As ManagementObjectCollection = ComputerContext.WMI.Query("SELECT Name, DriverPath, CreationClassName FROM Win32_PrinterDriver")
+        Dim printerDrivers As ManagementObjectCollection = ComputerPanel.WMI.Query("SELECT Name, DriverPath, CreationClassName FROM Win32_PrinterDriver")
         If printerDrivers IsNot Nothing AndAlso printerDrivers.Count > 0 Then
             Try
                 NewTabWriterItem("Driver Name:", New String() {"Driver Path:", "LEGEND"}, NameOf(ListViewGroups.lsvgPD))
@@ -123,7 +123,7 @@ Public Class PrinterTab
         End If
 
         ' Create the legend for TCP/IP Printer Ports
-        Dim tcpIPPorts As ManagementObjectCollection = ComputerContext.WMI.Query("SELECT Name, HostAddress, PortNumber, CreationClassName FROM Win32_TCPIPPrinterPort")
+        Dim tcpIPPorts As ManagementObjectCollection = ComputerPanel.WMI.Query("SELECT Name, HostAddress, PortNumber, CreationClassName FROM Win32_TCPIPPrinterPort")
         If tcpIPPorts IsNot Nothing AndAlso tcpIPPorts.Count > 0 Then
             Try
                 NewTabWriterItem("Port Name:", New String() {"Host Address:", "Port Number:", "LEGEND"}, NameOf(ListViewGroups.lsvgPO))
@@ -193,47 +193,47 @@ Public Class PrinterTab
     End Sub
 
     Private Sub AddPrinter()
-        Dim printerAdd As New RemoteTools(RemoteTools.RemoteTools.PrinterAdd, Me.ComputerContext)
-        AddHandler printerAdd.WorkCompleted, AddressOf LoaderBackgroundThread.RunWorkerAsync
+        Dim printerAdd As New RemoteTools(RemoteTools.RemoteTools.PrinterAdd, Me.ComputerPanel)
+        AddHandler printerAdd.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         printerAdd.BeginWork()
     End Sub
 
     Private Sub AddPrinterCab()
-        Dim printerAddCab As New RemoteTools(RemoteTools.RemoteTools.PrinterAddCab, Me.ComputerContext)
-        AddHandler printerAddCab.WorkCompleted, AddressOf LoaderBackgroundThread.RunWorkerAsync
+        Dim printerAddCab As New RemoteTools(RemoteTools.RemoteTools.PrinterAddCab, Me.ComputerPanel)
+        AddHandler printerAddCab.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         printerAddCab.BeginWork()
     End Sub
 
     Private Sub NewPrinterCab()
-        Dim printerNewCab As New RemoteTools(RemoteTools.RemoteTools.PrinterNewCab, Me.ComputerContext)
+        Dim printerNewCab As New RemoteTools(RemoteTools.RemoteTools.PrinterNewCab, Me.ComputerPanel)
         printerNewCab.BeginWork()
     End Sub
 
     Private Sub RenamePrinter(sender As Object, e As EventArgs)
-        Dim printerRename As New RemoteTools(RemoteTools.RemoteTools.PrinterRename, Me.ComputerContext, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
-        AddHandler printerRename.WorkCompleted, AddressOf Me.LoaderBackgroundThread.RunWorkerAsync
+        Dim printerRename As New RemoteTools(RemoteTools.RemoteTools.PrinterRename, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
+        AddHandler printerRename.WorkCompleted, AddressOf Me.InitWorker.RunWorkerAsync
         printerRename.BeginWork()
     End Sub
 
     Private Sub SetDefaultPrinter()
-        Dim printerSetDefault As New RemoteTools(RemoteTools.RemoteTools.PrinterSetDefault, Me.ComputerContext, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
-        AddHandler printerSetDefault.WorkCompleted, AddressOf Me.LoaderBackgroundThread.RunWorkerAsync
+        Dim printerSetDefault As New RemoteTools(RemoteTools.RemoteTools.PrinterSetDefault, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
+        AddHandler printerSetDefault.WorkCompleted, AddressOf Me.InitWorker.RunWorkerAsync
         printerSetDefault.BeginWork()
     End Sub
 
     Private Sub OpenPrinterQueue()
-        Dim printerOpenQueue As New RemoteTools(RemoteTools.RemoteTools.PrinterOpenQueue, Me.ComputerContext, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
+        Dim printerOpenQueue As New RemoteTools(RemoteTools.RemoteTools.PrinterOpenQueue, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
         printerOpenQueue.BeginWork()
     End Sub
 
     Private Sub OpenPrinterProperties()
-        Dim printerOpenProperties As New RemoteTools(RemoteTools.RemoteTools.PrinterOpenProperties, Me.ComputerContext, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
+        Dim printerOpenProperties As New RemoteTools(RemoteTools.RemoteTools.PrinterOpenProperties, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
         printerOpenProperties.BeginWork()
     End Sub
 
     Private Sub EditPrinterPort()
-        Dim printerEditPort As New RemoteTools(RemoteTools.RemoteTools.PrinterEditPort, Me.ComputerContext, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
-        AddHandler printerEditPort.WorkCompleted, AddressOf LoaderBackgroundThread.RunWorkerAsync
+        Dim printerEditPort As New RemoteTools(RemoteTools.RemoteTools.PrinterEditPort, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(MainListView).Tag})
+        AddHandler printerEditPort.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         printerEditPort.BeginWork()
     End Sub
 
@@ -247,8 +247,8 @@ Public Class PrinterTab
             Next
 
             If printersToDelete IsNot Nothing Then
-                Dim printerDeleteAnyType As New RemoteTools(RemoteTools.RemoteTools.PrinterDeleteAnyType, Me.ComputerContext, printersToDelete.ToArray())
-                AddHandler printerDeleteAnyType.WorkCompleted, AddressOf LoaderBackgroundThread.RunWorkerAsync
+                Dim printerDeleteAnyType As New RemoteTools(RemoteTools.RemoteTools.PrinterDeleteAnyType, Me.ComputerPanel, printersToDelete.ToArray())
+                AddHandler printerDeleteAnyType.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
 
                 printerDeleteAnyType.BeginWork()
             End If

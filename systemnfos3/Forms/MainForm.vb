@@ -11,23 +11,30 @@ Imports System.Web
 
 Public Class MainForm
 
-    Public Property BoundData As New BindingSource()
+    Public Property BindingSource As New BindingSource()
     Private ReadOnly Property DefaultTitle As String = GetDefaultTitle()
     Private Property MouseDownOnListView As Boolean = False
     Private Property LastChangedLDAPTime As Date
-    Private Property ImportBackgroundThread As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
+    Private Property ImportWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
+    Private Property LDAPWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
     Private Property AppUpdates As NuGetSearchResult
     Private Property AppUpdateNotificationSent As Boolean
 
+    Private ldapLock As New Object
+    Private statusStripLock As New Object
+    Private updateLock As New Object
+    Private nodeLock As New Object
+    Private settingsLock As New Object
+
 #Region " Initialization "
 
-    Public Sub New(dataSource As BindingList(Of DataUnit), lastChangedLDAPTime As Date)
+    Public Sub New(bindingList As BindingList(Of DataUnit), lastChangedLDAPTime As Date)
         ' This call is required by the designer
         InitializeComponent()
 
         ' Configure the BindingSource
-        With Me.BoundData
-            .DataSource = dataSource
+        With Me.BindingSource
+            .DataSource = bindingList
             .DataSource.AllowEdit = True
             .DataSource.AllowNew = True
             .DataSource.AllowRemove = True
@@ -41,7 +48,7 @@ Public Class MainForm
         With Me.UserInputComboBox
             .ValueMember = NameOf(DataUnit.Value)
             .DisplayMember = NameOf(DataUnit.Display)
-            .DataSource = Me.BoundData
+            .DataSource = Me.BindingSource
             .AutoCompleteMode = AutoCompleteMode.SuggestAppend
             .AutoCompleteSource = AutoCompleteSource.ListItems
             .SelectedItem = Nothing
@@ -55,18 +62,18 @@ Public Class MainForm
         Dim collectionNodeMenuStrip As New ContextMenuStrip()
         collectionNodeMenuStrip.Items.Add("Delete", Nothing, AddressOf DeleteCollection)
 
-        For index As Integer = (dataSource.Count - 1) To 0 Step -1
-            If TypeOf dataSource(index) Is Collection Then
+        For index As Integer = (bindingList.Count - 1) To 0 Step -1
+            If TypeOf bindingList(index) Is Collection Then
                 Dim treeNode As New TreeNode() With
                     {
-                        .Name = dataSource(index).Value,
-                        .Text = dataSource(index).Value,
-                        .Tag = dataSource(index).Value,
+                        .Name = bindingList(index).Value,
+                        .Text = bindingList(index).Value,
+                        .Tag = bindingList(index).Value,
                         .ContextMenuStrip = collectionNodeMenuStrip
                     }
 
                 rootNode.Nodes(NameOf(Nodes.Collections)).Nodes.Add(treeNode)
-            ElseIf TypeOf dataSource(index) Is Computer Then
+            ElseIf TypeOf bindingList(index) Is Computer Then
                 Exit For
             End If
         Next
@@ -110,9 +117,6 @@ Public Class MainForm
         AddHandler Me.UserInputComboBox.TextChanged, Sub() SetAcceptButton(Me.SubmitButton)
         AddHandler Me.UserInputComboBox.Click, Sub() SetAcceptButton(Me.SubmitButton)
 
-        ' Add event handler to begin background ldap incremental updates
-        AddHandler Me.Shown, AddressOf RunLDAPMonitor
-
         ' Add event handler to begin background ping monitoring of loaded computer nodes
         AddHandler Me.Shown, AddressOf RunPingMonitor
 
@@ -122,10 +126,15 @@ Public Class MainForm
         ' Add event handler to begin monitoring for program version updates
         AddHandler Me.Shown, AddressOf RunUpdateMonitor
 
+        ' Add event handler to begin background ldap incremental updates
+        AddHandler Me.LDAPWorker.DoWork, AddressOf UpdateLDAPDataBindings
+        AddHandler Me.LDAPWorker.RunWorkerCompleted, Sub(s, e) If Not e.Cancelled Then Me.LDAPWorker.RunWorkerAsync()
+        AddHandler Me.FormClosing, AddressOf LDAPWorker.CancelAsync
+
         ' Add event handlers for the import functionality
-        AddHandler Me.ImportBackgroundThread.DoWork, AddressOf MassImportProcessComputers
-        AddHandler Me.ImportBackgroundThread.RunWorkerCompleted, AddressOf RefreshComputerListView
-        AddHandler Me.FormClosing, AddressOf ImportBackgroundThread.CancelAsync
+        AddHandler Me.ImportWorker.DoWork, AddressOf MassImportProcessComputers
+        AddHandler Me.ImportWorker.RunWorkerCompleted, AddressOf RefreshComputerListView
+        AddHandler Me.FormClosing, AddressOf ImportWorker.CancelAsync
 
         ' Create the main ContextMenuStrip for the Computer TreeNode
         Dim computersMenuStrip As New ContextMenuStrip()
@@ -153,7 +162,7 @@ Public Class MainForm
         Dim title As String = Nothing
 
         Try
-            title = String.Format("System Tool 3 - {0}@{1}", Environment.UserName, Environment.MachineName)
+            title = String.Format("System Tool 3 - {0}@{1} - !!! TEST ATTEMPT 8 !!!", Environment.UserName, Environment.MachineName)
         Catch ex As Exception
             LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
         End Try
@@ -173,6 +182,7 @@ Public Class MainForm
 
     Private Sub Me_Shown(sender As Object, e As EventArgs) Handles Me.Shown
         Me.UserInputComboBox.Text = String.Empty
+        Me.LDAPWorker.RunWorkerAsync()
     End Sub
 
     Private Sub Me_ResizeEnd(sender As Object, e As EventArgs) Handles Me.ResizeEnd
@@ -216,7 +226,7 @@ Public Class MainForm
     End Sub
 
     Private Sub SearchUserInputText(userInputText As String)
-        Dim searcher As New DataSourceSearcher(userInputText, Me.BoundData)
+        Dim searcher As New DataSourceSearcher(userInputText, Me.BindingSource)
 
         Dim searchResults As List(Of Computer) = searcher.GetComputers()
         If searchResults IsNot Nothing AndAlso searchResults.Count > 0 Then
@@ -278,6 +288,8 @@ Public Class MainForm
     End Sub
 
     Private Function LoadComputerNode(computer As Computer, Optional isMassImport As Boolean = False) As TreeNode
+        If computer Is Nothing Then Return Nothing
+
         ' Add the computer name to user settings for it to be restored on launch
         UserSettingsAddComputer(computer)
 
@@ -308,9 +320,9 @@ Public Class MainForm
             .Text = computer.Display
         }
 
-        Dim computerContext As New ComputerControl(computer, Me, newComputerNode)
-        newComputerNode.Tag = computerContext
-        newComputerNode.ContextMenuStrip = computerContext.NewComputerMenuStrip(ComputerControl.ConnectionStatuses.Offline)
+        Dim computerPanel As New ComputerPanel(computer, Me, newComputerNode)
+        newComputerNode.Tag = computerPanel
+        newComputerNode.ContextMenuStrip = computerPanel.NewComputerMenuStrip(ComputerPanel.ConnectionStatuses.Offline)
 
         Me.UIThread(Sub() computerNodes.Add(newComputerNode))
 
@@ -352,10 +364,10 @@ Public Class MainForm
     End Sub
 
     Private Sub RemoveAllComputerNodes()
-        If Me.ImportBackgroundThread.IsBusy Then
+        If Me.ImportWorker.IsBusy Then
             Dim message = "Computers are still being imported. Would you like to cancel the import and clear all results?"
             If MsgBox(message, MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
-                Me.ImportBackgroundThread.CancelAsync()
+                Me.ImportWorker.CancelAsync()
             Else
                 Exit Sub
             End If
@@ -366,8 +378,8 @@ Public Class MainForm
 
         Dim garbageCollector As New GarbageCollector()
         For Each node As TreeNode In computersNode.Nodes
-            Dim computerContext As ComputerControl = node.Tag
-            garbageCollector.AddToGarbage = computerContext
+            Dim computerPanel As ComputerPanel = node.Tag
+            garbageCollector.AddToGarbage = computerPanel
         Next
         garbageCollector.DisposeAsync()
 
@@ -383,10 +395,10 @@ Public Class MainForm
         RemoveMenuItem(computersNode, "Load All", 0)
 
         For Each node As TreeNode In computersNode.Nodes
-            Dim computerContext As ComputerControl = node.Tag
-            If Not computerContext.IsLoaded Then
-                If Not computerContext.LoaderBackgroundThread.IsBusy Then
-                    computerContext.LoaderBackgroundThread.RunWorkerAsync()
+            Dim computerPanel As ComputerPanel = node.Tag
+            If Not computerPanel.IsLoaded Then
+                If Not computerPanel.InitWorker.IsBusy Then
+                    computerPanel.InitWorker.RunWorkerAsync()
                 End If
             End If
         Next
@@ -415,19 +427,19 @@ Public Class MainForm
     End Sub
 
     Private Sub DisplayComputerControl()
-        Dim computerContext As ComputerControl = Me.ResourceExplorer.SelectedNode.Tag
-        Me.UIThread(Sub() Me.UserInputComboBox.SelectedItem = computerContext.Computer)
+        Dim panel As ComputerPanel = Me.ResourceExplorer.SelectedNode.Tag
+        Me.UIThread(Sub() Me.UserInputComboBox.SelectedItem = panel.Computer)
 
-        If Not computerContext.LoaderBackgroundThread.IsBusy Then
-            SetDefaultProperties(computerContext)
+        If Not panel.InitWorker.IsBusy Then
+            SetDefaultProperties(panel)
             ResetSplitContainer()
 
-            Me.MainSplitContainer.Panel2.InvokeAddControl(computerContext)
+            Me.MainSplitContainer.Panel2.InvokeAddControl(panel)
 
-            If Not computerContext.Initialized Then
-                computerContext.Timeout = 20
-                computerContext.IsMassImport = False
-                computerContext.LoaderBackgroundThread.RunWorkerAsync()
+            If Not panel.Initialized Then
+                panel.Timeout = 20
+                panel.IsMassImport = False
+                panel.InitWorker.RunWorkerAsync()
             End If
         End If
     End Sub
@@ -441,7 +453,7 @@ Public Class MainForm
 
             Select Case True
                 Case TypeOf selectedNode.Tag Is String
-                    collectionContext = New CollectionControl(Me, selectedNode.Tag.ToString(), Me.BoundData.DataSource)
+                    collectionContext = New CollectionControl(Me, selectedNode.Tag.ToString(), Me.BindingSource.DataSource)
                 Case TypeOf selectedNode.Tag Is DataSourceSearcher
                     Dim searcher As DataSourceSearcher = selectedNode.Tag
                     collectionContext = New CollectionControl(Me, selectedNode, searcher)
@@ -517,11 +529,11 @@ Public Class MainForm
         Me.ResourceExplorer.Sort()
     End Sub
 
-    Public Function IsNodeSelected(computerContext As ComputerControl) As Boolean
+    Public Function IsNodeSelected(computerPanel As ComputerPanel) As Boolean
         Dim selected As Boolean = False
 
         Me.UIThread(Sub()
-                        If Me.ResourceExplorer.SelectedNode.Tag Is computerContext Then
+                        If Me.ResourceExplorer.SelectedNode.Tag Is computerPanel Then
                             selected = True
                         End If
                     End Sub)
@@ -553,11 +565,11 @@ Public Class MainForm
         End Try
     End Sub
 
-    Private Sub RemoveComputerNodesByStatus(connectionStatuses As ComputerControl.ConnectionStatuses())
-        If Me.ImportBackgroundThread.IsBusy Then
+    Private Sub RemoveComputerNodesByStatus(connectionStatuses As ComputerPanel.ConnectionStatuses())
+        If Me.ImportWorker.IsBusy Then
             Dim message = "Computers are still being imported. Would you like to cancel the import and clear all results?"
             If MsgBox(message, MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
-                ImportBackgroundThread.CancelAsync()
+                ImportWorker.CancelAsync()
             Else
                 Exit Sub
             End If
@@ -565,15 +577,15 @@ Public Class MainForm
 
         Dim garbageCollector As New GarbageCollector()
         Dim index As Integer = Me.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes.Count - 1
-        For Each connectionStatus As ComputerControl.ConnectionStatuses In connectionStatuses
+        For Each connectionStatus As ComputerPanel.ConnectionStatuses In connectionStatuses
             Do Until index = -1
                 Dim node = Me.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(index)
-                Dim computerContext As ComputerControl = node.Tag
+                Dim computerPanel As ComputerPanel = node.Tag
 
-                If computerContext.ConnectionStatus = connectionStatus Then
-                    garbageCollector.AddToGarbage = computerContext
-                    SyncLock computerContext.PingLock
-                        UserSettingsRemoveComputer(computerContext.Computer)
+                If computerPanel.ConnectionStatus = connectionStatus Then
+                    garbageCollector.AddToGarbage = computerPanel
+                    SyncLock settingsLock
+                        UserSettingsRemoveComputer(computerPanel.Computer)
                         node.Remove()
                     End SyncLock
                 End If
@@ -602,14 +614,14 @@ Public Class MainForm
 
                 Case Me.ResourceExplorer.Name
                     ' Remove "load all computers" menu item if all computers are already loaded
-                    If computersNodes.Nodes.OfType(Of TreeNode)().All(Function(t) CType(t.Tag, ComputerControl).IsLoaded) Then
+                    If computersNodes.Nodes.OfType(Of TreeNode)().All(Function(t) CType(t.Tag, ComputerPanel).IsLoaded) Then
                         RemoveMenuItem(computersNodes, "Load All", 0)
                     End If
                     With menuStrip.Items
                         .Add("Export Computers", Nothing, AddressOf ExportSelectedComputerNodes)
                         .Add(New ToolStripSeparator())
-                        .Add(New ToolStripMenuItem("Remove Offline Computers", Nothing, Sub() RemoveComputerNodesByStatus({ComputerControl.ConnectionStatuses.Offline})))
-                        .Add(New ToolStripMenuItem("Remove Online Computers", Nothing, Sub() RemoveComputerNodesByStatus({ComputerControl.ConnectionStatuses.Online, ComputerControl.ConnectionStatuses.OnlineDegraded, ComputerControl.ConnectionStatuses.OnlineSlow})))
+                        .Add(New ToolStripMenuItem("Remove Offline Computers", Nothing, Sub() RemoveComputerNodesByStatus({ComputerPanel.ConnectionStatuses.Offline})))
+                        .Add(New ToolStripMenuItem("Remove Online Computers", Nothing, Sub() RemoveComputerNodesByStatus({ComputerPanel.ConnectionStatuses.Online, ComputerPanel.ConnectionStatuses.OnlineDegraded, ComputerPanel.ConnectionStatuses.OnlineSlow})))
                         .Add("Sort Computers", Nothing, AddressOf SortComputerNodes)
                     End With
 
@@ -621,8 +633,8 @@ Public Class MainForm
                         With menuStrip.Items
                             .Add("Export Computers", Nothing, AddressOf ExportSelectedComputerNodes)
                             .Add(New ToolStripSeparator())
-                            .Add(New ToolStripMenuItem("Remove Offline Computers", Nothing, Sub() RemoveComputerNodesByStatus({ComputerControl.ConnectionStatuses.Offline})))
-                            .Add(New ToolStripMenuItem("Remove Online Computers", Nothing, Sub() RemoveComputerNodesByStatus({ComputerControl.ConnectionStatuses.Online, ComputerControl.ConnectionStatuses.OnlineDegraded, ComputerControl.ConnectionStatuses.OnlineSlow})))
+                            .Add(New ToolStripMenuItem("Remove Offline Computers", Nothing, Sub() RemoveComputerNodesByStatus({ComputerPanel.ConnectionStatuses.Offline})))
+                            .Add(New ToolStripMenuItem("Remove Online Computers", Nothing, Sub() RemoveComputerNodesByStatus({ComputerPanel.ConnectionStatuses.Online, ComputerPanel.ConnectionStatuses.OnlineDegraded, ComputerPanel.ConnectionStatuses.OnlineSlow})))
                         End With
                     End If
             End Select
@@ -666,8 +678,8 @@ Public Class MainForm
                     Next
 
                 Case 1
-                    Dim computerContext As ComputerControl = computersNode.Nodes(listView.SelectedItems(0).Name).Tag
-                    menuStrip = computerContext.NewComputerMenuStrip(computerContext.ConnectionStatus)
+                    Dim computerPanel As ComputerPanel = computersNode.Nodes(listView.SelectedItems(0).Name).Tag
+                    menuStrip = computerPanel.NewComputerMenuStrip(computerPanel.ConnectionStatus)
                     Dim getInfoMenuItem As New ToolStripMenuItem("Get Info", Nothing, AddressOf GetInfo)
                     getInfoMenuItem.Tag = listView
                     menuStrip.Items.Insert(0, getInfoMenuItem)
@@ -820,10 +832,10 @@ Public Class MainForm
         Dim garbageCollector As New GarbageCollector()
 
         For Each computerListViewItem As ListViewItem In computerListView.SelectedItems
-            Dim computerContext As ComputerControl = ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(computerListViewItem.Name).Tag
-            garbageCollector.AddToGarbage = computerContext
+            Dim computerPanel As ComputerPanel = ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(computerListViewItem.Name).Tag
+            garbageCollector.AddToGarbage = computerPanel
 
-            SyncLock computerContext.PingLock
+            SyncLock nodeLock
                 ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(computerListViewItem.Name).Remove()
             End SyncLock
         Next
@@ -834,35 +846,35 @@ Public Class MainForm
 
     Private Sub LogOffSelectedComputerNodes(computerListView As ListView)
         For Each computerListViewItem As ListViewItem In computerListView.SelectedItems
-            Dim computerContext As ComputerControl = ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(computerListViewItem.Name).Tag
+            Dim computerPanel As ComputerPanel = ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(computerListViewItem.Name).Tag
 
-            If computerContext.ConnectionStatus = ComputerControl.ConnectionStatuses.Online Then
-                computerContext.InitiateLogoff()
+            If computerPanel.ConnectionStatus = ComputerPanel.ConnectionStatuses.Online Then
+                computerPanel.InitiateLogoff()
             End If
         Next
     End Sub
 
     Private Sub RebootSelectedComputerNodes(computerListView As ListView)
         For Each computerListViewItem As ListViewItem In computerListView.SelectedItems
-            Dim computerContext As ComputerControl = ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(computerListViewItem.Name).Tag
+            Dim computerPanel As ComputerPanel = ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(computerListViewItem.Name).Tag
 
-            If computerContext.ConnectionStatus = ComputerControl.ConnectionStatuses.Online Then
-                computerContext.InitiateNoPromptRestart()
+            If computerPanel.ConnectionStatus = ComputerPanel.ConnectionStatuses.Online Then
+                computerPanel.InitiateNoPromptRestart()
             End If
         Next
     End Sub
 
     Private Sub EnableSelectedComputerNodes(computerListView As ListView)
         For Each computerListViewItem As ListViewItem In computerListView.SelectedItems
-            Dim computerContext As ComputerControl = ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(computerListViewItem.Name).Tag
-            computerContext.InitiateEnableComputers()
+            Dim computerPanel As ComputerPanel = ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(computerListViewItem.Name).Tag
+            computerPanel.InitiateEnableComputers()
         Next
     End Sub
 
     Private Sub DisableSelectedComputerNodes(computerListView As ListView)
         For Each computerListViewItem As ListViewItem In computerListView.SelectedItems
-            Dim computerContext As ComputerControl = ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(computerListViewItem.Name).Tag
-            computerContext.InitiateDisableComputers()
+            Dim computerPanel As ComputerPanel = ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(computerListViewItem.Name).Tag
+            computerPanel.InitiateDisableComputers()
         Next
     End Sub
 
@@ -870,10 +882,10 @@ Public Class MainForm
         [Global].SetPsExecBinaryPath()
 
         For Each listViewItem As ListViewItem In listView.SelectedItems
-            Dim computerContext As ComputerControl = ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(listViewItem.Name).Tag
+            Dim computerPanel As ComputerPanel = ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes(listViewItem.Name).Tag
 
-            If computerContext.ConnectionStatus <> ComputerControl.ConnectionStatuses.Offline Then
-                computerContext.InitiateCustomAction(customActionMenuItem, e)
+            If computerPanel.ConnectionStatus <> ComputerPanel.ConnectionStatuses.Offline Then
+                computerPanel.InitiateCustomAction(customActionMenuItem, e)
             End If
         Next
     End Sub
@@ -1006,16 +1018,16 @@ Public Class MainForm
 #Region " Mass Import "
 
     Private Sub MassImportFromClipboard()
-        If Me.ImportBackgroundThread.IsBusy Then
+        If Me.ImportWorker.IsBusy Then
             Dim message = "The system tool is currently processing an import job. Would you like to cancel the import job and begin a new one?"
             If MsgBox(message, MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
-                Me.ImportBackgroundThread.CancelAsync()
+                Me.ImportWorker.CancelAsync()
             End If
         End If
 
         If Clipboard.GetDataObject.GetDataPresent(DataFormats.Text) Then
-            If Not Me.ImportBackgroundThread.IsBusy Then
-                Me.ImportBackgroundThread.RunWorkerAsync(Clipboard.GetText)
+            If Not Me.ImportWorker.IsBusy Then
+                Me.ImportWorker.RunWorkerAsync(Clipboard.GetText)
             End If
         End If
     End Sub
@@ -1023,15 +1035,15 @@ Public Class MainForm
     Private Sub MassImportFromDragAndDrop(sender As Object, e As DragEventArgs)
         Try
             If e.Data.GetDataPresent(DataFormats.Text) Then
-                If Me.ImportBackgroundThread.IsBusy Then
+                If Me.ImportWorker.IsBusy Then
                     Dim message = "The system tool is currently processing an import job. Would you like to cancel the import job and begin a new one?"
                     If MsgBox(message, MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
-                        Me.ImportBackgroundThread.CancelAsync()
+                        Me.ImportWorker.CancelAsync()
                     End If
                 End If
 
-                If Not Me.ImportBackgroundThread.IsBusy Then
-                    Me.ImportBackgroundThread.RunWorkerAsync(e.Data.GetData(DataFormats.Text))
+                If Not Me.ImportWorker.IsBusy Then
+                    Me.ImportWorker.RunWorkerAsync(e.Data.GetData(DataFormats.Text))
                 End If
 
             ElseIf e.Data.GetDataPresent(DataFormats.FileDrop) Then
@@ -1044,8 +1056,8 @@ Public Class MainForm
                     End If
                 Next
 
-                If stringBuilder IsNot Nothing AndAlso stringBuilder.Length > 0 AndAlso Not Me.ImportBackgroundThread.IsBusy Then
-                    Me.ImportBackgroundThread.RunWorkerAsync(stringBuilder.ToString())
+                If stringBuilder IsNot Nothing AndAlso stringBuilder.Length > 0 AndAlso Not Me.ImportWorker.IsBusy Then
+                    Me.ImportWorker.RunWorkerAsync(stringBuilder.ToString())
                 End If
             End If
         Catch ex As Exception
@@ -1055,10 +1067,10 @@ Public Class MainForm
 
     Private Sub MassImportFromTextFile()
         Try
-            If Me.ImportBackgroundThread.IsBusy Then
+            If Me.ImportWorker.IsBusy Then
                 Dim message = "The system tool is currently processing an import job. Would you like to cancel the import job and begin a new one?"
                 If MsgBox(message, MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
-                    Me.ImportBackgroundThread.CancelAsync()
+                    Me.ImportWorker.CancelAsync()
                 Else
                     Exit Sub
                 End If
@@ -1077,8 +1089,8 @@ Public Class MainForm
                     stringBuilder.Append(ControlChars.Tab & IO.File.ReadAllText(file))
                 Next
 
-                If stringBuilder IsNot Nothing AndAlso stringBuilder.Length > 0 AndAlso Not Me.ImportBackgroundThread.IsBusy Then
-                    Me.ImportBackgroundThread.RunWorkerAsync(stringBuilder)
+                If stringBuilder IsNot Nothing AndAlso stringBuilder.Length > 0 AndAlso Not Me.ImportWorker.IsBusy Then
+                    Me.ImportWorker.RunWorkerAsync(stringBuilder)
                 End If
             End If
         Catch ex As Exception
@@ -1095,10 +1107,11 @@ Public Class MainForm
 
             If currentComputerTreeNodes IsNot Nothing Then
                 For Each treeNode As TreeNode In currentComputerTreeNodes
+                    If sender.CancellationPending Then Exit Sub
                     If treeNode IsNot Nothing Then
-                        Dim nodeWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
-                        AddHandler nodeWorker.DoWork, AddressOf MassImportTreeNodeLoader
-                        nodeWorker.RunWorkerAsync(treeNode)
+                        Dim worker As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
+                        AddHandler worker.DoWork, AddressOf MassImportTreeNodeLoader
+                        worker.RunWorkerAsync(treeNode)
                     End If
                 Next
             End If
@@ -1107,10 +1120,10 @@ Public Class MainForm
     End Sub
 
     Private Sub MassImportTreeNodeLoader(sender As Object, e As DoWorkEventArgs)
-        Dim computerContext As ComputerControl = CType(e.Argument, TreeNode).Tag
+        Dim panel As ComputerPanel = CType(e.Argument, TreeNode).Tag
 
-        If Not computerContext.LoaderBackgroundThread.IsBusy AndAlso Not computerContext.Initialized Then
-            With computerContext
+        If Not panel.InitWorker.IsBusy AndAlso Not panel.Initialized Then
+            With panel
                 .Timeout = 5
                 .IsMassImport = True
                 .UseRandomTimeoutForMassImport = True
@@ -1121,7 +1134,7 @@ Public Class MainForm
 
     Private Function MassImportNewComputerTreeNode(searchText As String) As TreeNode
         If Not String.IsNullOrWhiteSpace(searchText) AndAlso Not searchText.Length < 5 AndAlso Not searchText.Length > 20 Then
-            Dim searcher As New DataSourceSearcher(searchText, Me.BoundData)
+            Dim searcher As New DataSourceSearcher(searchText, Me.BindingSource)
 
             Dim computer As Computer = searcher.GetComputer()
             If computer IsNot Nothing Then
@@ -1145,7 +1158,7 @@ Public Class MainForm
         AddHandler Me.FormClosing, Sub() cts.Cancel()
 
         While Not cts.IsCancellationRequested
-            Await Task.Run(Sub() PingComputerNodes(token))
+            Await Task.Run(Sub() PingComputerNodes(token)).ConfigureAwait(False)
         End While
     End Sub
 
@@ -1157,7 +1170,7 @@ Public Class MainForm
 
         Try
             ' Do not ping computers during import
-            If Not Me.ImportBackgroundThread.IsBusy Then
+            If Not Me.ImportWorker.IsBusy Then
                 ' Get a collection of any loaded computer nodes
                 Dim computerNodes = Me.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes
                 For Each node As TreeNode In computerNodes
@@ -1175,9 +1188,9 @@ Public Class MainForm
     End Sub
 
     Private Sub PingNode(node As TreeNode)
-        Dim computerContext As ComputerControl = node.Tag
-        If computerContext.IsLoaded Then
-            computerContext.ReportConnectionStatus()
+        Dim computerPanel As ComputerPanel = node.Tag
+        If computerPanel.IsLoaded Then
+            computerPanel.ReportConnectionStatus()
         End If
     End Sub
 
@@ -1185,81 +1198,64 @@ Public Class MainForm
 
 #Region " LDAP Monitor "
 
-    Private Async Sub RunLDAPMonitor()
-        ' Start the ldap incremental update thread
-        Dim cts As New CancellationTokenSource()
-        Dim token As CancellationToken = cts.Token
-
-        AddHandler Me.FormClosing, Sub() cts.Cancel()
-
-        While Not token.IsCancellationRequested
-            Await Task.Run(Sub() UpdateLDAPDataBindings(token))
-        End While
-    End Sub
-
-    Private Sub UpdateLDAPDataBindings(token As CancellationToken)
+    Private Sub UpdateLDAPDataBindings(sender As BackgroundWorker, e As DoWorkEventArgs)
         ' *** This method runs continuously on the thread pool until cancelled on the Me.FormClosing event ***
+        SyncLock ldapLock
 
-        ' Check for newly added computers in ldap every 20 seconds
-        Thread.Sleep(20000)
+            ' Check for newly added computers in ldap every 20 seconds
+            Thread.Sleep(20000)
 
-        Try
-            ' Query ldap for a list of all computers that are either new or updated since the last incremental update (or full load)
-            Dim searcher As New LDAPSearcher()
+            Try
+                ' Query ldap for a list of all computers that are either new or updated since the last incremental update (or full load)
+                Using searchResults As SearchResultCollection = LDAPSearcher.GetIncrementalUpdateResults(Me.LastChangedLDAPTime)
+                    If searchResults IsNot Nothing AndAlso searchResults.Count > 0 Then
+                        ' At least one computer has been either updated or added to ldap so first set the new last changed time for the next incremental update
+                        Me.LastChangedLDAPTime = LDAPSearcher.GetLastChangedTime(searchResults)
 
-            Using searchResults As SearchResultCollection = searcher.GetIncrementalUpdateResults(Me.LastChangedLDAPTime)
-                If searchResults IsNot Nothing AndAlso searchResults.Count > 0 Then
-                    ' At least one computer has been either updated or added to ldap so first set the new last changed time for the next incremental update
-                    Me.LastChangedLDAPTime = searcher.GetLastChangedTime(searchResults)
-
-                    ' Begin looping through all of the results returned by the incremental update ldap query
-                    For Each result As SearchResult In searchResults
-                        token.ThrowIfCancellationRequested()
-
-                        Dim ldapComputer As New Computer(result)
-                        Dim dataBoundComputer = Me.BoundData.OfType(Of Computer).SingleOrDefault(Function(c) c.Value = ldapComputer.Value)
-                        Dim index As Integer = -1
-                        If dataBoundComputer IsNot Nothing Then
-                            ' The computer name was found in both ldap and the bound data source
-
-                            ' Get a collection of any loaded computer nodes
-                            Dim computerNodes = Me.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes.Cast(Of TreeNode)()
-
-                            ' See if this computer has been loaded to a node
-                            Dim dataBoundNode = computerNodes.SingleOrDefault(Function(t) t.Tag.Computer.Value = dataBoundComputer.Value)
-                            If dataBoundNode IsNot Nothing Then
-                                ' Computer is loaded to a node, so update it
-                                dataBoundNode.Tag.Computer = ldapComputer
-                                SetNodeText(dataBoundNode, ldapComputer.Display)
+                        ' Begin looping through all of the results returned by the incremental update ldap query
+                        For Each result As SearchResult In searchResults
+                            If sender.CancellationPending Then
+                                e.Cancel = True
+                                Return
                             End If
 
-                            ' Also update the computer object in the binding source
-                            index = Me.BoundData.IndexOf(dataBoundComputer)
-                            Me.BoundData(index) = ldapComputer
-                        Else
-                            ' The computer is in ldap but not in the binding source, so add it
-                            Me.BoundData.Add(ldapComputer)
-                            index = Me.BoundData.IndexOf(ldapComputer)
-                        End If
+                            Dim ldapComputer As New Computer(result)
+                            Dim dataBoundComputer = Me.BindingSource.OfType(Of Computer).SingleOrDefault(Function(c) c.Value = ldapComputer.Value)
+                            Dim index As Integer = Me.BindingSource.IndexOf(dataBoundComputer)
+                            If index <> -1 Then
+                                ' The computer name was found in both ldap and the bound data source
+                                ' Get the collection of loaded computer nodes
+                                Dim computerNodes = Me.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes.Cast(Of TreeNode)()
 
-                        ResetLDAPDataBindings(index)
-                    Next
-                End If
-            End Using
+                                ' See if this computer has been loaded to a node
+                                Dim dataBoundNode = computerNodes.SingleOrDefault(Function(t) t.Tag.Computer.Value = dataBoundComputer.Value)
+                                If dataBoundNode IsNot Nothing Then
+                                    ' Computer is loaded to a node, so update it
+                                    dataBoundNode.Tag.Computer = ldapComputer
+                                    SetNodeText(dataBoundNode, ldapComputer.Display)
+                                End If
 
-        Catch ex As OperationCanceledException
-            ' Operation was cancelled
-            Exit Sub
-        Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
-        End Try
+                                ' Also update the computer object in the binding source
+                                Me.BindingSource(index) = ldapComputer
+                            Else
+                                ' The computer is in ldap but not in the binding source, so add it
+                                Me.BindingSource.Add(ldapComputer)
+                                index = Me.BindingSource.IndexOf(ldapComputer)
+                            End If
+
+                            ResetLDAPDataBindings(index)
+                        Next
+                    End If
+                End Using
+            Catch ex As Exception
+                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            End Try
+        End SyncLock
     End Sub
 
     Private Sub ResetLDAPDataBindings(index As Integer)
-        Me.UIThread(Sub()
-                        Me.BoundData.EndEdit()
-                        Me.BoundData.ResetItem(index)
-                    End Sub)
+        If index = -1 Then Return
+        Me.UIThread(Sub() Me.BindingSource.ResetItem(index))
     End Sub
 
 #End Region
@@ -1330,60 +1326,60 @@ Public Class MainForm
 
     Private Sub UpdateStatusStrip(token As CancellationToken, proc As Process, cpuCounter As PerformanceCounter, memCounter As PerformanceCounter)
         ' *** This method runs continuously on the thread pool until cancelled on the Me.FormClosing event ***
+        SyncLock statusStripLock
 
-        ' Update the status strip every 1 second
-        Thread.Sleep(1000)
-        Try
-            token.ThrowIfCancellationRequested()
+            ' Update the status strip every 1 second
+            Thread.Sleep(1000)
+            Try
+                token.ThrowIfCancellationRequested()
 
-            ' Date time
-            Dim dateTime As Date = Date.Now
-            Dim dateTimeText As String = dateTime.ToLocalTime()
+                ' Date time
+                Dim dateTime As Date = Date.Now
+                Dim dateTimeText As String = dateTime.ToLocalTime()
 
-            ' Up time
-            Dim upTime As TimeSpan = Date.Now - proc.StartTime
-            Dim upTimeText As String = String.Format("Up Time: {0}:{1:D2}:{2:D2}:{3:D2}", upTime.Days, upTime.Hours, upTime.Minutes, upTime.Seconds)
+                ' Up time
+                Dim upTime As TimeSpan = Date.Now - proc.StartTime
+                Dim upTimeText As String = String.Format("Up Time: {0}:{1:D2}:{2:D2}:{3:D2}", upTime.Days, upTime.Hours, upTime.Minutes, upTime.Seconds)
 
-            ' CPU usage
-            Dim cpuUsage As Integer = cpuCounter.NextValue() / Environment.ProcessorCount
-            Dim cpuUsageText As String = String.Format("CPU Usage: {0}", cpuUsage)
+                ' CPU usage
+                Dim cpuUsage As Integer = cpuCounter.NextValue() / Environment.ProcessorCount
+                Dim cpuUsageText As String = String.Format("CPU Usage: {0}", cpuUsage)
 
-            ' Memory usage
-            Dim memUsage As Single = memCounter.NextValue() / 1024 / 1024
-            Dim memUsageText As String = String.Format("Memory Usage: {0:F1} MB", memUsage)
+                ' Memory usage
+                Dim memUsage As Single = memCounter.NextValue() / 1024 / 1024
+                Dim memUsageText As String = String.Format("Memory Usage: {0:F1} MB", memUsage)
 
-            ' Connections count
-            Dim connCount As Integer = GetConnectionsCount()
-            Dim connCountText As String = String.Format("Connections: {0}", connCount)
+                ' Connections count
+                Dim connCount As Integer = GetConnectionsCount()
+                Dim connCountText As String = String.Format("Connections: {0}", connCount)
 
-            ' Update the status labels display text
-            ShowStatusStripItems()
-            Me.UIThread(Sub()
-                            Me.DateTimeStatusLabel.Text = dateTimeText
-                            Me.UpTimeStatusLabel.Text = upTimeText
-                            Me.CpuUsageStatusLabel.Text = cpuUsageText
-                            Me.MemoryUsageStatusLabel.Text = memUsageText
-                            Me.ConnectionsStatusLabel.Text = connCountText
-                        End Sub)
-        Catch ex As OperationCanceledException
-            ' Operation was cancelled
-            Exit Sub
-        Catch ex As Exception
-            Debugger.Break()
-        End Try
+                ' Update the status labels display text
+                ShowStatusStripItems()
+                Me.UIThread(Sub()
+                                Me.DateTimeStatusLabel.Text = dateTimeText
+                                Me.UpTimeStatusLabel.Text = upTimeText
+                                Me.CpuUsageStatusLabel.Text = cpuUsageText
+                                Me.MemoryUsageStatusLabel.Text = memUsageText
+                                Me.ConnectionsStatusLabel.Text = connCountText
+                            End Sub)
+            Catch ex As OperationCanceledException
+                ' Operation was cancelled
+                Exit Sub
+            End Try
+        End SyncLock
     End Sub
 
     Private Function GetConnectionsCount() As Integer
         Dim connnectionsCount As Integer = 0
-        Me.UIThread(Sub()
-                        Dim computerNodes = Me.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes
-                        For Each node As TreeNode In computerNodes
-                            Dim computerContext As ComputerControl = node.Tag
-                            If computerContext.IsLoaded AndAlso computerContext.ConnectionStatus <> ComputerControl.ConnectionStatuses.Offline Then
-                                connnectionsCount += 1
-                            End If
-                        Next
-                    End Sub)
+        Me.ResourceExplorer.UIThread(Sub()
+                                         Dim computerNodes = Me.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes
+                                         For Each node As TreeNode In computerNodes
+                                             Dim computerPanel As ComputerPanel = node.Tag
+                                             If computerPanel.IsLoaded AndAlso computerPanel.ConnectionStatus <> ComputerPanel.ConnectionStatuses.Offline Then
+                                                 connnectionsCount += 1
+                                             End If
+                                         Next
+                                     End Sub)
 
         Return connnectionsCount
     End Function
@@ -1418,24 +1414,26 @@ Public Class MainForm
 
     Private Sub CheckForAppUpdate(token As CancellationToken, apiUri As Uri, pkgName As String)
         ' *** This method runs continuously on the thread pool until cancelled on the Me.FormClosing event ***
-        Try
-            token.ThrowIfCancellationRequested()
+        SyncLock updateLock
+            Try
+                token.ThrowIfCancellationRequested()
 
-            Me.AppUpdates = GetNuGetQueryResult(apiUri, pkgName, prerelease:=True)
-            Dim latestVersion As String = Me.AppUpdates.Data.First().Version.Trim()
+                Me.AppUpdates = GetNuGetQueryResult(apiUri, pkgName, prerelease:=True)
+                Dim latestVersion As String = Me.AppUpdates.Data.First().Version.Trim()
 
-            If Not latestVersion.Equals([Global].AppVersion) Then
-                SetNewVersionAvailable(latestVersion)
-            End If
-        Catch ex As OperationCanceledException
-            ' Operation was cancelled
-            Exit Sub
-        Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
-        End Try
+                If Not latestVersion.Equals([Global].AppVersion) Then
+                    SetNewVersionAvailable(latestVersion)
+                End If
+            Catch ex As OperationCanceledException
+                ' Operation was cancelled
+                Exit Sub
+            Catch ex As Exception
+                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            End Try
 
-        ' Check for update every 5 minutes
-        Thread.Sleep(300000)
+            ' Check for update every 5 minutes
+            Thread.Sleep(300000)
+        End SyncLock
     End Sub
 
     Private Sub SetNewVersionAvailable(version As String)
@@ -1501,6 +1499,7 @@ Public Class MainForm
     End Sub
 
     Private Sub UserSettingsAddComputer(computer As Computer)
+        If computer Is Nothing Then Return
         Try
             If My.Settings.ActiveComputers Is Nothing Then
                 My.Settings.ActiveComputers = New Specialized.StringCollection()
@@ -1514,6 +1513,7 @@ Public Class MainForm
     End Sub
 
     Public Sub UserSettingsRemoveComputer(computer As Computer)
+        If computer Is Nothing Then Return
         Try
             My.Settings.ActiveComputers.Remove(computer.Value)
             My.Settings.Save()
@@ -1545,7 +1545,7 @@ Public Class MainForm
                         .ToArray()
 
                     ' This is the bound data loaded from ldap during LoadForm
-                    Dim boundComputers = Me.BoundData.OfType(Of Computer)
+                    Dim boundComputers = Me.BindingSource.OfType(Of Computer)
 
                     For Each computerName As String In computerNamesToLoad
                         ' Lookup the computer from the bound data

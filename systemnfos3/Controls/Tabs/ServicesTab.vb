@@ -3,12 +3,12 @@
 Public Class ServicesTab
     Inherits Tab
 
-    Public Sub New(ownerTab As TabControl, computerContext As ComputerControl)
-        MyBase.New(ownerTab, computerContext)
+    Public Sub New(ownerTab As TabControl, computerPanel As ComputerPanel)
+        MyBase.New(ownerTab, computerPanel)
 
         Me.Text = "Services"
-        AddHandler LoaderBackgroundThread.DoWork, AddressOf InitializeServicesTab
-        AddHandler ExportBackgroundThread.DoWork, AddressOf ExportServiceInfo
+        AddHandler InitWorker.DoWork, AddressOf InitializeServicesTab
+        AddHandler ExportWorker.DoWork, AddressOf ExportServiceInfo
     End Sub
 
     Private Structure ListViewGroups
@@ -31,7 +31,7 @@ Public Class ServicesTab
         Dim serviceInfoListView As ListView = NewBasicInfoListView(3)
         serviceInfoListView.Groups.Add(New ListViewGroup("lsvgSV", "Services"))
 
-        For Each service As ManagementObject In ComputerContext.WMI.Query("SELECT DisplayName, StartMode, State, Name FROM Win32_Service")
+        For Each service As ManagementObject In ComputerPanel.WMI.Query("SELECT DisplayName, StartMode, State, Name FROM Win32_Service")
             If MyBase.UserCancellationPending() Then Exit Sub
 
             NewTabWriterItem(service.Properties("DisplayName").Value, New Object() {service.Properties("StartMode").Value, service.Properties(ListViewGroups.lsvgST).Value, service}, "lsvgSV")
@@ -61,12 +61,12 @@ Public Class ServicesTab
     Private Sub FindServiceInfo()
         Me.LastSelectedListViewItem = GetSelectedListViewItem(Me.MainListView)
 
-        If Not SelectionBackgroundThread.IsBusy Then
-            SelectionBackgroundThread.RunWorkerAsync()
+        If Not SelectionWorker.IsBusy Then
+            SelectionWorker.RunWorkerAsync()
         End If
     End Sub
 
-    Private Sub SelectionBackgroundThread_DoWork(sender As Object, e As DoWorkEventArgs) Handles SelectionBackgroundThread.DoWork
+    Private Sub SelectionWorker_DoWork(sender As Object, e As DoWorkEventArgs) Handles SelectionWorker.DoWork
         Me.Controls(0).Controls(1).InvokeClearControls()
 
         MyBase.EnumWriterObjects = Nothing
@@ -86,7 +86,7 @@ Public Class ServicesTab
             End With
 
             Dim selectedService As ManagementObject = selectedItem.Tag
-            Dim services As ManagementObjectCollection = Me.ComputerContext.WMI.Query(String.Format("SELECT DisplayName, Name, StartMode, State, Description, PathName, ProcessID FROM Win32_Service WHERE Name = ""{0}""", selectedService.Properties("Name").Value))
+            Dim services As ManagementObjectCollection = Me.ComputerPanel.WMI.Query(String.Format("SELECT DisplayName, Name, StartMode, State, Description, PathName, ProcessID FROM Win32_Service WHERE Name = ""{0}""", selectedService.Properties("Name").Value))
             If services IsNot Nothing Then
                 For Each service As ManagementObject In services
                     MyBase.NewEnumWriterItem(service.Properties("DisplayName").Value, service, NameOf(ListViewGroups.lsvgDN))
@@ -99,17 +99,17 @@ Public Class ServicesTab
                         MyBase.NewEnumWriterItem(description, service, NameOf(ListViewGroups.lsvgDE))
                     End If
 
-                    Dim dependentServices As String() = New ServiceController(Me.ComputerContext.WMI).CheckDependentServices(service.Properties("Name").Value)
+                    Dim dependentServices As String() = New ServiceController(Me.ComputerPanel.WMI).CheckDependentServices(service.Properties("Name").Value)
                     If dependentServices IsNot Nothing AndAlso dependentServices.Count > 0 Then
                         For Each dependentService As String In dependentServices
                             If Not String.IsNullOrWhiteSpace(dependentService) Then
-                                MyBase.NewEnumWriterItem(Me.ComputerContext.WMI.GetPropertyValue(Me.ComputerContext.WMI.Query(String.Format("SELECT DisplayName FROM Win32_Service WHERE Name = ""{0}""", dependentService)), "DisplayName"), service, NameOf(ListViewGroups.lsvgDS))
+                                MyBase.NewEnumWriterItem(Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query(String.Format("SELECT DisplayName FROM Win32_Service WHERE Name = ""{0}""", dependentService)), "DisplayName"), service, NameOf(ListViewGroups.lsvgDS))
                             End If
                         Next
                     End If
                     MyBase.NewEnumWriterItem(service.Properties("PathName").Value, service, NameOf(ListViewGroups.lsvgPN))
 
-                    If New ServiceController(Me.ComputerContext.WMI).QueryState(service.Properties("Name").Value) = ServiceController.ServiceState.Running Then
+                    If New ServiceController(Me.ComputerPanel.WMI).QueryState(service.Properties("Name").Value) = ServiceController.ServiceState.Running Then
                         MyBase.NewEnumWriterItem(service.Properties("ProcessID").Value, service, NameOf(ListViewGroups.lsvgPI))
                     End If
                 Next
@@ -123,7 +123,7 @@ Public Class ServicesTab
             If GetSelectedListViewItem(Me.MainListView) Is selectedItem Then
                 ShowListView(serviceInfoListView, Me.Controls(0), Panels.Panel2)
             Else
-                SelectionBackgroundThread_DoWork(sender, e)
+                SelectionWorker_DoWork(sender, e)
             End If
         End If
     End Sub
@@ -131,7 +131,7 @@ Public Class ServicesTab
     Private Sub AddMenuStripOptions()
         If MyBase.MainListView.SelectedItems.Count > 0 Then
             Dim service As ManagementObject = GetSelectedListViewItem(MyBase.MainListView).Tag
-            Dim serviceController As New ServiceController(Me.ComputerContext.WMI)
+            Dim serviceController As New ServiceController(Me.ComputerPanel.WMI)
             Dim setStartupTypeMenuItem As New ToolStripMenuItem("Set Startup Type")
 
             Select Case serviceController.QueryStartupType(service.Properties("Name").Value)
@@ -162,45 +162,45 @@ Public Class ServicesTab
     End Sub
 
     Private Sub SetServiceAuto()
-        Dim serviceSetAuto As New RemoteTools(RemoteTools.RemoteTools.ServiceSetAuto, Me.ComputerContext, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
-        AddHandler serviceSetAuto.WorkCompleted, AddressOf LoaderBackgroundThread.RunWorkerAsync
+        Dim serviceSetAuto As New RemoteTools(RemoteTools.RemoteTools.ServiceSetAuto, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
+        AddHandler serviceSetAuto.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         serviceSetAuto.BeginWork()
     End Sub
 
     Private Sub SetServiceManual()
-        Dim serviceSetManual As New RemoteTools(RemoteTools.RemoteTools.ServiceSetManual, Me.ComputerContext, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
-        AddHandler serviceSetManual.WorkCompleted, AddressOf LoaderBackgroundThread.RunWorkerAsync
+        Dim serviceSetManual As New RemoteTools(RemoteTools.RemoteTools.ServiceSetManual, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
+        AddHandler serviceSetManual.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         serviceSetManual.BeginWork()
     End Sub
 
     Private Sub SetServiceDisable()
-        Dim serviceSetDisable As New RemoteTools(RemoteTools.RemoteTools.ServiceSetDisable, Me.ComputerContext, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
-        AddHandler serviceSetDisable.WorkCompleted, AddressOf LoaderBackgroundThread.RunWorkerAsync
+        Dim serviceSetDisable As New RemoteTools(RemoteTools.RemoteTools.ServiceSetDisable, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
+        AddHandler serviceSetDisable.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         serviceSetDisable.BeginWork()
     End Sub
 
     Private Sub StopService()
-        Dim serviceStop As New RemoteTools(RemoteTools.RemoteTools.ServiceStop, Me.ComputerContext, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
-        AddHandler serviceStop.WorkCompleted, AddressOf LoaderBackgroundThread.RunWorkerAsync
+        Dim serviceStop As New RemoteTools(RemoteTools.RemoteTools.ServiceStop, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
+        AddHandler serviceStop.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         serviceStop.BeginWork()
     End Sub
 
     Private Sub StartService()
-        Dim serviceStart As New RemoteTools(RemoteTools.RemoteTools.ServiceStart, Me.ComputerContext, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
-        AddHandler serviceStart.WorkCompleted, AddressOf LoaderBackgroundThread.RunWorkerAsync
+        Dim serviceStart As New RemoteTools(RemoteTools.RemoteTools.ServiceStart, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
+        AddHandler serviceStart.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         serviceStart.BeginWork()
     End Sub
 
     Private Sub RestartService()
-        Dim serviceRestart As New RemoteTools(RemoteTools.RemoteTools.ServiceRestart, Me.ComputerContext, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
-        AddHandler serviceRestart.WorkCompleted, AddressOf LoaderBackgroundThread.RunWorkerAsync
+        Dim serviceRestart As New RemoteTools(RemoteTools.RemoteTools.ServiceRestart, Me.ComputerPanel, New ManagementObject() {GetSelectedListViewItem(Me.MainListView).Tag})
+        AddHandler serviceRestart.WorkCompleted, AddressOf InitWorker.RunWorkerAsync
         serviceRestart.BeginWork()
     End Sub
 
     Private Sub ExportServiceInfo(sender As Object, e As DoWorkEventArgs)
         ' Query the host's WMI provider for a collection of Win32_Service objects
         Dim queryText = "SELECT DisplayName, Name, StartMode, State, Description, PathName, ProcessID FROM Win32_Service"
-        Dim services = Me.ComputerContext.WMI.Query(queryText).Cast(Of ManagementObject)()
+        Dim services = Me.ComputerPanel.WMI.Query(queryText).Cast(Of ManagementObject)()
 
         ' Get the total count of objects for calcuating progress
         Dim servicesCount As Integer = services.Count
@@ -211,7 +211,7 @@ Public Class ServicesTab
         ' Create a list of ProcessInfo objects from the raw tab data
         Dim serviceInfos As New List(Of ServiceInfo)
         For index As Integer = 0 To servicesCount - 1
-            If MyBase.ExportBackgroundThread.CancellationPending Then Exit For
+            If MyBase.ExportWorker.CancellationPending Then Exit For
 
             Dim state As String = services(index).Properties("State").Value
             Dim processID As String = services(index).Properties("ProcessID").Value
@@ -227,7 +227,7 @@ Public Class ServicesTab
                 .ProcessID = If(state = "Running", processID, String.Empty)
             })
 
-            MyBase.ExportBackgroundThread.ReportProgress(100 * (index / servicesCount))
+            MyBase.ExportWorker.ReportProgress(100 * (index / servicesCount))
         Next
 
         ' Write the list out to the CSV file chosen by the user in the base class Tab.BeginExportProcess()

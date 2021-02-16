@@ -150,10 +150,10 @@
     <Compile Include="Classes\GarbageCollector.vb" />
     <Compile Include="Classes\DataSourceSearcher.vb" />
     <Compile Include="Classes\WMIManagement.vb" />
-    <Compile Include="Controls\ComputerControl.Designer.vb">
-      <DependentUpon>ComputerControl.vb</DependentUpon>
+    <Compile Include="Controls\ComputerPanel.Designer.vb">
+      <DependentUpon>ComputerPanel.vb</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ComputerControl.vb">
+    <Compile Include="Controls\ComputerPanel.vb">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Controls\CollectionOptionsControl.designer.vb">
@@ -290,15 +290,15 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Classes\LDAPSearcher.vb" />
+    <Compile Include="Modules\LDAPSearcher.vb" />
     <Compile Include="Controllers\RegistryController.vb" />
     <Compile Include="Controllers\WMIController.vb" />
     <Compile Include="Classes\TabExport\ProcessInfo.vb" />
     <Compile Include="Classes\TabExport\ServiceInfo.vb" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Controls\ComputerControl.resx">
-      <DependentUpon>ComputerControl.vb</DependentUpon>
+    <EmbeddedResource Include="Controls\ComputerPanel.resx">
+      <DependentUpon>ComputerPanel.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\CollectionOptionsControl.resx">

@@ -1,4 +1,4 @@
-﻿Public Class LDAPSearcher
+﻿Public Module LDAPSearcher
 
     Private Function NewBaseDirectorySearcher(filter As String) As DirectorySearcher
         Dim baseSearcher As New DirectorySearcher()
@@ -62,4 +62,4 @@
         Return lastChangedTime
     End Function
 
-End Class
+End Module
