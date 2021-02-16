@@ -5,6 +5,7 @@ Imports Microsoft.Management.Infrastructure
 Imports Microsoft.Win32
 Imports System.Text.RegularExpressions
 Imports System.Threading.Tasks
+Imports System.IO
 
 Public NotInheritable Class LoadForm
 
@@ -28,13 +29,13 @@ Public NotInheritable Class LoadForm
         NewAppRegistryKey(RegistryHive.CurrentUser)
 
         ' Execute the application upgrade script if an update is available
-        'UpgradeApp()
+        UpgradeApp()
 
         ' Authenticate the current user
         'AuthenticateCurrentUser()
 
         ' Migrate user settings from previous version
-        'MigrateUserSettings()
+        MigrateUserSettings()
 
         ' User is authorized so begin loading data into the data source
         Await Task.Run(Sub() GetAllData())
@@ -75,8 +76,8 @@ Public NotInheritable Class LoadForm
             Dim regEntry As String = NameOf(RegistryController.RegistrySettings.UpdateAvailable)
             Dim updateAvailable As Boolean = registry.GetKeyValue(My.Settings.RegistryPath, regEntry, hive:=RegistryHive.LocalMachine)
 
-            If updateAvailable Then
-                Process.Start("powershell.exe", "-ExecutionPolicy ByPass -File " & My.Settings.UpgradeScriptPath)
+            If updateAvailable And File.Exists(My.Settings.UpgradeScriptPath) Then
+                Process.Start("powershell.exe", $"-ExecutionPolicy ByPass -File {My.Settings.UpgradeScriptPath}")
 
                 ' Set the registry entry to *not* trigger upgrade upon next launch
                 registry.SetKeyValue(My.Settings.RegistryPath, regEntry, "0", hive:=RegistryHive.LocalMachine)
