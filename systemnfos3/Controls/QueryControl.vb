@@ -46,7 +46,7 @@ Public Class QueryControl
                 .Text = value
             })
 
-            For Each computerName In registry.GetKeyValues(String.Format("{0}\{1}", My.Settings.RegistryPathCollections, value), RegistryHive.CurrentUser)
+            For Each computerName In registry.GetKeyValues($"{My.Settings.RegistryPathCollections}\{value}", RegistryHive.CurrentUser)
                 collectionsRootNode.Nodes(value).Nodes.Add(New TreeNode With
                 {
                     .Name = computerName,
@@ -186,7 +186,7 @@ Public Class QueryControl
 
         For Each query1TreeNode As TreeNode In Me.OwnerForm.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Results)).Nodes
             If query1TreeNode.Text = Me.QueryNameTextBox.Text Then
-                MsgBox(String.Format("Query: {0} already exists", query1TreeNode.Text))
+                MsgBox($"Query: {query1TreeNode.Text} already exists")
                 Exit Sub
             End If
         Next
@@ -198,11 +198,11 @@ Public Class QueryControl
 
         Dim properties As New List(Of String)
         For Each [property] As ListViewItem In QueryListView.Items
-            properties.Add(String.Format("{0}>>{1}", [property].Text, [property].SubItems(1).Text))
+            properties.Add($"{[property].Text}>>{[property].SubItems(1).Text}")
         Next
 
         Dim query2Result As New QueryResultControl(computers, properties, Me.OwnerForm)
-        query2Result.lblName.Text = String.Format("Query: {0} for Collection: {1}", Me.QueryNameTextBox.Text, Me.CollectionsTreeView.SelectedNode.Text)
+        query2Result.lblName.Text = $"Query: {Me.QueryNameTextBox.Text} for Collection: {Me.CollectionsTreeView.SelectedNode.Text}"
         Dim query2TreeNode As New TreeNode With
             {
                 .Text = Me.QueryNameTextBox.Text,

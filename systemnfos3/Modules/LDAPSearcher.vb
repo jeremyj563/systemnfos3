@@ -3,7 +3,7 @@
     Private Function NewBaseDirectorySearcher(filter As String) As DirectorySearcher
         Dim baseSearcher As New DirectorySearcher()
         With baseSearcher
-            .Filter = String.Format("(&(objectClass=computer){0})", filter)
+            .Filter = $"(&(objectClass=computer){filter})"
             .PropertiesToLoad.AddRange({"name", "description", "uid", "displayName", "extensionAttribute1", "networkAddress", "whenChanged"})
             .Sort.Direction = SortDirection.Ascending
             .Sort.PropertyName = "description"
@@ -31,7 +31,7 @@
 
     Public Function GetOneComputerResult(computerName As String) As SearchResult
         Using entry As DirectoryEntry = NewBaseDirectoryEntry()
-            Dim filter As String = String.Format("(&(objectClass=computer)(&(name={0})))", computerName)
+            Dim filter = $"(&(objectClass=computer)(&(name={computerName})))"
             Using searcher As DirectorySearcher = NewBaseDirectorySearcher(filter)
 
                 Return searcher.FindOne()
@@ -42,8 +42,8 @@
     Public Function GetIncrementalUpdateResults(timestamp As Date) As SearchResultCollection
         Using entry As DirectoryEntry = NewBaseDirectoryEntry()
             Using searcher As DirectorySearcher = NewBaseDirectorySearcher(My.Settings.LDAPComputerFilter)
-                Dim convertedTimestamp As String = ManagementDateTimeConverter.ToDmtfDateTime(timestamp).Split(".")(0)
-                searcher.Filter = String.Format("(&(objectClass=computer)(!whenChanged<={0}.0Z){1})", convertedTimestamp, My.Settings.LDAPComputerFilter)
+                Dim convertedTimestamp = ManagementDateTimeConverter.ToDmtfDateTime(timestamp).Split(".")(0)
+                searcher.Filter = $"(&(objectClass=computer)(!whenChanged<={convertedTimestamp}.0Z){My.Settings.LDAPComputerFilter})"
 
                 Return searcher.FindAll()
             End Using

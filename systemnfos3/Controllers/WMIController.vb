@@ -93,7 +93,7 @@ Public NotInheritable Class WMIController
             Dim searcher As New ManagementObjectSearcher(scope.Path.ToString(), queryText)
             result = searcher.Get()
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return result
@@ -204,7 +204,7 @@ Public NotInheritable Class WMIController
                 If Not Me.RegularScope.IsConnected Then
                     ' Connection could not be esablished within timeout so abort
                     connectionWorker.CancelAsync()
-                    Throw New Exception(String.Format("Failed to connect to RPC server on {0}", computerName))
+                    Throw New Exception($"Failed to connect to RPC server on {computerName}")
                 End If
             Else
                 Me.RegularScope.Connect()

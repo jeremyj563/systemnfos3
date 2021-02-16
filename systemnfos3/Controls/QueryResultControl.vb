@@ -107,7 +107,7 @@ Public Class QueryResultControl
         Try
             Marshal.ReleaseComObject([object])
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         Finally
             [object] = Nothing
             GC.Collect()
@@ -136,9 +136,9 @@ Public Class QueryResultControl
 
         Me.SortingColumn = newSortingColumn
         If order = SortOrder.Ascending Then
-            Me.SortingColumn.Text = String.Format("> {0}", Me.SortingColumn.Text)
+            Me.SortingColumn.Text = $"> {Me.SortingColumn.Text}"
         Else
-            Me.SortingColumn.Text = String.Format("< {0}", Me.SortingColumn.Text)
+            Me.SortingColumn.Text = $"< {Me.SortingColumn.Text}"
         End If
 
         Me.ResultsListView.ListViewItemSorter = New ListViewComparer(e.Column, order)
@@ -181,7 +181,7 @@ Public Class QueryResultControl
 
             Dim searcher As New DirectorySearcher(entry)
             With searcher
-                .Filter = String.Format("(&(objectClass=computer)(|(name={0})))", computerName)
+                .Filter = $"(&(objectClass=computer)(|(name={computerName})))"
                 .PropertiesToLoad.Add([property])
             End With
 
@@ -190,7 +190,7 @@ Public Class QueryResultControl
                 Return result.Properties([property])(0).ToString()
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return Nothing

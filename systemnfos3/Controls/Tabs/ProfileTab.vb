@@ -31,7 +31,7 @@ Public Class ProfileTab
         ' Create the ListView Groups
         Me.ProfileInfoListView.Groups.Add(New ListViewGroup(NameOf(ListViewGroups.lsvgUS), ListViewGroups.lsvgUS))
 
-        For Each user As String In Directory.GetDirectories(String.Format("\\{0}\C$\Users", Me.ComputerPanel.Computer.ConnectionString))
+        For Each user In Directory.GetDirectories($"\\{Me.ComputerPanel.Computer.ConnectionString}\C$\Users")
             If MyBase.UserCancellationPending() Then Exit Sub
 
             NewTabWriterItem(New DirectoryInfo(user).Name, New String() {New DirectoryInfo(user).LastAccessTime, user}, NameOf(ListViewGroups.lsvgUS))
@@ -49,8 +49,9 @@ Public Class ProfileTab
         Dim sortMenuItem As New ToolStripMenuItem("Sort")
 
         If Me.MainListView.SelectedItems.Count > 0 Then
-            Dim openProfileMenuItem As New ToolStripMenuItem("Open Profile", Nothing, AddressOf OpenProfile)
-            openProfileMenuItem.Tag = Me.MainListView.SelectedItems(0).SubItems(2).Text
+            Dim openProfileMenuItem As New ToolStripMenuItem("Open Profile", Nothing, AddressOf OpenProfile) With {
+                .Tag = Me.MainListView.SelectedItems(0).SubItems(2).Text
+            }
 
             With sortMenuItem.DropDownItems
                 .Add("Name", Nothing, AddressOf OrderByName)
@@ -92,11 +93,11 @@ Public Class ProfileTab
             If Directory.Exists(sender.tag) Then
                 Process.Start(sender.tag)
             Else
-                Dim message = String.Format("Unable to locate the requested location: {0}", sender.tag)
+                Dim message = $"Unable to locate the requested location: {sender.tag}"
                 Me.ComputerPanel.WriteMessage(message, Color.Red)
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 

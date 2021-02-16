@@ -9,11 +9,11 @@ Public Class WMIQueryWork
         Try
             Select Case serviceName
                 Case "NAC IP Address"
-                    Return WMI.GetPropertyValue(WMI.Query(String.Format("SELECT IPAddress FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{0}'", My.Settings.DomainName)), "IPAddress")
+                    Return WMI.GetPropertyValue(WMI.Query($"SELECT IPAddress FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{My.Settings.DomainName}'"), "IPAddress")
                 Case "NAC MAC Address"
-                    Return WMI.GetPropertyValue(WMI.Query(String.Format("SELECT MACAddress FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{0}'", My.Settings.DomainName)), "MACAddress")
+                    Return WMI.GetPropertyValue(WMI.Query($"SELECT MACAddress FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{My.Settings.DomainName}'"), "MACAddress")
                 Case "NAC Default Gateway"
-                    Return WMI.GetPropertyValue(WMI.Query(String.Format("SELECT DefaultIPGateway FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{0}'", My.Settings.DomainName)), "DefaultIPGateway")
+                    Return WMI.GetPropertyValue(WMI.Query($"SELECT DefaultIPGateway FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{My.Settings.DomainName}'"), "DefaultIPGateway")
                 Case "OS Name"
                     Return WMI.GetPropertyValue(WMI.Query("SELECT Caption FROM Win32_OperatingSystem"), "Caption")
                 Case "OS Description"
@@ -43,29 +43,32 @@ Public Class WMIQueryWork
             End Select
 
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return Nothing
     End Function
 
     Private Function DateConverter(originalText As String, Optional includeTime As Boolean = False) As String
-        Dim fullDate As String = Nothing
         Dim year As String
         Dim month As String
         Dim day As String
 
+        Dim fullDate As String = String.Empty
         If originalText Is Nothing Then
             Return Nothing
         Else
-            year = CType(Mid(originalText, 1, 4), Integer)
             month = CType(Mid(originalText, 5, 2), Integer)
             day = CType(Mid(originalText, 7, 2), Integer)
-            fullDate = String.Format("{0}/{1}/{2}", month, day, year)
+            year = CType(Mid(originalText, 1, 4), Integer)
+            fullDate = $"{month}/{day}/{year}"
         End If
 
         If includeTime Then
-            fullDate += String.Format(" {0}:{1}:{2}", Mid(originalText, 9, 2), Mid(originalText, 11, 2), Mid(originalText, 13, 2))
+            month = Mid(originalText, 9, 2)
+            day = Mid(originalText, 11, 2)
+            year = Mid(originalText, 13, 2)
+            fullDate += $" {month}:{day}:{year}"
         End If
 
         Return fullDate
@@ -91,13 +94,13 @@ Public Class WMIQueryWork
                             Case 1
                                 Return "Enabled - Fully Encrypted"
                             Case 2
-                                Return String.Format("Enabled - Encrypting at {0}%", hddEncryptionStatus(1))
+                                Return $"Enabled - Encrypting at {hddEncryptionStatus(1)}%"
                             Case 3
-                                Return String.Format("Enabled - Decrypting at {0}%", hddEncryptionStatus(1))
+                                Return $"Enabled - Decrypting at {hddEncryptionStatus(1)}%"
                             Case 4
-                                Return String.Format("Enabled - Encrypting paused at {0}%", hddEncryptionStatus(1))
+                                Return $"Enabled - Encrypting paused at {hddEncryptionStatus(1)}%"
                             Case 5
-                                Return String.Format("Enabled - Decrypting paused at {0}%", hddEncryptionStatus(1))
+                                Return $"Enabled - Decrypting paused at {hddEncryptionStatus(1)}%"
                         End Select
                         Exit For
                     Else

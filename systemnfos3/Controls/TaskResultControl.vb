@@ -57,15 +57,15 @@ Public Class TaskResultControl
         End If
 
         If Me.Task.Contains(" ") Then
-            Me.Task = String.Format("""{0}""", Me.Task)
+            Me.Task = $"'{Me.Task}'"
         End If
 
         If appPath.Contains(" ") Then
-            appPath = String.Format("""{0}""", appPath)
+            appPath = $"'{appPath}'"
         End If
 
         If fileName.Contains(" ") Then
-            fileName = String.Format("""{0}""", fileName)
+            fileName = $"'{fileName}'"
         End If
 
         PerformListViewWork(computerName, "Initializing...")
@@ -77,40 +77,40 @@ Public Class TaskResultControl
                 Dim psExecProcess As New ProcessStartInfo With
                 {
                     .FileName = My.Settings.PsExecPath,
-                    .Arguments = String.Format("-accepteula -s \\{0} robocopy.exe {1} {2}", computerName, appPath & fileName, ITFolderLocalPath),
+                    .Arguments = $"-accepteula -s \\{computerName} robocopy.exe {Path.Combine(appPath, fileName)} {[Global].ITFolderLocalPath}",
                     .WindowStyle = ProcessWindowStyle.Hidden
                 }
 
-                If Me.Task.ToUpper().Trim().EndsWith(".PRINTEREXPORT""") OrElse Me.Task.ToUpper().Trim().EndsWith(".PRINTEREXPORT") Then
+                If Me.Task.ToUpper().Trim().EndsWith(".PRINTEREXPORT'") OrElse Me.Task.ToUpper().Trim().EndsWith(".PRINTEREXPORT") Then
                     PerformListViewWork(computerName, "Copying printer export file...")
 
                     If psExec.ExitCode <> 0 AndAlso psExec.ExitCode <> 1 Then
-                        PerformListViewWork(computerName, String.Format("Robocopy process failed! Exit Code: {0}", psExec.ExitCode))
+                        PerformListViewWork(computerName, $"Robocopy process failed! Exit Code: {psExec.ExitCode}")
                         Exit Sub
                     End If
 
                     Thread.Sleep(1000)
-                    Dim filePath As String = String.Format("""{0}""", Path.Combine(ITFolderLocalPath, files(files.Length)))
+                    Dim filePath = $"'{Path.Combine(ITFolderLocalPath, files(files.Length))}'"
 
-                    psExecProcess.Arguments = String.Format("-s \\{0} {1} -r -f {2} -O FORCE", computerName, Path.Combine(Environment.SystemDirectory, "spool\tools\PrintBrm.exe"), filePath)
+                    psExecProcess.Arguments = $"-s \\{computerName} {Path.Combine(Environment.SystemDirectory, "spool\tools\PrintBrm.exe")} -r -f {filePath} -O FORCE"
                     If Not String.IsNullOrWhiteSpace(Args) Then
-                        psExecProcess.Arguments += String.Format(" {0}", Args)
+                        psExecProcess.Arguments += $" {Args}"
                     End If
                 Else
-                    psExecProcess.Arguments = String.Format("-accepteula -s {0}\\{1} {2}", viewable, computerName, Task)
+                    psExecProcess.Arguments = $"-accepteula -s {viewable}\\{computerName} {Task}"
                     If Not String.IsNullOrWhiteSpace(Args) Then
-                        psExecProcess.Arguments += String.Format(" {0}", Args)
+                        psExecProcess.Arguments += $" {Args}"
                     End If
                 End If
 
-                PerformListViewWork(computerName, String.Format("Running {0}\{1}", files(files.Length - 1), files(files.Length)))
+                PerformListViewWork(computerName, $"Running {files(files.Length - 1)}\{files(files.Length)}")
                 psExec = Process.Start(psExecProcess)
                 psExec.WaitForExit()
-                PerformListViewWork(computerName, String.Format("Process Complete! Exit Code: {0}", psExec.ExitCode.ToString()))
+                PerformListViewWork(computerName, $"Process Complete! Exit Code: {psExec.ExitCode}")
 
             Catch ex As Exception
-                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
-                PerformListViewWork(computerName, String.Format("Process Incomplete! Error Message: {0}", ex.Message))
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
+                PerformListViewWork(computerName, $"Process Incomplete! Error Message: {ex.Message}")
             Finally
                 psExec.Close()
             End Try
@@ -139,7 +139,7 @@ Public Class TaskResultControl
         Try
             Marshal.ReleaseComObject([object])
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         Finally
             [object] = Nothing
             GC.Collect()
@@ -167,9 +167,9 @@ Public Class TaskResultControl
 
         Me.SortingColumn = newSortingColumn
         If sortOrder = SortOrder.Ascending Then
-            Me.SortingColumn.Text = String.Format("> {0}", Me.SortingColumn.Text)
+            Me.SortingColumn.Text = $"> {Me.SortingColumn.Text}"
         Else
-            Me.SortingColumn.Text = String.Format("< {0}", Me.SortingColumn.Text)
+            Me.SortingColumn.Text = $"< {Me.SortingColumn.Text}"
         End If
 
         ResultsListView.ListViewItemSorter = New ListViewComparer(e.Column, sortOrder)

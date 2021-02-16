@@ -19,13 +19,13 @@ Public Class ProcessController
 
     Public Function StopProcess(processID As String) As ProcessError
         Try
-            For Each process As ManagementObject In WMI.Query(String.Format("SELECT * FROM Win32_Process WHERE ProcessID=""{0}""", processID))
+            For Each process As ManagementObject In WMI.Query($"SELECT * FROM Win32_Process WHERE ProcessID='{processID}'")
                 Return process.InvokeMethod("Terminate", Nothing)
             Next
 
             Return ProcessError.Success
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return ProcessError.UnknownFailure
@@ -34,13 +34,13 @@ Public Class ProcessController
     Public Function GetProcesses(processName As String) As ManagementObject()
         Try
             Dim processes As New List(Of ManagementObject)
-            For Each process As ManagementObject In WMI.Query(String.Format("SELECT * FROM Win32_Process WHERE Name=""{0}""", processName))
+            For Each process As ManagementObject In WMI.Query($"SELECT * FROM Win32_Process WHERE Name='{processName}'")
                 processes.Add(process)
             Next
 
             Return processes.ToArray()
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return Nothing
@@ -71,7 +71,7 @@ Public Class ProcessController
 
     Public Function QueryProcessState(processName As String) As ProcessCondition
         Try
-            Select Case WMI.Query(String.Format("SELECT * FROM Win32_Process WHERE Name=""{0}""", processName)).Count
+            Select Case WMI.Query($"SELECT * FROM Win32_Process WHERE Name='{processName}'").Count
                 Case = 1
                     Return ProcessCondition.SingleRunning
                 Case > 1
@@ -83,7 +83,7 @@ Public Class ProcessController
             End Select
 
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return ProcessCondition.Unknown

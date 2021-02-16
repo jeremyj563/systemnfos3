@@ -259,10 +259,10 @@ Public Class RemoteTools
 
     Private Sub RemoteAssistance()
         Try
-            TryWriteMessage(String.Format("Initializing Remote Assistance on {0}", ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Initializing Remote Assistance on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
             ' Save original registry values so they can be restored when the tool terminates
-            Dim x86Registry As New RegistryController(ComputerPanel.WMI.X86Scope)
+            Dim x86Registry As New RegistryController(Me.ComputerPanel.WMI.X86Scope)
             Dim x86OriginalRegistryValues As RemoteAssistanceRegistryValues = RemoteAssistanceGetRegistryValues(x86Registry)
 
             Dim x64Registry As New RegistryController(Me.ComputerPanel.WMI.X64Scope)
@@ -289,7 +289,7 @@ Public Class RemoteTools
 
             ' Start the remote tool session
             TryWriteMessage("Starting Remote Assistance...", Color.Blue)
-            Process.Start("msra.exe", String.Format("/OFFERRA {0}", Me.ComputerPanel.Computer.ConnectionString)).WaitForExit()
+            Process.Start("msra.exe", $"/OFFERRA {Me.ComputerPanel.Computer.ConnectionString}").WaitForExit()
 
 
             ' The session has ended so restore original registry values
@@ -300,9 +300,9 @@ Public Class RemoteTools
                 RemoteAssistanceSetRegistryValues(x64Registry, x64OriginalRegistryValues)
             End If
 
-            TryWriteMessage(String.Format("Terminated Remote Assistance on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Terminated Remote Assistance on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -310,7 +310,7 @@ Public Class RemoteTools
 
     Private Sub RemoteDesktop()
         Try
-            TryWriteMessage(String.Format("Initializing Remote Desktop on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Initializing Remote Desktop on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
             ' Save original registry values so they can be restored when the tool terminates
             Dim x86Registry As New RegistryController(Me.ComputerPanel.WMI.X86Scope)
@@ -341,7 +341,7 @@ Public Class RemoteTools
 
             ' Start the remote tool session
             TryWriteMessage("Starting Remote Desktop", Color.Blue)
-            Process.Start("mstsc.exe", String.Format("/v:{0}", Me.ComputerPanel.Computer.ConnectionString)).WaitForExit()
+            Process.Start("mstsc.exe", $"/v:{Me.ComputerPanel.Computer.ConnectionString}").WaitForExit()
             Thread.Sleep(1000)
 
             ' Wait until there are no running instances of Remote Desktop
@@ -357,10 +357,10 @@ Public Class RemoteTools
                 x64Registry.SetKeyValue(RegistryPaths.ScForceOption, NameOf(RegistryPaths.ScForceOption), originalScForceOption_x64)
             End If
 
-            TryWriteMessage(String.Format("Terminated Remote Desktop on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Terminated Remote Desktop on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
-            TryWriteMessage(String.Format("Unable to start Remote Desktop {0}", ex.Message), Color.Red)
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
+            TryWriteMessage($"Unable to start Remote Desktop {ex.Message}", Color.Red)
         End Try
     End Sub
 
@@ -378,7 +378,7 @@ Public Class RemoteTools
                 Exit Sub
             End If
 
-            TryWriteMessage(String.Format("Initializing Remote Control Viewer on {0}", ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Initializing Remote Control Viewer on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
             Dim ServiceController As New ServiceController(ComputerPanel.WMI)
 
             TryWriteMessage("Checking the availability of the Remote Control Service", Color.Blue)
@@ -401,10 +401,10 @@ Public Class RemoteTools
                 Thread.Sleep(1000)
             Loop
 
-            TryWriteMessage(String.Format("Terminated Remote Control Viewer on {0}", ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Terminated Remote Control Viewer on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
-            TryWriteMessage(String.Format("Unable to start Remote Control Viewer {0}", ex.Message), Color.Red)
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
+            TryWriteMessage($"Unable to start Remote Control Viewer {ex.Message}", Color.Red)
         End Try
     End Sub
 
@@ -433,16 +433,16 @@ Public Class RemoteTools
             TryWriteMessage("Sending Keys: Enter", Color.Blue)
             SendKeys.SendWait("{ENTER}")
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub InitializeAdminShare()
         Try
-            TryWriteMessage(String.Format("Initializing {0} Share on {1}", Me.AdminShare, Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
-            Process.Start("explorer.exe", String.Format("\\{0}\{1}", Me.ComputerPanel.Computer.ConnectionString, Me.AdminShare)).WaitForExit()
+            TryWriteMessage($"Initializing {Me.AdminShare} Share on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
+            Process.Start("explorer.exe", $"\\{Me.ComputerPanel.Computer.ConnectionString}\{Me.AdminShare}").WaitForExit()
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -455,45 +455,45 @@ Public Class RemoteTools
                 TryWriteMessage("Unable to locate a valid copy of PsExec.exe", Color.Red)
                 Exit Sub
             Else
-                TryWriteMessage(String.Format("Initializing PsExec on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+                TryWriteMessage($"Initializing PsExec on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
                 Dim psExecProcess As New ProcessStartInfo With
                     {
                         .FileName = "cmd.exe",
-                        .Arguments = String.Format(" /c ""{0}"" -s \\{1} cmd.exe", My.Settings.PsExecPath, Me.ComputerPanel.Computer.ConnectionString),
+                        .Arguments = $" /c '{My.Settings.PsExecPath}' -s \\{Me.ComputerPanel.Computer.ConnectionString} cmd.exe",
                         .Verb = "RunAs",
                         .WorkingDirectory = Path.GetDirectoryName(My.Settings.PsExecPath)
                     }
                 Process.Start(psExecProcess).WaitForExit()
             End If
 
-            TryWriteMessage(String.Format("Terminated PsExec on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Terminated PsExec on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub ComputerManagement()
         Try
-            TryWriteMessage(String.Format("Initializing Computer Management on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
-            Process.Start("mmc.exe", String.Format("{0} /computer={1}", "compmgmt.msc", Me.ComputerPanel.Computer.ConnectionString)).WaitForExit()
+            TryWriteMessage($"Initializing Computer Management on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
+            Process.Start("mmc.exe", $"compmgmt.msc /computer={Me.ComputerPanel.Computer.ConnectionString}").WaitForExit()
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub RemoteGroupPolicyEditor()
         Try
-            TryWriteMessage(String.Format("Initializing Remote Group Policy Editor on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
-            Process.Start("mmc.exe", String.Format("gpedit.msc /gpcomputer: {0}", Me.ComputerPanel.Computer.ConnectionString)).WaitForExit()
+            TryWriteMessage($"Initializing Remote Group Policy Editor on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
+            Process.Start("mmc.exe", $"gpedit.msc /gpcomputer: {Me.ComputerPanel.Computer.ConnectionString}").WaitForExit()
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub SetDescription()
         Try
-            TryWriteMessage(String.Format("Initializing Set Description on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Initializing Set Description on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
             Dim currentDescription As String = Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("Description")
             Dim newDescription As String = InputBox("Enter a new description:", "Set Description", currentDescription)
@@ -510,19 +510,19 @@ Public Class RemoteTools
                     Next
                 End If
 
-                TryWriteMessage(String.Format("Description successfully changed from {0} to {1} on {2}", currentDescription, newDescription, Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+                TryWriteMessage($"Description successfully changed from {currentDescription} to {newDescription} on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
                 TryWriteMessage("The description will update in the system tool once the change is reflected in LDAP", Color.Blue)
             End If
 
-            TryWriteMessage(String.Format("Terminated Set Description on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Terminated Set Description on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub SetLocation()
         Try
-            TryWriteMessage(String.Format("Initializing Set Location on {0}", ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Initializing Set Location on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
             Dim currentLocation As String = Me.ComputerPanel.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName
             Dim newLocation As String = InputBox("Enter a new location:", "Set Location", currentLocation)
@@ -530,70 +530,70 @@ Public Class RemoteTools
             If newLocation IsNot currentLocation AndAlso Not String.IsNullOrWhiteSpace(newLocation) Then
                 Me.ComputerPanel.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName = newLocation
 
-                TryWriteMessage(String.Format("Location successfully changed from {0} to {1} on {2}", currentLocation, newLocation, ComputerPanel.Computer.ConnectionString), Color.Blue)
+                TryWriteMessage($"Location successfully changed from {currentLocation} to {newLocation} on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
                 RaiseEvent WorkCompleted(Me, EventArgs.Empty)
             End If
 
-            TryWriteMessage(String.Format("Terminated Set Location on {0}", ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Terminated Set Location on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub ToggleBitLocker()
         Try
-            TryWriteMessage(String.Format("Initializing Toggle BitLocker on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Initializing Toggle BitLocker on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
             If Me.ComputerPanel.WMI.BitLockerScope.IsConnected Then
                 TryWriteMessage("BitLocker is installed on this computer. Checking status", Color.Blue)
 
                 Dim bitLocker As ManagementClass = New ManagementClass(Me.ComputerPanel.WMI.BitLockerScope, Me.ComputerPanel.WMI.BitLockerScope.Path, New ObjectGetOptions)
-                For Each bitLockerInstance As ManagementObject In bitLocker.GetInstances()
+                For Each instance As ManagementObject In bitLocker.GetInstances()
 
                     Dim protectionStatus(0) As Object
                     Dim hddEncryptionStatus(1) As Object
 
-                    bitLockerInstance.InvokeMethod("GetProtectionStatus", protectionStatus)
-                    bitLockerInstance.InvokeMethod("GetConversionStatus", hddEncryptionStatus)
+                    instance.InvokeMethod("GetProtectionStatus", protectionStatus)
+                    instance.InvokeMethod("GetConversionStatus", hddEncryptionStatus)
 
                     If hddEncryptionStatus(0) = 1 Then
                         Select Case protectionStatus(0)
 
                             Case 0
-                                TryWriteMessage(String.Format("BitLocker is disabled on the {0} drive. Prompting for consent to enable BitLocker", bitLockerInstance.Properties("DriveLetter").Value), Color.Blue)
-                                If MsgBox(String.Format("Would you like to enable BitLocker for the {0} Drive?", bitLockerInstance.Properties("DriveLetter").Value), MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
-                                    bitLockerInstance.InvokeMethod("EnableKeyProtectors", Nothing)
+                                TryWriteMessage($"BitLocker is disabled on the {instance.Properties("DriveLetter").Value} drive. Prompting for consent to enable BitLocker", Color.Blue)
+                                If MsgBox($"Would you like to enable BitLocker for the {instance.Properties("DriveLetter").Value} Drive?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
+                                    instance.InvokeMethod("EnableKeyProtectors", Nothing)
                                 End If
 
-                                TryWriteMessage(String.Format("BitLocker has been successfully enabled on {0} drive", bitLockerInstance.Properties("DriveLetter").Value), Color.Blue)
+                                TryWriteMessage($"BitLocker has been successfully enabled on {instance.Properties("DriveLetter").Value} drive", Color.Blue)
                                 If Me.ComputerPanel IsNot Nothing Then
                                     Me.ComputerPanel.SetConnectionStatus(ComputerPanel.ConnectionStatuses.Online)
                                 End If
 
                             Case 1
-                                TryWriteMessage(String.Format("BitLocker is enabled on the {0} drive. Prompting for consent to disable BitLocker", bitLockerInstance.Properties("DriveLetter").Value), Color.Blue)
-                                If MsgBox(String.Format("Would you like to disable BitLocker for the {0} Drive?", bitLockerInstance.Properties("DriveLetter").Value), MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
-                                    bitLockerInstance.InvokeMethod("DisableKeyProtectors", Nothing)
+                                TryWriteMessage($"BitLocker is enabled on the {instance.Properties("DriveLetter").Value} drive. Prompting for consent to disable BitLocker", Color.Blue)
+                                If MsgBox($"Would you like to disable BitLocker for the {instance.Properties("DriveLetter").Value} Drive?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
+                                    instance.InvokeMethod("DisableKeyProtectors", Nothing)
                                 End If
 
-                                TryWriteMessage(String.Format("BitLocker has been successfully disabled on {0} drive", bitLockerInstance.Properties("DriveLetter").Value), Color.Blue)
+                                TryWriteMessage($"BitLocker has been successfully disabled on {instance.Properties("DriveLetter").Value} drive", Color.Blue)
                                 If Me.ComputerPanel IsNot Nothing Then
                                     Me.ComputerPanel.SetConnectionStatus(ComputerPanel.ConnectionStatuses.Online)
                                 End If
 
                         End Select
                     Else
-                        TryWriteMessage(String.Format("No encryption detected on the {0} drive.", bitLockerInstance.Properties("DriveLetter").Value), Color.Blue)
+                        TryWriteMessage($"No encryption detected on the {instance.Properties("DriveLetter").Value} drive.", Color.Blue)
                     End If
                 Next
             Else
                 TryWriteMessage("A connection has not been established with the BitLocker Namespace in WMI", Color.Red)
                 TryWriteMessage("This is most likely because BitLocker is not installed on the computer", Color.Red)
             End If
-            TryWriteMessage(String.Format("Terminated Toggle BitLocker on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Terminated Toggle BitLocker on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -614,8 +614,8 @@ Public Class RemoteTools
                 End If
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
-            TryWriteMessage(String.Format("Unable to enable computer account. {0}", ex.Message), Color.Red)
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
+            TryWriteMessage($"Unable to enable computer account. {ex.Message}", Color.Red)
         End Try
     End Sub
 
@@ -636,14 +636,14 @@ Public Class RemoteTools
                 End If
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
-            TryWriteMessage(String.Format("Unable to disable computer account. {0}", ex.Message), Color.Red)
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
+            TryWriteMessage($"Unable to enable computer account. {ex.Message}", Color.Red)
         End Try
     End Sub
 
     Private Sub NoPromptRestart()
         Try
-            TryWriteMessage(String.Format("Initializing Remote Restart on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Initializing Remote Restart on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
             If Me.ComputerPanel.WMI.BitLockerScope.IsConnected Then
                 TryWriteMessage("BitLocker is installed on this computer. Checking status", Color.Blue)
@@ -666,13 +666,13 @@ Public Class RemoteTools
 
                 For Each win32_OperatingSystem As ManagementObject In Me.ComputerPanel.WMI.Query("SELECT * FROM Win32_OperatingSystem WHERE Primary=TRUE")
                     win32_OperatingSystem.InvokeMethod("Reboot", Nothing)
-                    TryWriteMessage(String.Format("{0} is currently rebooting", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+                    TryWriteMessage($"{Me.ComputerPanel.Computer.ConnectionString} is currently rebooting", Color.Blue)
                 Next
             End If
 
-            TryWriteMessage(String.Format("Terminated Remote Restart on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Terminated Remote Restart on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -682,27 +682,27 @@ Public Class RemoteTools
             Dim delay As Integer = Nothing
             Dim userMessage As String = Nothing
 
-            TryWriteMessage(String.Format("Initializing Remote Restart on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Initializing Remote Restart on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
-            If MsgBox(String.Format("Are you sure you want to restart{0}{1}?", Environment.NewLine, Me.ComputerPanel.Computer.Display), MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
+            If MsgBox($"Are you sure you want to restart{Environment.NewLine}{Me.ComputerPanel.Computer.Display}?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
 
                 If Me.ComputerPanel.WMI.BitLockerScope.IsConnected Then
                     TryWriteMessage("BitLocker is installed on this computer. Checking status", Color.Blue)
 
                     Dim bitLocker As ManagementClass = New ManagementClass(Me.ComputerPanel.WMI.BitLockerScope, Me.ComputerPanel.WMI.BitLockerScope.Path, New ObjectGetOptions())
-                    For Each bitLockerInstance As ManagementObject In bitLocker.GetInstances()
+                    For Each instance As ManagementObject In bitLocker.GetInstances()
 
                         Dim protectionStatus(0) As Object
                         Dim hddEncryptionStatus(1) As Object
 
-                        bitLockerInstance.InvokeMethod("GetProtectionStatus", protectionStatus)
-                        bitLockerInstance.InvokeMethod("GetConversionStatus", hddEncryptionStatus)
+                        instance.InvokeMethod("GetProtectionStatus", protectionStatus)
+                        instance.InvokeMethod("GetConversionStatus", hddEncryptionStatus)
 
                         If hddEncryptionStatus(0) = 1 AndAlso protectionStatus(0) = 1 Then
                             TryWriteMessage("BitLocker is enabled on this drive. Prompting for consent to disable BitLocker", Color.Blue)
 
                             If MsgBox("Would you like to disable BitLocker before rebooting?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
-                                bitLockerInstance.InvokeMethod("DisableKeyProtectors", Nothing)
+                                instance.InvokeMethod("DisableKeyProtectors", Nothing)
                                 TryWriteMessage("BitLocker has been disabled", Color.Blue)
                             End If
                         End If
@@ -711,13 +711,13 @@ Public Class RemoteTools
 
                 For Each win32_OperatingSystem As ManagementObject In Me.ComputerPanel.WMI.Query("SELECT * FROM Win32_OperatingSystem WHERE Primary=TRUE")
                     win32_OperatingSystem.InvokeMethod("Reboot", Nothing)
-                    TryWriteMessage(String.Format("{0} is currently rebooting", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+                    TryWriteMessage($"{Me.ComputerPanel.Computer.ConnectionString} is currently rebooting", Color.Blue)
                 Next
             End If
 
-            TryWriteMessage(String.Format("Terminated Remote Restart on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Terminated Remote Restart on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -726,22 +726,23 @@ Public Class RemoteTools
             Dim delay As Integer = Nothing
             Dim userMessage As String = Nothing
 
-            TryWriteMessage(String.Format("Initializing Timed Remote Restart on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Initializing Timed Remote Restart on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
-            If MsgBox(String.Format("Are you sure you want to restart{0}{1}?", Environment.NewLine, Me.ComputerPanel.Computer.Display), MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
+            If MsgBox($"Are you sure you want to restart{Environment.NewLine}{Me.ComputerPanel.Computer.Display}?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
 
-                Dim userDelay As String = InputBox(String.Format("How long until the computer is rebooted (in seconds){0}Default: 30 Minutes (1800 Seconds)", Environment.NewLine), , "1800")
+                Dim msg As String = $"How long until the computer is rebooted (in seconds){Environment.NewLine}Default: 30 Minutes (1800 Seconds)"
+                Dim userDelay As String = InputBox(msg, , "1800")
                 If String.IsNullOrWhiteSpace(userDelay) OrElse Not Regex.IsMatch(userDelay, "[0-9]+") Then
                     TryWriteMessage("Invalid Time Format. Exiting Remote Restart", Color.Red)
-                    TryWriteMessage(String.Format("Terminated Remote Restart on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+                    TryWriteMessage($"Terminated Remote Restart on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
                     Exit Sub
                 End If
 
                 delay = Convert.ToInt32(userDelay)
-                Dim userComment As String = InputBox("What message would you like displayed to the user? The time the restart will occur will be appended at the end of the message.", , String.Format("Your computer will be rebooted in {0} minutes", Math.Round(delay / 60, 0)))
+                Dim userComment As String = InputBox("What message would you like displayed to the user? The time the restart will occur will be appended at the end of the message.", , $"Your computer will be rebooted in {Math.Round(delay / 60, 0)} minutes")
                 If String.IsNullOrWhiteSpace(userComment) Then
                     TryWriteMessage("Invalid Comment. Exiting Remote Restart", Color.Red)
-                    TryWriteMessage(String.Format("Terminated Remote Restart on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+                    TryWriteMessage($"Terminated Remote Restart on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
                     Exit Sub
                 End If
 
@@ -749,18 +750,18 @@ Public Class RemoteTools
                     TryWriteMessage("BitLocker is installed on this computer. Checking status", Color.Blue)
 
                     Dim bitLocker As ManagementClass = New ManagementClass(Me.ComputerPanel.WMI.BitLockerScope, Me.ComputerPanel.WMI.BitLockerScope.Path, New ObjectGetOptions)
-                    For Each bitLockerInstance As ManagementObject In bitLocker.GetInstances()
+                    For Each instance As ManagementObject In bitLocker.GetInstances()
 
                         Dim protectionStatus(0) As Object
                         Dim hddEncryptionStatus(1) As Object
 
-                        bitLockerInstance.InvokeMethod("GetProtectionStatus", protectionStatus)
-                        bitLockerInstance.InvokeMethod("GetConversionStatus", hddEncryptionStatus)
+                        instance.InvokeMethod("GetProtectionStatus", protectionStatus)
+                        instance.InvokeMethod("GetConversionStatus", hddEncryptionStatus)
 
                         If hddEncryptionStatus(0) = 1 AndAlso protectionStatus(0) = 1 Then
                             TryWriteMessage("BitLocker is enabled on this drive. Prompting for consent to disable BitLocker", Color.Blue)
                             If MsgBox("Would you like to disable BitLocker before rebooting?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = MsgBoxResult.Yes Then
-                                bitLockerInstance.InvokeMethod("DisableKeyProtectors", Nothing)
+                                instance.InvokeMethod("DisableKeyProtectors", Nothing)
                                 TryWriteMessage("BitLocker has been disabled", Color.Blue)
                             End If
                         End If
@@ -772,44 +773,44 @@ Public Class RemoteTools
                     Dim shutdownTrackerParams As ManagementBaseObject = win32_OperatingSystem.GetMethodParameters("Win32ShutdownTracker")
                     With shutdownTrackerParams
                         .SetPropertyValue("Timeout", delay)
-                        .SetPropertyValue("Comment", String.Format("{0}{1}Time of Restart: {2}", userComment, Environment.NewLine, Now.AddSeconds(delay).ToString("MM/dd/yyyy HH:mm:ss")))
+                        .SetPropertyValue("Comment", $"{userComment}{Environment.NewLine}Time of Restart: {Now.AddSeconds(delay):MM/dd/yyyy HH:mm:ss}")
                         .SetPropertyValue("ReasonCode", 218)
                         .SetPropertyValue("Flags", 6)
                     End With
                     win32_OperatingSystem.InvokeMethod("Win32ShutdownTracker", shutdownTrackerParams, Nothing)
 
-                    TryWriteMessage(String.Format("{0} will reboot in {1} seconds", Me.ComputerPanel.Computer.ConnectionString, delay), Color.Blue)
+                    TryWriteMessage($"{Me.ComputerPanel.Computer.ConnectionString} will reboot in {delay} seconds", Color.Blue)
                 Next
             End If
 
-            TryWriteMessage(String.Format("Terminated Timed Remote Restart on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Terminated Timed Remote Restart on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub RemoteLogoff()
         Try
-            TryWriteMessage(String.Format("Initializing Remote Logoff on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Initializing Remote Logoff on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
             If Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_Process WHERE Name='explorer.exe'", Me.ComputerPanel.WMI.RegularScope).Count > 0 Then
-                For Each win32_OperatingSystem As ManagementObject In Me.ComputerPanel.WMI.Query("SELECT * FROM Win32_OperatingSystem WHERE Primary=TRUE")
-                    Dim shutdownParams As ManagementBaseObject = win32_OperatingSystem.GetMethodParameters("Win32Shutdown")
+                For Each instance As ManagementObject In Me.ComputerPanel.WMI.Query("SELECT * FROM Win32_OperatingSystem WHERE Primary=TRUE")
+                    Dim shutdownParams As ManagementBaseObject = instance.GetMethodParameters("Win32Shutdown")
                     With shutdownParams
                         .SetPropertyValue("Flags", 0)
                         .SetPropertyValue("Reserved", 0)
                     End With
 
-                    win32_OperatingSystem.InvokeMethod("Win32Shutdown", shutdownParams, Nothing)
+                    instance.InvokeMethod("Win32Shutdown", shutdownParams, Nothing)
                 Next
                 TryWriteMessage("Remote Logoff has been performed", Color.Blue)
             Else
                 TryWriteMessage("No user has been detected as logged into the computer", Color.Blue)
             End If
 
-            TryWriteMessage(String.Format("Terminated Remote Logoff on {0}", Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+            TryWriteMessage($"Terminated Remote Logoff on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -826,16 +827,16 @@ Public Class RemoteTools
 
                 Dim customActions As String() = New RegistryController().GetKeyValues(customActionRegistryPath, RegistryHive.CurrentUser, methodName:="EnumValues")
                 For Each action As String In customActions
-                    TryWriteMessage(String.Format("Preparing Custom Action: {0}", CustomAction), Color.Blue)
+                    TryWriteMessage($"Preparing Custom Action: {Me.CustomAction}", Color.Blue)
                     Dim parsedCommand As String = New RegistryController().GetKeyValue(customActionRegistryPath, action, RegistryController.RegistryKeyValueTypes.String).ToUpper().Replace("|COMPUTER|", Me.ComputerPanel.Computer.ConnectionString, RegistryHive.CurrentUser)
 
-                    TryWriteMessage(String.Format("Running Custom Command: {0}", parsedCommand), Color.Blue)
+                    TryWriteMessage($"Running Custom Command: {parsedCommand}", Color.Blue)
 
                     Dim psExecProcess As New ProcessStartInfo() With
                     {
                         .UseShellExecute = False,
                         .FileName = "cmd.exe",
-                        .Arguments = String.Format(" /k ""{0}"" -s \\{1} {2}", My.Settings.PsExecPath, Me.ComputerPanel.Computer.ConnectionString, parsedCommand),
+                        .Arguments = $" /k '{My.Settings.PsExecPath}' -s \\{Me.ComputerPanel.Computer.ConnectionString} {parsedCommand}",
                         .Verb = "RunAs",
                         .WorkingDirectory = Environment.SystemDirectory
                     }
@@ -844,7 +845,7 @@ Public Class RemoteTools
                 Next
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
             TryWriteMessage("An error occured while running the custom action", Color.Red)
         End Try
     End Sub
@@ -856,17 +857,18 @@ Public Class RemoteTools
     Private Sub PrinterAdd()
         Try
             ' Install a printer on a remote computer
-            Process.Start(String.Format("{0} /il /c \\{1}", Path.Combine(Environment.SystemDirectory, "Printui.exe"), Me.ComputerPanel.Computer.ConnectionString)).WaitForExit()
+            Dim path As String = IO.Path.Combine(Environment.SystemDirectory, "Printui.exe")
+            Process.Start($"{path} /il /c \\{Me.ComputerPanel.Computer.ConnectionString}").WaitForExit()
             RaiseEvent WorkCompleted(Me, Nothing)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub PrinterAddCab()
         Try
             ' Install printers using a printerExport file on a remote computer
-            Dim openDialog As New OpenFileDialog With
+            Dim openDialog As New OpenFileDialog() With
             {
                 .CheckFileExists = True,
                 .CheckPathExists = True,
@@ -876,7 +878,7 @@ Public Class RemoteTools
             }
 
             If openDialog.ShowDialog() = DialogResult.OK Then
-                Dim randomNumber As New Random
+                Dim randomNumber As New Random()
                 Dim openSharePrinterName As String = randomNumber.Next(9999999)
 
                 TryWriteMessage("Creating a printer share", Color.Blue)
@@ -899,25 +901,25 @@ Public Class RemoteTools
                 win32_Printer.Dispose()
 
                 For Each fileName As String In openDialog.FileNames
-                    Dim cabFile As String = Path.Combine(Application.UserAppDataPath, String.Format("{0}.printerExport", randomNumber.Next(9999999)))
+                    Dim cabFile As String = Path.Combine(Application.UserAppDataPath, $"{randomNumber.Next(9999999)}.printerExport")
                     If File.Exists(cabFile) Then
                         File.Delete(cabFile)
                     End If
 
-                    TryWriteMessage(String.Format("Copying export file to: {0}", cabFile), Color.Blue)
+                    TryWriteMessage($"Copying export file to: {cabFile}", Color.Blue)
                     File.Copy(fileName, cabFile, True)
                     Dim printBrmProcess As New ProcessStartInfo With
                     {
                         .Verb = "RunAs",
                         .FileName = Path.Combine(Environment.SystemDirectory, "spool\tools\PrintBrm.exe"),
-                        .Arguments = String.Format("-s {0} -r -f {1} -O FORCE", Me.ComputerPanel.Computer.ConnectionString, cabFile),
+                        .Arguments = $"-s {Me.ComputerPanel.Computer.ConnectionString} -r -f {cabFile} -O FORCE",
                         .UseShellExecute = False
                     }
 
-                    TryWriteMessage(String.Format("Running the export file: {0}", cabFile), Color.Blue)
+                    TryWriteMessage($"Running the export file: {cabFile}", Color.Blue)
                     Process.Start(printBrmProcess).WaitForExit()
 
-                    TryWriteMessage(String.Format("Deleting the export file: {0}", cabFile), Color.Blue)
+                    TryWriteMessage($"Deleting the export file: {cabFile}", Color.Blue)
                     File.Delete(cabFile)
                 Next
 
@@ -927,7 +929,7 @@ Public Class RemoteTools
                 RaiseEvent WorkCompleted(Me, Nothing)
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
             TryWriteMessage("An error occured while attempting to load printers from an export. Please make sure to remove any printer share remnants.", Color.Red)
         End Try
     End Sub
@@ -945,8 +947,8 @@ Public Class RemoteTools
 
                 If safeFileDialog.ShowDialog() = DialogResult.OK Then
                     Dim randomNumber As New Random
-                    Dim openSharePrinterName As String = String.Format("DELETE THIS PRINTER - LEFTOVER FROM CAB CREATION ({0})", randomNumber.Next(9999999))
-                    Dim cabFile As String = Path.Combine(Application.UserAppDataPath, String.Format("{0}.printerExport", randomNumber.Next(9999999)))
+                    Dim openSharePrinterName As String = $"DELETE THIS PRINTER - LEFTOVER FROM CAB CREATION ({randomNumber.Next(9999999)})"
+                    Dim cabFile As String = Path.Combine(Application.UserAppDataPath, $"{randomNumber.Next(9999999)}.printerExport")
 
                     TryWriteMessage("Creating a printer share", Color.Blue)
 
@@ -976,7 +978,7 @@ Public Class RemoteTools
                     {
                         .Verb = "RunAs",
                         .FileName = Path.Combine(Environment.SystemDirectory, "spool\tools\PrintBrm.exe"),
-                        .Arguments = String.Format("-s {0} -b -f {1} -O FORCE", Me.ComputerPanel.Computer.ConnectionString, cabFile),
+                        .Arguments = $"-s {Me.ComputerPanel.Computer.ConnectionString} -b -f {cabFile} -O FORCE",
                         .UseShellExecute = False
                     }
 
@@ -991,11 +993,11 @@ Public Class RemoteTools
                 End If
             Else
                 TryWriteMessage("The target computer must have the same processor architecture as this computer", Color.Red)
-                TryWriteMessage(String.Format("This Computer: {0}", New WMIController(".", WMIController.ManagementScopes.Regular).Architecture.ToString()), Color.Red)
-                TryWriteMessage(String.Format("Remote Computer: {0}", Me.ComputerPanel.WMI.Architecture), Color.Red)
+                TryWriteMessage($"This Computer: {New WMIController(".", WMIController.ManagementScopes.Regular).Architecture}", Color.Red)
+                TryWriteMessage($"Remote Computer: {Me.ComputerPanel.WMI.Architecture}", Color.Red)
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
             TryWriteMessage("An error occured while attempting to backup printers to a file. Please make sure to remove any printer share remnants.", Color.Red)
         End Try
     End Sub
@@ -1009,16 +1011,16 @@ Public Class RemoteTools
                 newPrinterName(0) = InputBox("What is the new Printer name:", , currentPrinterName)
 
                 If newPrinterName IsNot Nothing AndAlso newPrinterName IsNot currentPrinterName Then
-                    TryWriteMessage(String.Format("Renaming Printer from {0} to {1}", currentPrinterName, newPrinterName(0)), Color.Blue)
-                    Me.ComputerPanel.WMI.Query(String.Format("SELECT * FROM Win32_Printer WHERE Name=""{0}""", currentPrinterName))(0).InvokeMethod("RenamePrinter", newPrinterName)
+                    TryWriteMessage($"Renaming Printer from {currentPrinterName} to {newPrinterName(0)}", Color.Blue)
+                    Me.ComputerPanel.WMI.Query($"SELECT * FROM Win32_Printer WHERE Name='{currentPrinterName}'")(0).InvokeMethod("RenamePrinter", newPrinterName)
 
-                    TryWriteMessage(String.Format("Printer successfully renamed to {0}", newPrinterName(0)), Color.Blue)
+                    TryWriteMessage($"Printer successfully renamed to {newPrinterName(0)}", Color.Blue)
                 End If
             Next
 
             RaiseEvent WorkCompleted(Me, Nothing)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1059,15 +1061,16 @@ Public Class RemoteTools
                 If curentUserRegistryKey Is Nothing Then
                     TryWriteMessage("Unable to locate the user's registry hive", Color.Red)
                 Else
-                    x86Registry.SetKeyValue(String.Format("{0}\Software\Microsoft\Windows NT\CurrentVersion\Windows", curentUserRegistryKey), "Device", String.Format("{0},winspool,Ne00:", WMIObjects(0).Properties("Name").Value), RegistryController.RegistryKeyValueTypes.String, RegistryHive.Users)
+                    Dim keyPath As String = $"{curentUserRegistryKey}\Software\Microsoft\Windows NT\CurrentVersion\Windows"
+                    Dim value As String = $"{WMIObjects(0).Properties("Name").Value},winspool,Ne00:"
+                    x86Registry.SetKeyValue(keyPath, "Device", value, RegistryController.RegistryKeyValueTypes.String, RegistryHive.Users)
                 End If
-
                 RaiseEvent WorkCompleted(Me, Nothing)
             Else
                 TryWriteMessage("A default printer can only be set when a user is logged in", Color.Red)
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1078,12 +1081,12 @@ Public Class RemoteTools
             {
                 .Verb = "RunAs",
                 .FileName = Path.Combine(Environment.SystemDirectory, "rundll32.exe"),
-                .Arguments = String.Format("printui.dll,PrintUIEntry /o /n ""\\{0}\{1}""", Me.ComputerPanel.Computer.ConnectionString, Me.WMIObjects(0).Properties("Name").Value)
+                .Arguments = $"printui.dll,PrintUIEntry /o /n '\\{Me.ComputerPanel.Computer.ConnectionString}\{Me.WMIObjects(0).Properties("Name").Value}'"
             }
 
             Process.Start(rundll32Process).WaitForExit()
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1094,12 +1097,12 @@ Public Class RemoteTools
             {
                 .Verb = "RunAs",
                 .FileName = Path.Combine(Environment.SystemDirectory, "rundll32.exe"),
-                .Arguments = String.Format("printui.dll,PrintUIEntry /p /n ""\\{0}\{1}""", Me.ComputerPanel.Computer.ConnectionString, Me.WMIObjects(0).Properties("Name").Value)
+                .Arguments = $"printui.dll,PrintUIEntry /p /n '\\{Me.ComputerPanel.Computer.ConnectionString}\{Me.WMIObjects(0).Properties("Name").Value}'"
             }
 
             Process.Start(rundll32ProcessInfo).WaitForExit()
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1108,16 +1111,16 @@ Public Class RemoteTools
             ' Change the TCP/IP Printer port of a printer installed on a remote computer
             For Each printerWMIObject As ManagementObject In Me.WMIObjects
                 Dim portName As String = InputBox(Prompt:="Enter either an existing port, or a new port:", DefaultResponse:=printerWMIObject.Properties("PortName").Value)
-                Dim fullPrinterObject As ManagementObject = Me.ComputerPanel.WMI.Query(String.Format("SELECT * FROM Win32_Printer WHERE Name=""{0}""", printerWMIObject.Properties("Name").Value))(0)
-                Dim oldTCPIPPort As ManagementObject = Me.ComputerPanel.WMI.Query(String.Format("SELECT Protocol, PortNumber, SNMPEnabled FROM Win32_TCPIPPrinterPort WHERE Name=""{0}""", printerWMIObject.Properties("PortName").Value))(0)
+                Dim fullPrinterObject As ManagementObject = Me.ComputerPanel.WMI.Query($"SELECT * FROM Win32_Printer WHERE Name='{printerWMIObject.Properties("Name").Value}'")(0)
+                Dim oldTCPIPPort As ManagementObject = Me.ComputerPanel.WMI.Query($"SELECT Protocol, PortNumber, SNMPEnabled FROM Win32_TCPIPPrinterPort WHERE Name='{printerWMIObject.Properties("PortName").Value}'")(0)
 
                 If portName IsNot Nothing AndAlso portName IsNot printerWMIObject.Properties("PortName").Value Then
                     Dim existingPort As Boolean = False
-                    For Each tcpIPPort As ManagementObject In Me.ComputerPanel.WMI.Query(String.Format("SELECT * FROM Win32_TCPIPPrinterPort Where Name LIKE ""{0}""%", portName))
-                        If tcpIPPort.Properties("HostAddress").Value = portName OrElse tcpIPPort.Properties("PortName").Value.ToString().StartsWith(String.Format("{0}_", portName)) Then
+                    For Each tcpIPPort As ManagementObject In Me.ComputerPanel.WMI.Query($"SELECT * FROM Win32_TCPIPPrinterPort Where Name LIKE '{portName}'%")
+                        If tcpIPPort.Properties("HostAddress").Value = portName OrElse tcpIPPort.Properties("PortName").Value.ToString().StartsWith($"{portName}_") Then
                             existingPort = True
 
-                            TryWriteMessage(String.Format("Existing Port {0} found! Setting Port", tcpIPPort.Properties("Name").Value), Color.Blue)
+                            TryWriteMessage($"Existing Port {tcpIPPort.Properties("Name").Value} found! Setting Port", Color.Blue)
                             fullPrinterObject("PortName") = portName
 
                             fullPrinterObject.Put()
@@ -1126,9 +1129,8 @@ Public Class RemoteTools
                     Next
 
                     If Not existingPort Then
-                        TryWriteMessage(String.Format("Creating new TCP/IP Port: {0}", portName), Color.Blue)
+                        TryWriteMessage($"Creating new TCP/IP Port: {portName}", Color.Blue)
                         Dim win32_TCPIPPrinterPort As New ManagementClass(Me.ComputerPanel.WMI.RegularScope, New ManagementPath("Win32_TCPIPPrinterPort"), Nothing)
-
                         Dim win32_TCPIPPrinterPortInstance As ManagementObject = win32_TCPIPPrinterPort.CreateInstance()
                         With win32_TCPIPPrinterPortInstance
                             .Properties("Name").Value = portName
@@ -1151,7 +1153,7 @@ Public Class RemoteTools
 
             RaiseEvent WorkCompleted(Me, Nothing)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1174,13 +1176,14 @@ Public Class RemoteTools
 
                 End Select
 
-                TryWriteMessage(String.Format("Initializing {0} for {1} on {2}", displayText, printerName, Me.ComputerPanel.Computer.ConnectionString), Color.Blue)
+                TryWriteMessage($"Initializing {displayText} for {printerName} on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
                 Try
-                    Me.ComputerPanel.WMI.Query(String.Format("SELECT * FROM {0} WHERE Name = ""{1}""", printerWMIObject.Properties("CreationClassName").Value, printerName))(0).Delete()
-                    TryWriteMessage(String.Format("{0} has been successfully deleted.", printerName), Color.Blue)
+                    Dim printer = Me.ComputerPanel.WMI.Query($"SELECT * FROM {printerWMIObject.Properties("CreationClassName").Value} WHERE Name = '{printerName}'")(0)
+                    printer.Delete()
+                    TryWriteMessage($"{printerName} has been successfully deleted.", Color.Blue)
                 Catch ex As Exception
-                    LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                    LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
                     TryWriteMessage("An error occured while attempting the deletion", Color.Red)
                 Finally
                     printerWMIObject.Dispose()
@@ -1189,7 +1192,7 @@ Public Class RemoteTools
 
             RaiseEvent WorkCompleted(Me, EventArgs.Empty)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1199,140 +1202,139 @@ Public Class RemoteTools
 
     Private Sub ServiceStop()
         Try
-            For Each serviceWMIObject As ManagementObject In Me.WMIObjects
-                TryWriteMessage(String.Format("Sending a stop request to {0}", serviceWMIObject.Properties("DisplayName").Value), Color.Blue)
+            For Each instance As ManagementObject In Me.WMIObjects
+                TryWriteMessage($"Sending a stop request to {instance.Properties("DisplayName").Value}", Color.Blue)
 
                 Dim service As New ServiceController(Me.ComputerPanel.WMI)
-                Dim serviceStopResult As ServiceController.ServiceError = service.Stop(serviceWMIObject.Properties("Name").Value)
+                Dim serviceStopResult As ServiceController.ServiceError = service.Stop(instance.Properties("Name").Value)
 
                 If serviceStopResult = ServiceController.ServiceError.DependentServicesRunning Then
                     TryWriteMessage("The follwing dependent services are running and must be stopped first:", Color.Red)
 
-                    For Each dependentService As String In service.CheckDependentServices(serviceWMIObject.Properties("Name").Value)
-                        Dim win32_Service As ManagementObject = Me.ComputerPanel.WMI.Query(String.Format("SELECT DisplayName, State FROM Win32_Service WHERE Name=""{0}""", dependentService))(0)
-
+                    For Each dependentService As String In service.CheckDependentServices(instance.Properties("Name").Value)
+                        Dim win32_Service As ManagementObject = Me.ComputerPanel.WMI.Query($"SELECT DisplayName, State FROM Win32_Service WHERE Name='{dependentService}'")(0)
                         If win32_Service.Properties("State").Value.ToString().ToUpper().Trim() = "RUNNING" Then
                             TryWriteMessage(win32_Service.Properties("DisplayName").Value, Color.Red)
                         End If
                     Next
                 Else
-                    If service.WaitForService(serviceWMIObject.Properties("Name").Value, ServiceController.ServiceState.Stopped, 10) Then
-                        TryWriteMessage(String.Format("The service ""{0}"" has been stopped successfully", serviceWMIObject.Properties("DisplayName").Value), Color.Blue)
+                    If service.WaitForService(instance.Properties("Name").Value, ServiceController.ServiceState.Stopped, 10) Then
+                        TryWriteMessage($"The service '{instance.Properties("DisplayName").Value}' has been stopped successfully", Color.Blue)
                     Else
-                        TryWriteMessage(String.Format("A stop request was sent to ""{0}"", but it did not stop in a timely manner", serviceWMIObject.Properties("DisplayName").Value), Color.Red)
+                        TryWriteMessage($"A stop request was sent to '{instance.Properties("DisplayName").Value}', but it did not stop in a timely manner", Color.Red)
                     End If
 
                     RaiseEvent WorkCompleted(Me, Nothing)
                 End If
             Next
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub ServiceStart()
         Try
-            For Each serviceWMIObject As ManagementObject In Me.WMIObjects
-                TryWriteMessage(String.Format("Sending a start request to {0}", serviceWMIObject.Properties("DisplayName").Value), Color.Blue)
+            For Each instance As ManagementObject In Me.WMIObjects
+                TryWriteMessage($"Sending a start request to {instance.Properties("DisplayName").Value}", Color.Blue)
 
                 Dim service As New ServiceController(Me.ComputerPanel.WMI)
-                service.Start(serviceWMIObject.Properties("Name").Value)
+                service.Start(instance.Properties("Name").Value)
 
-                If service.WaitForService(serviceWMIObject.Properties("Name").Value, ServiceController.ServiceState.Running, 10) Then
-                    TryWriteMessage(String.Format("The service ""{0}"" has been started successfully", serviceWMIObject.Properties("DisplayName").Value), Color.Blue)
+                If service.WaitForService(instance.Properties("Name").Value, ServiceController.ServiceState.Running, 10) Then
+                    TryWriteMessage($"The service '{instance.Properties("DisplayName").Value}' has been started successfully", Color.Blue)
                 Else
-                    TryWriteMessage(String.Format("A start request was sent to ""{0}"", but it did not start in a timely manner", serviceWMIObject.Properties("DisplayName").Value), Color.Red)
+                    TryWriteMessage($"A start request was sent to '{instance.Properties("DisplayName").Value}', but it did not start in a timely manner", Color.Red)
                 End If
 
                 RaiseEvent WorkCompleted(Me, Nothing)
             Next
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub ServiceRestart()
         Try
-            For Each serviceWMIObject As ManagementObject In Me.WMIObjects
-                TryWriteMessage(String.Format("Sending a stop request to {0}", serviceWMIObject.Properties("DisplayName").Value), Color.Blue)
+            For Each instance As ManagementObject In Me.WMIObjects
+                TryWriteMessage($"Sending a stop request to {instance.Properties("DisplayName").Value}", Color.Blue)
 
                 Dim service As New ServiceController(Me.ComputerPanel.WMI)
-                Dim serviceStopResult As ServiceController.ServiceError = service.Stop(serviceWMIObject.Properties("Name").Value)
+                Dim serviceStopResult As ServiceController.ServiceError = service.Stop(instance.Properties("Name").Value)
 
                 If serviceStopResult = ServiceController.ServiceError.DependentServicesRunning Then
                     TryWriteMessage("The follwing dependent services are running and must be stopped first:", Color.Red)
 
-                    For Each dependentService As String In service.CheckDependentServices(serviceWMIObject.Properties("Name").Value)
-                        Dim win32_Service As ManagementObject = Me.ComputerPanel.WMI.Query(String.Format("SELECT DisplayName, State FROM Win32_Service WHERE Name=""{0}""", dependentService))(0)
+                    For Each dependentService As String In service.CheckDependentServices(instance.Properties("Name").Value)
+                        Dim win32_Service As ManagementObject = Me.ComputerPanel.WMI.Query($"SELECT DisplayName, State FROM Win32_Service WHERE Name='{dependentService}'")(0)
                         If win32_Service.Properties("State").Value.ToString().ToUpper().Trim() = "RUNNING" Then
                             TryWriteMessage(win32_Service.Properties("DisplayName").Value, Color.Red)
                         End If
                     Next
                 Else
-                    If service.WaitForService(serviceWMIObject.Properties("Name").Value, ServiceController.ServiceState.Stopped, 10) Then
-                        TryWriteMessage(String.Format("The service ""{0}"" has been stopped successfully", serviceWMIObject.Properties("DisplayName").Value), Color.Blue)
-                        TryWriteMessage(String.Format("Sending a start request to {0}", serviceWMIObject.Properties("DisplayName").Value), Color.Blue)
-                        service.Start(serviceWMIObject.Properties("Name").Value)
+                    If service.WaitForService(instance.Properties("Name").Value, ServiceController.ServiceState.Stopped, 10) Then
+                        TryWriteMessage($"The service '{instance.Properties("DisplayName").Value}' has been stopped successfully", Color.Blue)
+                        TryWriteMessage($"Sending a start request to {instance.Properties("DisplayName").Value}", Color.Blue)
+                        service.Start(instance.Properties("Name").Value)
 
-                        If service.WaitForService(serviceWMIObject.Properties("Name").Value, ServiceController.ServiceState.Running, 10) Then
-                            TryWriteMessage(String.Format("The service ""{0}"" has been started successfully", serviceWMIObject.Properties("DisplayName").Value), Color.Blue)
+                        If service.WaitForService(instance.Properties("Name").Value, ServiceController.ServiceState.Running, 10) Then
+                            TryWriteMessage($"The service '{instance.Properties("DisplayName").Value}' has been started successfully", Color.Blue)
                         Else
-                            TryWriteMessage(String.Format("A start request was sent to ""{0}"", but it did not start in a timely manner", serviceWMIObject.Properties("DisplayName").Value), Color.Red)
+                            TryWriteMessage($"A start request was sent to '{instance.Properties("DisplayName").Value}', but it did not start in a timely manner", Color.Red)
                         End If
                     Else
-                        TryWriteMessage(String.Format("A stop request was sent to ""{0}"", but it did not stop in a timely manner", serviceWMIObject.Properties("DisplayName").Value), Color.Red)
+                        TryWriteMessage($"A stop request was sent to '{instance.Properties("DisplayName").Value}', but it did not stop in a timely manner", Color.Red)
                     End If
 
                     RaiseEvent WorkCompleted(Me, Nothing)
                 End If
             Next
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub ServiceSetAuto()
         Try
-            For Each serviceWMIObject As ManagementObject In Me.WMIObjects
-                TryWriteMessage(String.Format("Changing Start Mode for {0} to Automatic", serviceWMIObject.Properties("DisplayName").Value), Color.Blue)
+            For Each instance As ManagementObject In Me.WMIObjects
+                TryWriteMessage($"Changing Start Mode for {instance.Properties("DisplayName").Value} to Automatic", Color.Blue)
 
                 Dim service As New ServiceController(Me.ComputerPanel.WMI)
-                service.ChangeStartupType(serviceWMIObject.Properties("Name").Value, ServiceController.ServiceStartupType.Auto)
+                service.ChangeStartupType(instance.Properties("Name").Value, ServiceController.ServiceStartupType.Auto)
             Next
 
             RaiseEvent WorkCompleted(Me, Nothing)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub ServiceSetManual()
         Try
-            For Each serviceWMIObject As ManagementObject In Me.WMIObjects
-                TryWriteMessage(String.Format("Changing Start Mode for {0} to Manual", serviceWMIObject.Properties("DisplayName").Value), Color.Blue)
+            For Each instance As ManagementObject In Me.WMIObjects
+                TryWriteMessage($"Changing Start Mode for {instance.Properties("DisplayName").Value} to Manual", Color.Blue)
 
                 Dim service As New ServiceController(Me.ComputerPanel.WMI)
-                service.ChangeStartupType(serviceWMIObject.Properties("Name").Value, ServiceController.ServiceStartupType.Manual)
+                service.ChangeStartupType(instance.Properties("Name").Value, ServiceController.ServiceStartupType.Manual)
             Next
 
             RaiseEvent WorkCompleted(Me, Nothing)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
     Private Sub ServiceSetDisabled()
         Try
-            For Each serviceWMIObject As ManagementObject In Me.WMIObjects
-                TryWriteMessage(String.Format("Changing Start Mode for {0} to Disabled", serviceWMIObject.Properties("DisplayName").Value), Color.Blue)
+            For Each instance As ManagementObject In Me.WMIObjects
+                TryWriteMessage($"Changing Start Mode for {instance.Properties("DisplayName").Value} to Disabled", Color.Blue)
 
                 Dim service As New ServiceController(Me.ComputerPanel.WMI)
-                service.ChangeStartupType(serviceWMIObject.Properties("Name").Value, ServiceController.ServiceStartupType.Disabled)
+                service.ChangeStartupType(instance.Properties("Name").Value, ServiceController.ServiceStartupType.Disabled)
             Next
 
             RaiseEvent WorkCompleted(Me, Nothing)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1344,20 +1346,20 @@ Public Class RemoteTools
         Try
             Dim process As New ProcessController(Me.ComputerPanel.WMI)
 
-            For Each processWMIObject As ManagementObject In WMIObjects
-                TryWriteMessage(String.Format("Sending a stop request to ""{0} ({1})""", processWMIObject.Properties("Name").Value, processWMIObject.Properties("ProcessID").Value), Color.Blue)
+            For Each instance As ManagementObject In WMIObjects
+                TryWriteMessage($"Sending a stop request to '{instance.Properties("Name").Value} ({instance.Properties("ProcessID").Value})'", Color.Blue)
 
-                Dim processStopResult As ProcessController.ProcessError = process.StopProcess(processWMIObject.Properties("ProcessID").Value)
-                If process.WaitForProcess(processWMIObject.Properties("Name").Value, ProcessController.ProcessCondition.Stopped, 10) AndAlso processStopResult = ProcessController.ProcessError.Success Then
-                    TryWriteMessage(String.Format("The process ""{0} ({1})"" has been stopped successfully", processWMIObject.Properties("Name").Value, processWMIObject.Properties("ProcessID").Value), Color.Blue)
+                Dim processStopResult As ProcessController.ProcessError = process.StopProcess(instance.Properties("ProcessID").Value)
+                If process.WaitForProcess(instance.Properties("Name").Value, ProcessController.ProcessCondition.Stopped, 10) AndAlso processStopResult = ProcessController.ProcessError.Success Then
+                    TryWriteMessage($"The process '{instance.Properties("Name").Value} ({instance.Properties("ProcessID").Value})' has been stopped successfully", Color.Blue)
                 Else
-                    TryWriteMessage(String.Format("A stop request was sent to ""{0} ({1})"", but it did not stop in a timely manner", processWMIObject.Properties("Name").Value, processWMIObject.Properties("ProcessID").Value), Color.Red)
+                    TryWriteMessage($"A stop request was sent to '{instance.Properties("Name").Value} ({instance.Properties("ProcessID").Value})', but it did not stop in a timely manner", Color.Red)
                 End If
             Next
 
             RaiseEvent WorkCompleted(Me, Nothing)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 

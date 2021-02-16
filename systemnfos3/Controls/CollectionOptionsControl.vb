@@ -88,7 +88,8 @@ Public Class CollectionOptionsControl
             If line.Contains(ControlChars.Tab) Then
                 Dim columnNames As String() = line.Split(ControlChars.Tab)
                 If columnNames.Length > 1 Then
-                    Dim userSelectedColumnNumber As Integer = InputBox(String.Format("This list contains multiple columns.{0}Which column would you like to use?", Environment.NewLine), "Select column:", "1")
+                    Dim prompt = $"This list contains multiple columns.{Environment.NewLine}Which column would you like to use?"
+                    Dim userSelectedColumnNumber As Integer = InputBox(prompt, "Select column:", "1")
                     If userSelectedColumnNumber <= columnNames.Length Then
                         columnNumber = userSelectedColumnNumber
                     End If
@@ -121,8 +122,8 @@ Public Class CollectionOptionsControl
 
             For Each listViewItem As ListViewItem In Me.ComputerStatusListView.Items
                 If listViewItem.Text = Me.SystemTextBox.Text Then
-                    MsgBox(String.Format("{0} is already a member of collection: {1}", Me.SystemTextBox.Text, Me.ComputerStatusListView.Columns(0).Text))
-                    Me.StatusTwoLabel.Text = String.Format("{0} not added to the collection", Me.SystemTextBox.Text)
+                    MsgBox($"{Me.SystemTextBox.Text} is already a member of collection: {Me.ComputerStatusListView.Columns(0).Text}")
+                    Me.StatusTwoLabel.Text = $"{Me.SystemTextBox.Text} not added to the collection"
                     Me.SystemTextBox.Text = String.Empty
                     Me.SystemTextBox.Focus()
                     Exit Sub
@@ -136,13 +137,13 @@ Public Class CollectionOptionsControl
 
                 Dim listViewItem As New ListViewItem() With {.Text = Me.SystemTextBox.Text}
                 Me.ComputerStatusListView.Items.Add(listViewItem)
-                Me.StatusTwoLabel.Text = String.Format("{0} added to Collection", Me.SystemTextBox.Text)
+                Me.StatusTwoLabel.Text = $"{Me.SystemTextBox.Text} added to Collection"
                 Me.SystemTextBox.Text = String.Empty
                 Me.SystemTextBox.Focus()
             Catch ex As Exception
-                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
                 MsgBox(ex.Message, icon:=MessageBoxIcon.Error)
-                Me.StatusTwoLabel.Text = String.Format("{0} not added to collection", Me.SystemTextBox.Text)
+                Me.StatusTwoLabel.Text = $"{Me.SystemTextBox.Text} not added to collection"
             End Try
         End If
     End Sub
@@ -175,13 +176,13 @@ Public Class CollectionOptionsControl
                     Dim subKeyToCreatePath = Path.Combine(collectionRegistryPath, computerName)
                     Me.RegistryContext.NewKey(subKeyToCreatePath, RegistryHive.CurrentUser)
                 Catch ex As Exception
-                    LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
-                    Dim message = String.Format("Import failed for system: {0} Below is the error message: {1}{2}", Me.ComputerName, Environment.NewLine, ex.Message)
+                    LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
+                    Dim message = $"Import failed for system: {Me.ComputerName} Below is the error message: {Environment.NewLine}{ex.Message}"
                     MsgBox(message, icon:=MessageBoxIcon.Error)
                 End Try
             Next
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 

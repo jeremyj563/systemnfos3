@@ -46,10 +46,10 @@ Public Class GarbageCollector
 
                             Me.GarbageCan(index) = Nothing
                         Catch ex As InvalidOperationException
-                            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
                             Me.GarbageCan(index) = Nothing
                         Catch ex As Exception
-                            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
                         End Try
                     End If
                 Next

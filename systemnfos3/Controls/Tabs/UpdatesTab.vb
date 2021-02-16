@@ -58,7 +58,7 @@ Public Class UpdatesTab
                     groupName = NameOf(ListViewGroups.lsvgOT)
             End Select
 
-            If update.Properties("InstalledOn").Value = "" Then
+            If update.Properties("InstalledOn").Value = String.Empty Then
                 NewTabWriterItem(update.Properties("HotfixID").Value, New Object() {"1/1/1601", update.Properties("Caption").Value, update}, groupName)
             ElseIf New Regex("^[a-zA-Z0-9]+$").IsMatch(update.Properties("HotFixID").Value) Then
 
@@ -125,7 +125,7 @@ Public Class UpdatesTab
                 End If
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 

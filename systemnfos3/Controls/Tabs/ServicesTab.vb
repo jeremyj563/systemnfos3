@@ -86,7 +86,8 @@ Public Class ServicesTab
             End With
 
             Dim selectedService As ManagementObject = selectedItem.Tag
-            Dim services As ManagementObjectCollection = Me.ComputerPanel.WMI.Query(String.Format("SELECT DisplayName, Name, StartMode, State, Description, PathName, ProcessID FROM Win32_Service WHERE Name = ""{0}""", selectedService.Properties("Name").Value))
+            Dim queryText = $"SELECT DisplayName, Name, StartMode, State, Description, PathName, ProcessID FROM Win32_Service WHERE Name = '{selectedService.Properties("Name").Value}'"
+            Dim services = Me.ComputerPanel.WMI.Query(queryText)
             If services IsNot Nothing Then
                 For Each service As ManagementObject In services
                     MyBase.NewEnumWriterItem(service.Properties("DisplayName").Value, service, NameOf(ListViewGroups.lsvgDN))
@@ -103,7 +104,8 @@ Public Class ServicesTab
                     If dependentServices IsNot Nothing AndAlso dependentServices.Count > 0 Then
                         For Each dependentService As String In dependentServices
                             If Not String.IsNullOrWhiteSpace(dependentService) Then
-                                MyBase.NewEnumWriterItem(Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query(String.Format("SELECT DisplayName FROM Win32_Service WHERE Name = ""{0}""", dependentService)), "DisplayName"), service, NameOf(ListViewGroups.lsvgDS))
+                                Dim managementObjects = Me.ComputerPanel.WMI.Query($"SELECT DisplayName FROM Win32_Service WHERE Name = '{dependentService}'")
+                                MyBase.NewEnumWriterItem(Me.ComputerPanel.WMI.GetPropertyValue(managementObjects, "DisplayName"), service, NameOf(ListViewGroups.lsvgDS))
                             End If
                         Next
                     End If

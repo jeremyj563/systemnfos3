@@ -162,9 +162,9 @@ Public Class MainForm
         Dim title As String = Nothing
 
         Try
-            title = String.Format("System Tool 3 - {0}@{1} - !!! TEST ATTEMPT 8 !!!", Environment.UserName, Environment.MachineName)
+            title = $"System Tool 3 - {Environment.UserName}@{Environment.MachineName} - !!! TEST ATTEMPT 8 !!!"
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return title
@@ -218,10 +218,10 @@ Public Class MainForm
 
     Private Sub NewButton_Click(sender As Object, e As EventArgs) Handles NewButton.Click
         Try
-            Dim newInstanceArg As String = String.Format("-{0}", NameOf(Switch.NewInstance))
+            Dim newInstanceArg = $"-{NameOf(Switch.NewInstance)}"
             Process.Start([Global].AppPath, newInstanceArg)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -330,7 +330,7 @@ Public Class MainForm
     End Function
 
     Private Function LoadCollectionNode(caption As String, searcher As DataSourceSearcher) As TreeNode
-        caption = String.Format("Search: {0}", caption)
+        caption = $"Search: {caption}"
 
         Dim collectionNodes = Me.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Collections)).Nodes
 
@@ -561,7 +561,7 @@ Public Class MainForm
                 File.WriteAllText(saveDialog.FileName, computerExportText)
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -912,7 +912,7 @@ Public Class MainForm
                 Exit Sub
             End If
 
-            Me.Text = String.Format("{0} - {1}", newTitle, Me.DefaultTitle)
+            Me.Text = $"{newTitle} - {Me.DefaultTitle}"
         End If
     End Sub
 
@@ -1061,7 +1061,7 @@ Public Class MainForm
                 End If
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1094,7 +1094,7 @@ Public Class MainForm
                 End If
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1183,7 +1183,7 @@ Public Class MainForm
             ' Operation was cancelled
             Exit Sub
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1248,7 +1248,7 @@ Public Class MainForm
                     End If
                 End Using
             Catch ex As Exception
-                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
             End Try
         End SyncLock
     End Sub
@@ -1297,7 +1297,7 @@ Public Class MainForm
 
     Private Sub AddVersionStatusLabel()
         Dim versionLabel As New ToolStripStatusLabel()
-        versionLabel.Text = String.Format("Version: {0}", [Global].AppVersion)
+        versionLabel.Text = $"Version: {[Global].AppVersion}"
         versionLabel.Alignment = ToolStripItemAlignment.Left
 
         StatusStrip1.Items.Add(versionLabel)
@@ -1339,19 +1339,19 @@ Public Class MainForm
 
                 ' Up time
                 Dim upTime As TimeSpan = Date.Now - proc.StartTime
-                Dim upTimeText As String = String.Format("Up Time: {0}:{1:D2}:{2:D2}:{3:D2}", upTime.Days, upTime.Hours, upTime.Minutes, upTime.Seconds)
+                Dim upTimeText = $"Up Time: {upTime.Days}:{upTime.Hours:D2}:{upTime.Minutes:D2}:{upTime.Seconds:D2}"
 
                 ' CPU usage
                 Dim cpuUsage As Integer = cpuCounter.NextValue() / Environment.ProcessorCount
-                Dim cpuUsageText As String = String.Format("CPU Usage: {0}", cpuUsage)
+                Dim cpuUsageText = $"CPU Usage: {cpuUsage}"
 
                 ' Memory usage
                 Dim memUsage As Single = memCounter.NextValue() / 1024 / 1024
-                Dim memUsageText As String = String.Format("Memory Usage: {0:F1} MB", memUsage)
+                Dim memUsageText = $"Memory Usage: {memUsage:F1} MB"
 
                 ' Connections count
                 Dim connCount As Integer = GetConnectionsCount()
-                Dim connCountText As String = String.Format("Connections: {0}", connCount)
+                Dim connCountText = $"Connections: {connCount}"
 
                 ' Update the status labels display text
                 ShowStatusStripItems()
@@ -1428,7 +1428,7 @@ Public Class MainForm
                 ' Operation was cancelled
                 Exit Sub
             Catch ex As Exception
-                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
             End Try
 
             ' Check for update every 5 minutes
@@ -1494,7 +1494,7 @@ Public Class MainForm
                 .Save()
             End With
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1508,7 +1508,7 @@ Public Class MainForm
             My.Settings.ActiveComputers.Add(computer.Value)
             My.Settings.Save()
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1518,7 +1518,7 @@ Public Class MainForm
             My.Settings.ActiveComputers.Remove(computer.Value)
             My.Settings.Save()
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1527,7 +1527,7 @@ Public Class MainForm
             My.Settings.ActiveComputers.Clear()
             My.Settings.Save()
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -1535,7 +1535,7 @@ Public Class MainForm
         Try
             ' Don't load stored computers if the new instance switch was passed at launch
             Dim args = Environment.GetCommandLineArgs().Select(Function(a) a.ToUpper().Trim())
-            Dim newInstanceArg As String = String.Format("-{0}", NameOf(Switch.NewInstance).ToUpper())
+            Dim newInstanceArg = $"-{NameOf(Switch.NewInstance).ToUpper()}"
 
             If Not args.Contains(newInstanceArg) Then
                 If My.Settings.ActiveComputers IsNot Nothing Then
@@ -1569,7 +1569,7 @@ Public Class MainForm
             End If
 
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
     End Sub

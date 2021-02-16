@@ -240,7 +240,7 @@ Public Class MainTab
     End Sub
 
     Private Sub LoadNetAdapterInstances()
-        Dim queryText = String.Format("SELECT Description, IPAddress, MACAddress, DefaultIPGateway FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{0}'", My.Settings.DomainName)
+        Dim queryText = $"SELECT Description, IPAddress, MACAddress, DefaultIPGateway FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{My.Settings.DomainName}'"
         Dim networkAdapters As ManagementObjectCollection = Me.ComputerPanel.WMI.Query(queryText)
 
         If networkAdapters IsNot Nothing Then
@@ -266,7 +266,7 @@ Public Class MainTab
         Dim userName As String = Nothing
 
         ' Check to see if explorer.exe is open.
-        Dim explorerQueryResult As String = Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_Process WHERE Name = ""explorer.exe"""), "Name")
+        Dim explorerQueryResult As String = Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_Process WHERE Name = 'explorer.exe'"), "Name")
 
         ' If explorer is open then...
         If Not String.IsNullOrWhiteSpace(explorerQueryResult) AndAlso explorerQueryResult.ToUpper() = "EXPLORER.EXE" Then
@@ -288,7 +288,7 @@ Public Class MainTab
                         ' If it finds the volatile environment folder then...
                         If nextSubKey.ToUpper() = "VOLATILE ENVIRONMENT" Then
                             ' Find out what the registry says for the logged in user
-                            userName = registry.GetKeyValue(String.Format("{0}\{1}", keyValue, nextSubKey), "UserName", RegistryController.RegistryKeyValueTypes.String, RegistryHive.Users)
+                            userName = registry.GetKeyValue($"{keyValue}\{nextSubKey}", "UserName", RegistryController.RegistryKeyValueTypes.String, RegistryHive.Users)
 
                             ' But if the registry says nothing then
                             If String.IsNullOrWhiteSpace(userName) Then
@@ -316,7 +316,7 @@ Public Class MainTab
             ' I will let the technician know
             NewTabWriterItem("Logged On:", "Yes", NameOf(ListViewGroups.lsvgUI))
 
-            Dim logonUI As String = Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_Process WHERE Name = ""logonui.exe"""), "Name")
+            Dim logonUI As String = Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Name FROM Win32_Process WHERE Name = 'logonui.exe'"), "Name")
             If Not String.IsNullOrWhiteSpace(logonUI) AndAlso logonUI.ToUpper() = "LOGONUI.EXE" Then
                 NewTabWriterItem("Away From Keyboard:", "Yes", NameOf(ListViewGroups.lsvgUI))
             Else

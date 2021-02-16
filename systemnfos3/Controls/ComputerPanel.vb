@@ -52,7 +52,7 @@ Public Class ComputerPanel
                                               With Me.StatusRichTextBox
                                                   .SelectionStart = .Text.Length
                                                   .SelectionColor = color
-                                                  .AppendText(String.Format("({0}): {1}{2}", Now, message, Environment.NewLine))
+                                                  .AppendText($"({Now}): {message}{Environment.NewLine}")
                                                   .SelectionColor = .ForeColor
                                                   .SelectionStart = .Text.Length
                                                   .ScrollToCaret()
@@ -106,7 +106,7 @@ Public Class ComputerPanel
         Try
             Process.Start(e.LinkText)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -163,7 +163,7 @@ Public Class ComputerPanel
         Me.Initialized = True
 
         If Not Me.IsMassImport Then
-            WriteMessage(String.Format("Checking Connection Status of: {0}", Computer.Value))
+            WriteMessage($"Checking Connection Status of: {Me.Computer.Value}")
         End If
 
         If RespondsToPing() Then
@@ -189,7 +189,7 @@ Public Class ComputerPanel
                     Try
                         wmiWorker.RunWorkerAsync(True)
                     Catch ex As Exception
-                        LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                        LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
                         WriteMessage("An error occured connecting to the remote computer", Color.Red, Me.IsMassImport)
                         WriteMessage(ex.Message, Color.Red, Me.IsMassImport)
                     End Try
@@ -217,7 +217,7 @@ Public Class ComputerPanel
                     wmiWorker.Dispose()
 
                     If Me.WMI Is Nothing Then
-                        Dim message = String.Format("The WMI connection has been terminated because the timeout period of {0} seconds has elapsed", Me.Timeout)
+                        Dim message = $"The WMI connection has been terminated because the timeout period of {Me.Timeout} seconds has elapsed"
                         WriteMessage(message, Color.Brown, Me.IsMassImport)
                         SetConnectionStatus(ConnectionStatuses.OnlineDegraded)
                         Exit Sub
@@ -226,7 +226,7 @@ Public Class ComputerPanel
                     Try
                         Me.WMI = New WMIController(Computer.ConnectionString)
                     Catch ex As Exception
-                        LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                        LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
                         WriteMessage("An error occured while connecting to the remote computer", Color.Brown, IsMassImport)
                         WriteMessage(ex.Message, Color.Red, IsMassImport)
                         SetConnectionStatus(ConnectionStatuses.OnlineDegraded)
@@ -321,7 +321,7 @@ Public Class ComputerPanel
         If connectionString = Nothing Then connectionString = Computer.ConnectionString
 
         Dim wmi = New WMIController(".", ManagementScopes.Regular)
-        Dim responseTime As String = wmi.GetPropertyValue(wmi.Query(String.Format("SELECT ResponseTime FROM Win32_PingStatus Where Address='{0}'", connectionString)), "ResponseTime")
+        Dim responseTime As String = wmi.GetPropertyValue(wmi.Query($"SELECT ResponseTime FROM Win32_PingStatus Where Address='{connectionString}'"), "ResponseTime")
         Dim responseTimeThreshold As Integer = If(isMassImport, 50, 10)
 
         If Not String.IsNullOrWhiteSpace(responseTime) AndAlso Integer.Parse(responseTime) < responseTimeThreshold Then
@@ -443,7 +443,7 @@ Public Class ComputerPanel
                     .Items.Add("Remote Registry", Nothing, AddressOf InitiateRemoteRegistry)
                     Dim hardDriveSharesMenuItem As New ToolStripMenuItem("Hard Drive Share(s)")
                     If Me.WMI IsNot Nothing Then
-                        Dim wmiQueryResult = Me.WMI.Query("SELECT Name, Path FROM Win32_Share WHERE Description=""Default Share""")
+                        Dim wmiQueryResult = Me.WMI.Query("SELECT Name, Path FROM Win32_Share WHERE Description='Default Share'")
                         If wmiQueryResult IsNot Nothing Then
                             For Each share As ManagementBaseObject In wmiQueryResult
                                 Dim shareMenuItem As New ToolStripMenuItem(share.Properties("Path").Value, Nothing, AddressOf InitiateAdminShare)
@@ -480,9 +480,9 @@ Public Class ComputerPanel
 
     Private Function GetUserStatus() As UserStatuses
         If ConnectionStatus = ConnectionStatuses.Online AndAlso Me.WMI IsNot Nothing Then
-            Dim wmiQueryResult As String = Me.WMI.GetPropertyValue(Me.WMI.Query("SELECT Name FROM Win32_Process WHERE Name=""explorer.exe"""), "Name")
+            Dim wmiQueryResult As String = Me.WMI.GetPropertyValue(Me.WMI.Query("SELECT Name FROM Win32_Process WHERE Name='explorer.exe'"), "Name")
             If Not String.IsNullOrWhiteSpace(wmiQueryResult) AndAlso wmiQueryResult.ToUpper() = "EXPLORER.EXE" Then
-                wmiQueryResult = Me.WMI.GetPropertyValue(Me.WMI.Query("SELECT Name FROM Win32_Process WHERE Name=""logonui.exe"""), "Name")
+                wmiQueryResult = Me.WMI.GetPropertyValue(Me.WMI.Query("SELECT Name FROM Win32_Process WHERE Name='logonui.exe'"), "Name")
                 If Not String.IsNullOrWhiteSpace(wmiQueryResult) AndAlso wmiQueryResult.ToUpper() = "LOGONUI.EXE" Then
                     Return UserStatuses.Inactive
                 End If
@@ -558,7 +558,7 @@ Public Class ComputerPanel
                         Next
 
                     Catch ex As Exception
-                        LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                        LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
                     End Try
                 End If
 
@@ -645,7 +645,7 @@ Public Class ComputerPanel
             ' Add the Tab Control to the Panel
             Me.SplitContainer.Panel1.InvokeAddControl(mainTabControl)
 
-            WriteMessage(String.Format("Connection has completed loading (Status: {0})", [Enum].GetName(GetType(ConnectionStatuses), status)))
+            WriteMessage($"Connection has completed loading (Status: {[Enum].GetName(GetType(ConnectionStatuses), status)})")
 
         Else
             Me.Initialized = False

@@ -34,8 +34,8 @@ Public Module [Global]
             If File.Exists(logPath) Then
                 ' Timestamp and move the current log if it's 10 days or older
                 If (Date.Now - File.GetCreationTime(logPath)).TotalDays >= 10 Then
-                    Dim outFileName As String = String.Format("{0}.{1}{2}", Path.GetFileNameWithoutExtension(logPath), Date.Now.ToString("MMddyyyyHHmmss"), Path.GetExtension(logPath))
-                    Dim outPath As String = Path.Combine(archivePath, outFileName)
+                    Dim outFileName = $"{Path.GetFileNameWithoutExtension(logPath)}.{Date.Now:MMddyyyyHHmmss}{Path.GetExtension(logPath)}"
+                    Dim outPath = Path.Combine(archivePath, outFileName)
 
                     File.Move(logPath, outPath)
                 End If
@@ -48,7 +48,7 @@ Public Module [Global]
                 Next
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -71,7 +71,7 @@ Public Module [Global]
             ExitApp(1, ex.Message, errorWritingToLog:=True)
         End Try
 
-        Return Path.Combine(logsFolderPath, String.Format("{0}.log", [Global].AppName))
+        Return Path.Combine(logsFolderPath, $"{[Global].AppName}.log")
     End Function
 
     Public Sub SetLog4NetFileAppenderPath(logPath As String)
@@ -87,7 +87,7 @@ Public Module [Global]
     End Sub
 
     Public Sub LogEvent(message As String, Optional logEvent As LogEvents = LogEvents.Error)
-        message = String.Format("{0} | {1} | {2}@{3}", message, [Global].AppVersion, Environment.UserName, Environment.MachineName)
+        message = $"{message} | {[Global].AppVersion} | {Environment.UserName}@{Environment.MachineName}"
         Dim logger As ILog = LogManager.GetLogger("FileAppender")
 
         Try
@@ -210,7 +210,7 @@ Public Module [Global]
                 End If
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -229,7 +229,7 @@ Public Module [Global]
             End Using
 
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -246,14 +246,14 @@ Public Module [Global]
 
                 For Each row As DataRow In table.Rows
                     Dim items = row.ItemArray _
-                        .Select(Function(item) If(item.ToString().Contains(","), """" & item & """", item)) _
+                        .Select(Function(item) If(item.ToString().Contains(","), $"'{item}'", item)) _
                         .ToArray()
 
                     writer.WriteLine(String.Join(",", items))
                 Next
             End Using
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -266,7 +266,7 @@ Public Module [Global]
             message = "completed successfully"
         End If
 
-        message = String.Format("[{0}] {1} - exit code: {2}", AppName, message, exitCode)
+        message = $"[{[Global].AppName}] {message} - exit code: {exitCode}"
         If errorWritingToLog Then
             Console.WriteLine(message)
         Else
@@ -286,7 +286,7 @@ Public Module [Global]
         Try
             appPath = Process.GetCurrentProcess().MainModule.FileName
         Catch ex As Exception
-            ExitApp(1, String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            ExitApp(1, $"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return appPath
@@ -298,7 +298,7 @@ Public Module [Global]
         Try
             appDir = Path.GetDirectoryName(AppPath)
         Catch ex As Exception
-            ExitApp(1, String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            ExitApp(1, $"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return appDir
@@ -318,7 +318,7 @@ Public Module [Global]
                 version = CType(xmlElements.Elements.Nodes(1), XElement).Value.Trim()
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return version
@@ -331,7 +331,7 @@ Public Module [Global]
             Dim assemblyPath = Assembly.GetEntryAssembly().Location
             appName = Path.GetFileNameWithoutExtension(assemblyPath)
         Catch ex As Exception
-            ExitApp(1, String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            ExitApp(1, $"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return appName
@@ -343,7 +343,7 @@ Public Module [Global]
         Try
             systemDrive = Directory.GetDirectoryRoot(Environment.SystemDirectory)
         Catch ex As Exception
-            ExitApp(1, String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            ExitApp(1, $"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return systemDrive
@@ -355,7 +355,7 @@ Public Module [Global]
         Try
             itPath = Path.Combine(SystemDrive, My.Settings.ITFolderLocalPathWithoutSystemDrive)
         Catch ex As Exception
-            ExitApp(1, String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            ExitApp(1, $"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return itPath

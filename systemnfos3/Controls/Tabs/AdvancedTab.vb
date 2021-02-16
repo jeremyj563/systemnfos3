@@ -75,23 +75,23 @@ Public Class AdvancedTab
         ' Network Interfaces
         Me.advancedInfoListView.Groups.Add(NameOf(ListViewGroups.lsvgNI), ListViewGroups.lsvgNI)
         Dim networkInterfaceCount As Integer = 0
-        For Each networkInterface As ManagementBaseObject In Me.ComputerPanel.WMI.Query(String.Format("SELECT Description, IPAddress, MACAddress, DefaultIPGateway FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{0}'", My.Settings.DomainName))
+        For Each instance In Me.ComputerPanel.WMI.Query($"SELECT Description, IPAddress, MACAddress, DefaultIPGateway FROM Win32_NetworkAdapterConfiguration WHERE DNSDomain='{My.Settings.DomainName}'")
             If MyBase.UserCancellationPending() Then Exit Sub
 
             networkInterfaceCount += 1
 
-            Dim adapterName As String = networkInterface.Properties("Description").Value
-            Me.advancedInfoListView.Groups.Add(NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount, String.Format("{0} ({1})", ListViewGroups.lsvgNI, adapterName))
+            Dim adapterName As String = instance.Properties("Description").Value
+            Me.advancedInfoListView.Groups.Add(NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount, $"{ListViewGroups.lsvgNI} ({adapterName})")
 
-            For index = 0 To networkInterface.GetPropertyValue("IPAddress").Length - 1
-                NewTabWriterItem("IP Address:", networkInterface.GetPropertyValue("IPAddress")(index), NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount)
+            For index = 0 To instance.GetPropertyValue("IPAddress").Length - 1
+                NewTabWriterItem("IP Address:", instance.GetPropertyValue("IPAddress")(index), NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount)
             Next
 
-            NewTabWriterItem("MAC Address:", networkInterface.Properties("MACAddress").Value, NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount)
+            NewTabWriterItem("MAC Address:", instance.Properties("MACAddress").Value, NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount)
 
-            If networkInterface.GetPropertyValue("DefaultIPGateway") IsNot Nothing Then
-                For index = 0 To networkInterface.GetPropertyValue("DefaultIPGateway").Length - 1
-                    NewTabWriterItem("Default Gateway:", networkInterface.GetPropertyValue("DefaultIPGateway")(index), NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount)
+            If instance.GetPropertyValue("DefaultIPGateway") IsNot Nothing Then
+                For index = 0 To instance.GetPropertyValue("DefaultIPGateway").Length - 1
+                    NewTabWriterItem("Default Gateway:", instance.GetPropertyValue("DefaultIPGateway")(index), NameOf(ListViewGroups.lsvgNI) & networkInterfaceCount)
                 Next
             End If
         Next
@@ -107,7 +107,7 @@ Public Class AdvancedTab
             hddInterfaceCount += 1
 
             Dim driveLetter As String = hddInterface.Properties("Name").Value
-            Me.advancedInfoListView.Groups.Add(New ListViewGroup(NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount, String.Format("{0} ({1})", ListViewGroups.lsvgHD, driveLetter)))
+            Me.advancedInfoListView.Groups.Add(New ListViewGroup(NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount, $"{ListViewGroups.lsvgHD} ({driveLetter})"))
 
             NewTabWriterItem("Volume Name:", hddInterface.Properties("VolumeName").Value, NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount)
             NewTabWriterItem("Serial Number:", hddInterface.Properties("VolumeSerialNumber").Value, NameOf(ListViewGroups.lsvgHD) & hddInterfaceCount)
@@ -129,16 +129,16 @@ Public Class AdvancedTab
             memoryInterfaceCount += 1
 
             Dim capacity As Long = memoryInterface.Properties("Capacity").Value / 1073741824
-            Me.advancedInfoListView.Groups.Add(NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount, String.Format("{0} {1}", ListViewGroups.lsvgMI, memoryInterfaceCount))
+            Me.advancedInfoListView.Groups.Add(NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount, $"{ListViewGroups.lsvgMI} {memoryInterfaceCount}")
 
-            NewTabWriterItem("Capacity:", String.Format("{0} GB(s)", capacity), NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
-            NewTabWriterItem("Speed:", String.Format("{0} MHz", memoryInterface.Properties("Speed").Value), NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
+            NewTabWriterItem("Capacity:", $"{capacity} GB(s)", NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
+            NewTabWriterItem("Speed:", $"{memoryInterface.Properties("Speed").Value} MHz", NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
             NewTabWriterItem("Serial Number:", memoryInterface.Properties("SerialNumber").Value, NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
             NewTabWriterItem("Part Number:", memoryInterface.Properties("PartNumber").Value, NameOf(ListViewGroups.lsvgMI) & memoryInterfaceCount)
             totalCapacity += capacity
         Next
 
-        NewTabWriterItem("Total Memory Capacity:", String.Format("{0} GB(s)", totalCapacity), NameOf(ListViewGroups.lsvgMI))
+        NewTabWriterItem("Total Memory Capacity:", $"{totalCapacity} GB(s)", NameOf(ListViewGroups.lsvgMI))
     End Sub
 
     Private Sub ExportAdvancedInfo(sender As Object, e As DoWorkEventArgs)

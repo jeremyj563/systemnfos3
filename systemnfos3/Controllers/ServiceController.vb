@@ -15,7 +15,7 @@
     End Sub
 
     Public Function [Stop](serviceName As String) As ServiceError
-        For Each service As ManagementObject In WMI.Query(String.Format("SELECT * FROM Win32_Service WHERE Name=""{0}""", serviceName))
+        For Each service As ManagementObject In WMI.Query($"SELECT * FROM Win32_Service WHERE Name='{serviceName}'")
             Return service.InvokeMethod("StopService", Nothing)
         Next
 
@@ -23,7 +23,7 @@
     End Function
 
     Public Function Start(serviceName As String) As ServiceError
-        For Each service As ManagementObject In WMI.Query(String.Format("SELECT * FROM Win32_Service WHERE Name=""{0}""", serviceName))
+        For Each service As ManagementObject In WMI.Query($"SELECT * FROM Win32_Service WHERE Name='{serviceName}'")
             Return service.InvokeMethod("StartService", Nothing)
         Next
 
@@ -31,8 +31,9 @@
     End Function
 
     Public Sub ChangeStartupType(serviceName As String, startupType As ServiceStartupType)
-        For Each service As ManagementObject In WMI.Query(String.Format("SELECT * FROM Win32_Service WHERE Name=""{0}""", serviceName))
-            Dim startMode As ManagementBaseObject = service.GetMethodParameters("ChangeStartMode")
+        For Each service As ManagementObject In WMI.Query($"SELECT * FROM Win32_Service WHERE Name='{serviceName}'")
+
+            Dim startMode = service.GetMethodParameters("ChangeStartMode")
 
             Select Case startupType
                 Case ServiceStartupType.Auto
@@ -49,7 +50,7 @@
 
     Public Function CheckDependentServices(serviceName As String) As String()
         Dim results As New List(Of String)
-        Dim services As ManagementObjectCollection = WMI.Query(String.Format("ASSOCIATORS OF {{Win32_Service.Name='{0}'}} WHERE AssocClass=Win32_DependentService Role=Antecedent", serviceName))
+        Dim services = WMI.Query($"ASSOCIATORS OF {{Win32_Service.Name='{serviceName}'}} WHERE AssocClass=Win32_DependentService Role=Antecedent")
         If services.Count > 0 Then
             For Each dependentService As ManagementObject In services
                 results.Add(dependentService.Properties("Name").Value)
@@ -83,7 +84,7 @@
     End Function
 
     Public Function QueryState(serviceName As String) As ServiceState
-        Dim serviceState As String = WMI.GetPropertyValue(WMI.Query(String.Format("SELECT State FROM Win32_Service WHERE Name=""{0}""", serviceName)), "State").ToUpper().Trim()
+        Dim serviceState As String = WMI.GetPropertyValue(WMI.Query($"SELECT State FROM Win32_Service WHERE Name='{serviceName}'"), "State").ToUpper().Trim()
 
         Select Case serviceState
             Case "RUNNING"
@@ -100,7 +101,7 @@
     End Function
 
     Public Function QueryStartupType(serviceName As String) As ServiceStartupType
-        Select Case WMI.GetPropertyValue(WMI.Query(String.Format("SELECT StartMode FROM Win32_Service Where Name=""{0}""", serviceName)), "StartMode").ToUpper().Trim()
+        Select Case WMI.GetPropertyValue(WMI.Query($"SELECT StartMode FROM Win32_Service Where Name='{serviceName}'"), "StartMode").ToUpper().Trim()
             Case "AUTO"
                 Return ServiceStartupType.Auto
             Case "MANUAL"

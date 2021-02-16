@@ -41,14 +41,14 @@ Public Class ApplicationTab
         For Each keyValue In x86Registry.GetKeyValues("Software\Microsoft\Windows\CurrentVersion\Uninstall")
             If MyBase.UserCancellationPending() Then Exit Sub
 
-            Dim registryKeyPath As String = String.Format("Software\Microsoft\Windows\CurrentVersion\Uninstall\{0}", keyValue)
+            Dim registryKeyPath = $"Software\Microsoft\Windows\CurrentVersion\Uninstall\{keyValue}"
             Dim displayName As String = x86Registry.GetKeyValue(registryKeyPath, "DisplayName", RegistryController.RegistryKeyValueTypes.String)
 
             If String.IsNullOrWhiteSpace(displayName) Then
                 Continue For
             End If
 
-            NewTabWriterItem(displayName, String.Format("Software\Microsoft\Windows\CurrentVersion\Uninstall\{0}&32", keyValue), NameOf(ListViewGroups.lsvgAN))
+            NewTabWriterItem(displayName, $"Software\Microsoft\Windows\CurrentVersion\Uninstall\{keyValue}&32", NameOf(ListViewGroups.lsvgAN))
         Next
 
         If Me.ComputerPanel.WMI.X64Scope.IsConnected Then
@@ -56,14 +56,14 @@ Public Class ApplicationTab
             For Each keyValue In x64Registry.GetKeyValues("Software\Microsoft\Windows\CurrentVersion\Uninstall")
                 If MyBase.UserCancellationPending() Then Exit Sub
 
-                Dim registryKeyPath As String = String.Format("Software\Microsoft\Windows\CurrentVersion\Uninstall\{0}", keyValue)
+                Dim registryKeyPath = $"Software\Microsoft\Windows\CurrentVersion\Uninstall\{keyValue}"
                 Dim displayName As String = x64Registry.GetKeyValue(registryKeyPath, "DisplayName", RegistryController.RegistryKeyValueTypes.String)
 
                 If String.IsNullOrWhiteSpace(displayName) Then
                     Continue For
                 End If
 
-                NewTabWriterItem(displayName, String.Format("Software\Microsoft\Windows\CurrentVersion\Uninstall\{0}&64", keyValue), NameOf(ListViewGroups.lsvgAN))
+                NewTabWriterItem(displayName, $"Software\Microsoft\Windows\CurrentVersion\Uninstall\{keyValue}&64", NameOf(ListViewGroups.lsvgAN))
             Next
         End If
 
@@ -97,7 +97,7 @@ Public Class ApplicationTab
             Me.EnumWriterApps = New List(Of Object)()
         End If
 
-        Me.EnumWriterApps.Add(New Object() {String.Format("   {0}", subject), group, body})
+        Me.EnumWriterApps.Add(New Object() {$"   {subject}", group, body})
     End Sub
 
     Private Sub GetAppInformation()
@@ -134,8 +134,8 @@ Public Class ApplicationTab
                 If rawKeys(1) = "64" Then registry = New RegistryController(Me.ComputerPanel.WMI.X64Scope)
 
                 NewAppWriteItem(registry.GetKeyValue(rawKeys(0), "DisplayName", RegistryController.RegistryKeyValueTypes.String), " ", NameOf(ListViewGroups.lsvgSN))
-                NewAppWriteItem(String.Format("HKLM\{0}", rawKeys(0)), " ", NameOf(ListViewGroups.lsvgRK))
-                NewAppWriteItem(String.Format("{0}-bit Registry", rawKeys(1)), " ", NameOf(ListViewGroups.lsvgRI))
+                NewAppWriteItem($"HKLM\{rawKeys(0)}", " ", NameOf(ListViewGroups.lsvgRK))
+                NewAppWriteItem($"{rawKeys(1)}-bit Registry", " ", NameOf(ListViewGroups.lsvgRI))
 
                 Dim displayVersion As String = registry.GetKeyValue(rawKeys(0), "DisplayVersion", RegistryController.RegistryKeyValueTypes.String)
                 If Not String.IsNullOrWhiteSpace(displayVersion) Then
@@ -165,7 +165,7 @@ Public Class ApplicationTab
                 End If
 
             Catch ex As Exception
-                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
 
                 If Not Me.ComputerPanel.RespondsToPing() Then
                     Me.ComputerPanel.SetConnectionStatus(ComputerPanel.ConnectionStatuses.Offline)
@@ -200,7 +200,7 @@ Public Class ApplicationTab
                 {
                     .SoftwareName = registry.GetKeyValue(appKeyPath, "DisplayName", RegistryController.RegistryKeyValueTypes.String),
                     .RegistryKey = appKeyPath,
-                    .RegistryInformation = String.Format("{0}-bit Registry", appArchitecture),
+                    .RegistryInformation = $"{appArchitecture}-bit Registry",
                     .Version = registry.GetKeyValue(appKeyPath, "DisplayVersion", RegistryController.RegistryKeyValueTypes.String),
                     .UninstallString = registry.GetKeyValue(appKeyPath, "UninstallString", RegistryController.RegistryKeyValueTypes.String),
                     .InstallDate = registry.GetKeyValue(appKeyPath, "InstallDate", RegistryController.RegistryKeyValueTypes.String),

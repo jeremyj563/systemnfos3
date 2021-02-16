@@ -86,7 +86,7 @@ Public NotInheritable Class LoadForm
             End If
         Catch ex As Exception
             ' Error encountered running upgrade script so log the error and continue running the program
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
             Exit Sub
         End Try
     End Sub
@@ -111,7 +111,7 @@ Public NotInheritable Class LoadForm
         Dim authorizedGroupName As String = "SysTool"
 
         If Not UserInAuthorizedGroup(Environment.UserName, authorizedDomain, authorizedGroupPath, authorizedGroupName) Then
-            Dim message As String = String.Format("Your user account ({0}) is not authorized to access this program. Please contact the IT department for assistance.", Environment.UserName)
+            Dim message = $"Your user account ({Environment.UserName}) is not authorized to access this program. Please contact the IT department for assistance."
             MessageBox.Show(Me, message, "Unauthorized", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
             [Global].ExitApp(99, "Unauthorized User", [Global].LogEvents.Fatal)
         End If
@@ -121,7 +121,7 @@ Public NotInheritable Class LoadForm
         ' Lookup the user's ldap group membership via local WMI provider
         Try
             Dim session = CimSession.Create("localhost")
-            Dim query = String.Format("SELECT DS_memberOf FROM ds_user WHERE ds_samAccountName='{0}'", userName)
+            Dim query = $"SELECT DS_memberOf FROM ds_user WHERE ds_samAccountName='{userName}'"
             Dim user = session.QueryInstances("root\directory\ldap", "WQL", query).SingleOrDefault()
 
             If user IsNot Nothing Then
@@ -144,7 +144,7 @@ Public NotInheritable Class LoadForm
                 Next
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return False
@@ -189,12 +189,12 @@ Public NotInheritable Class LoadForm
                     Me.DataSource.Add(New Collection() With
                         {
                             .Value = collectionName,
-                            .Display = String.Format("COLL:{0}", collectionName)
+                            .Display = $"COLL:{collectionName}"
                         })
                 Next
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 

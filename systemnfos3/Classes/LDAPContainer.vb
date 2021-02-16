@@ -40,7 +40,7 @@ Public Class LDAPContainer
     ''' <param name="searchValue">The value of the attribute you are seaerching against</param>
     ''' <remarks></remarks>
     Public Sub New(objectClass As String, searchTerm As String, searchValue As String)
-        Me.New(String.Format("(&(objectClass={0})({1}={2}))", objectClass, searchTerm, searchValue))
+        Me.New($"(&(objectClass={objectClass})({searchTerm}={searchValue}))")
     End Sub
 
     Public Sub New(queryOrPath As String)
@@ -65,7 +65,7 @@ Public Class LDAPContainer
             Me.DirectoryEntry.Properties(attributeName).Value = value
             Me.DirectoryEntry.CommitChanges()
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -86,7 +86,7 @@ Public Class LDAPContainer
                 End If
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return Nothing

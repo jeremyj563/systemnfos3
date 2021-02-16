@@ -126,7 +126,7 @@ Public MustInherit Class Tab
         Dim saveDialog As New SaveFileDialog() With
             {
                 .InitialDirectory = "%UserProfile%",
-                .FileName = String.Format("{0} - {1}", selectedComputerName, selectedTabName),
+                .FileName = $"{selectedComputerName} - {selectedTabName}",
                 .Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
                 .RestoreDirectory = True
             }
@@ -149,7 +149,7 @@ Public MustInherit Class Tab
                 ' Start the export BackgroundWorker
                 Me.ExportWorker.RunWorkerAsync(saveDialog.FileName)
             Catch ex As Exception
-                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
             End Try
         Else
             ' User canceled so enable the previously disabled tabs
@@ -308,7 +308,7 @@ Public MustInherit Class Tab
                 Me.TabWriterObjects = New List(Of Object)()
             End If
 
-            Me.TabWriterObjects.Add(New Object() {String.Format("   {0}", subject), group, body})
+            Me.TabWriterObjects.Add(New Object() {$"   {subject}", group, body})
         End If
     End Sub
 
@@ -322,7 +322,7 @@ Public MustInherit Class Tab
                 Me.EnumWriterObjects = New List(Of Object)()
             End If
 
-            Me.EnumWriterObjects.Add(New Object() {String.Format("   {0}", subject), group, body})
+            Me.EnumWriterObjects.Add(New Object() {$"   {subject}", group, body})
         End If
     End Sub
 
@@ -348,11 +348,11 @@ Public MustInherit Class Tab
     End Enum
 
     Public Function ConvertDate(originalDate As String, Optional includeTime As Boolean = False) As String
-        Dim convertedDate As String = Nothing
-
         Dim year As String
         Dim month As String
         Dim day As String
+
+        Dim convertedDate As String = String.Empty
 
         If originalDate Is Nothing Then
             Return Nothing
@@ -361,14 +361,17 @@ Public MustInherit Class Tab
                 originalDate.Replace("-", String.Empty)
             End If
 
-            year = CType(Mid(originalDate, 1, 4), Integer)
             month = CType(Mid(originalDate, 5, 2), Integer)
             day = CType(Mid(originalDate, 7, 2), Integer)
-            convertedDate = String.Format("{0}/{1}/{2}", month, day, year)
+            year = CType(Mid(originalDate, 1, 4), Integer)
+            convertedDate = $"{month}/{day}/{year}"
         End If
 
         If includeTime Then
-            convertedDate += String.Format(" {0}:{1}:{2}", Mid(originalDate, 9, 2), Mid(originalDate, 11, 2), Mid(originalDate, 13, 2))
+            month = Mid(originalDate, 9, 2)
+            day = Mid(originalDate, 11, 2)
+            year = Mid(originalDate, 13, 2)
+            convertedDate += $" {month}:{day}:{year}"
         End If
 
         Return convertedDate
@@ -524,12 +527,12 @@ Public MustInherit Class Tab
             End If
 
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
 
             Try
                 Me.ComputerPanel.WMI.Connect(Me.ComputerPanel.Computer.Value, WMIController.ManagementScopes.All, async:=False)
             Catch exc As Exception
-                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), exc.Message))
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {exc.Message}")
                 Me.ComputerPanel.SetConnectionStatus(ComputerPanel.ConnectionStatuses.Offline)
             End Try
         End Try

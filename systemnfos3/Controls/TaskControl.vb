@@ -42,7 +42,7 @@ Public Class TaskControl
                     .Text = value
                 })
 
-        Dim subKeyValues = registry.GetKeyValues(String.Format("{0}\{1}", My.Settings.RegistryPathCollections, value), RegistryHive.CurrentUser)
+            Dim subKeyValues = registry.GetKeyValues($"{My.Settings.RegistryPathCollections}\{value}", RegistryHive.CurrentUser)
             For Each computerName In subKeyValues
                 rootNode.Nodes(value).Nodes.Add(New TreeNode With
                         {
@@ -79,7 +79,7 @@ Public Class TaskControl
 
         For Each q1ResultNode As TreeNode In OwnerForm.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Results)).Nodes
             If q1ResultNode.Text = Me.TaskNameTextBox.Text Then
-                MsgBox(String.Format("Task: {0} already exists", q1ResultNode.Text))
+                MsgBox($"Task: {q1ResultNode.Text} already exists")
                 Exit Sub
             End If
         Next
@@ -115,7 +115,7 @@ Public Class TaskControl
         Next
 
         Dim taskResult As New TaskResultControl(computers, FileComboBox.Text, ArgumentsTextBox.Text, chbViewable.Checked, OwnerForm)
-        taskResult.LabelName.Text = String.Format("Task: {0} on Collection: {1}", FileComboBox.Text, CollectionsTreeView.SelectedNode.Text)
+        taskResult.LabelName.Text = $"Task: {FileComboBox.Text} on Collection: {CollectionsTreeView.SelectedNode.Text}"
         Dim q2ResultNode As New TreeNode With
             {
                 .Text = Me.TaskNameTextBox.Text,

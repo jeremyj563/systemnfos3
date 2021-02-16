@@ -50,7 +50,7 @@ Public Class RegistryController
                 .Timeout = New TimeSpan(0, 0, 0, 5, 0)
             }
 
-        Me.Scope = New ManagementScope(String.Format("\\{0}\root\default", computerName))
+        Me.Scope = New ManagementScope($"\\{computerName}\root\default")
         With Me.Scope
             .Options = options
             .Options.Context.Add("__ProviderArchitecture", architecture)
@@ -71,7 +71,7 @@ Public Class RegistryController
                 keyValues = properties.Select(Function(p) p.ToUpper().Trim()).ToArray()
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return keyValues
@@ -94,7 +94,7 @@ Public Class RegistryController
                 Return wmi.ManagementBaseObject("sValue")
             End If
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
 
         Return Nothing
@@ -118,7 +118,7 @@ Public Class RegistryController
             Dim wmi = WMIManagementFactory(methodName, properties)
             wmi.ManagementClass.InvokeMethod(methodName, wmi.ManagementBaseObject, wmi.InvokeMethodOptions)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -131,7 +131,7 @@ Public Class RegistryController
             Dim wmi = WMIManagementFactory(methodName, properties)
             wmi.ManagementClass.InvokeMethod(methodName, wmi.ManagementBaseObject, wmi.InvokeMethodOptions)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -141,7 +141,7 @@ Public Class RegistryController
         Try
             Dim keyValues As String() = GetKeyValues(keyPath, hive)
             For Each key As String In keyValues
-                DeleteKey(String.Format("{0}\{1}", keyPath, key), hive)
+                DeleteKey($"{keyPath}\{key}", hive)
             Next
 
             Dim properties As Dictionary(Of String, Object) = NewBaseWMIProperties(hive, keyPath)
@@ -149,7 +149,7 @@ Public Class RegistryController
             Dim wmi = WMIManagementFactory(methodName, properties)
             wmi.ManagementClass.InvokeMethod(methodName, wmi.ManagementBaseObject, wmi.InvokeMethodOptions)
         Catch ex As Exception
-            LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+            LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
     End Sub
 
@@ -157,9 +157,9 @@ Public Class RegistryController
         ' Return a method name for getting/setting either a DWORD or String value
         Select Case valueType
             Case RegistryKeyValueTypes.Dword
-                Return String.Format("{0}DWORDValue", verb)
+                Return $"{verb}DWORDValue"
             Case RegistryKeyValueTypes.String
-                Return String.Format("{0}StringValue", verb)
+                Return $"{verb}StringValue"
         End Select
 
         Return Nothing

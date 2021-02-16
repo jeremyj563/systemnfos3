@@ -73,16 +73,17 @@ Public Class PrinterTab
                         End If
                     Next
                 Catch ex As Exception
-                    LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                    LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
                 End Try
             Case Else
         End Select
 
         If Not String.IsNullOrWhiteSpace(currentUserRegistryKey) Then
             Try
-                Me.DefaultPrinter = registry.GetKeyValue(String.Format("{0}\Software\Microsoft\Windows NT\CurrentVersion\Windows", currentUserRegistryKey), "Device", RegistryController.RegistryKeyValueTypes.String, RegistryHive.Users).ToString().Split(",")
+                Dim keyPath = $"{currentUserRegistryKey}\Software\Microsoft\Windows NT\CurrentVersion\Windows"
+                Me.DefaultPrinter = registry.GetKeyValue(keyPath, "Device", RegistryController.RegistryKeyValueTypes.String, RegistryHive.Users).ToString().Split(",")
             Catch ex As Exception
-                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
             End Try
         End If
 
@@ -95,13 +96,13 @@ Public Class PrinterTab
                     If MyBase.UserCancellationPending() Then Exit Sub
 
                     If Me.DefaultPrinter IsNot Nothing AndAlso printer.Properties("name").Value = Me.DefaultPrinter(0) Then
-                        NewTabWriterItem(String.Format("{0} (Default Printer)", printer.Properties("Name").Value), New Object() {printer.Properties("PortName").Value, printer.Properties("PrintProcessor").Value, printer.Properties("PrintJobDataType").Value, printer}, NameOf(ListViewGroups.lsvgPR))
+                        NewTabWriterItem($"{printer.Properties("Name").Value} (Default Printer)", New Object() {printer.Properties("PortName").Value, printer.Properties("PrintProcessor").Value, printer.Properties("PrintJobDataType").Value, printer}, NameOf(ListViewGroups.lsvgPR))
                     Else
                         NewTabWriterItem(printer.Properties("Name").Value, New Object() {printer.Properties("PortName").Value, printer.Properties("PrintProcessor").Value, printer.Properties("PrintJobDataType").Value, printer}, NameOf(ListViewGroups.lsvgPR))
                     End If
                 Next
             Catch ex As Exception
-                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
                 NewTabWriterItem("Error:", New Object() {ex.Message, "LEGEND"}, NameOf(ListViewGroups.lsvgPR))
             End Try
         End If
@@ -117,7 +118,7 @@ Public Class PrinterTab
                     NewTabWriterItem(driver.Properties("Name").Value, New Object() {driver.Properties("DriverPath").Value, driver}, NameOf(ListViewGroups.lsvgPD))
                 Next
             Catch ex As Exception
-                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
                 NewTabWriterItem("Error:", New Object() {ex.Message, "LEGEND"}, NameOf(ListViewGroups.lsvgPD))
             End Try
         End If
@@ -133,7 +134,7 @@ Public Class PrinterTab
                     NewTabWriterItem(port.Properties("Name").Value, New Object() {port.Properties("HostAddress").Value, port.Properties("PortNumber").Value, port}, NameOf(ListViewGroups.lsvgPO))
                 Next
             Catch ex As Exception
-                LogEvent(String.Format("EXCEPTION in {0}: {1}", MethodBase.GetCurrentMethod(), ex.Message))
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
                 NewTabWriterItem("Error:", New Object() {ex.Message, "LEGEND"}, NameOf(ListViewGroups.lsvgPO))
             End Try
         End If

@@ -84,7 +84,8 @@ Public Class ProcessesTab
                 .Add(New ListViewGroup(NameOf(ListViewGroups.lsvgCL), ListViewGroups.lsvgCL))
             End With
 
-            For Each proc As ManagementObject In Me.ComputerPanel.WMI.Query(String.Format("SELECT Name, ProcessID, CreationDate, ThreadCount, CommandLine FROM Win32_Process WHERE ProcessID = ""{0}""", process.Properties("ProcessID").Value))
+            Dim queryText = $"SELECT Name, ProcessID, CreationDate, ThreadCount, CommandLine FROM Win32_Process WHERE ProcessID = '{process.Properties("ProcessID").Value}'"
+            For Each proc In Me.ComputerPanel.WMI.Query(queryText)
                 MyBase.NewTabWriterItem(proc.Properties("Name").Value, proc, NameOf(ListViewGroups.lsvgPN))
                 MyBase.NewTabWriterItem(proc.Properties("ProcessID").Value, proc, NameOf(ListViewGroups.lsvgPI))
                 MyBase.NewTabWriterItem(proc.Properties("CreationDate").Value, proc, NameOf(ListViewGroups.lsvgCD))
