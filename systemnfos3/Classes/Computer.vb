@@ -16,44 +16,28 @@
 
     Public Sub New(ldapData As SearchResult)
         Me.LDAPData = ldapData
-        Me.SetProperties()
-    End Sub
 
-    Private Sub SetProperties()
-        Me.SetNetworkAddressProperties()
-
-        Dim description = GetResultPropertyValue(Me.LDAPData.Properties("description"))
-        Me.Value = GetResultPropertyValue(Me.LDAPData.Properties("name"))
-        Me.Description = If(String.IsNullOrWhiteSpace(description), "Unknown", description)
+        Dim netAddr As String = Me.GetValue(Me.LDAPData.Properties("networkAddress"))
+        Dim netAddrs = netAddr.Split(",")
+        Dim desc = Me.GetValue(Me.LDAPData.Properties("description"))
+        Me.IPAddress = netAddrs(0)
+        Me.MACAddress = If(netAddrs.Count > 1, netAddrs(1), String.Empty)
+        Me.Value = Me.GetValue(Me.LDAPData.Properties("name"))
+        Me.Description = If(String.IsNullOrWhiteSpace(desc), "Unknown", desc)
         Me.Display = $"{Me.Description}  >  {Me.Value}"
-        Me.UserName = GetResultPropertyValue(Me.LDAPData.Properties("uid"))
-        Me.DisplayName = GetResultPropertyValue(Me.LDAPData.Properties("displayName"))
-        Me.LastLogon = GetResultPropertyValue(Me.LDAPData.Properties("extensionAttribute1"))
+        Me.UserName = Me.GetValue(Me.LDAPData.Properties("uid"))
+        Me.DisplayName = Me.GetValue(Me.LDAPData.Properties("displayName"))
+        Me.LastLogon = Me.GetValue(Me.LDAPData.Properties("extensionAttribute1"))
         Me.ActiveDirectoryPath = If(Me.LDAPData.Path, String.Empty)
         Me.ActiveDirectoryContainer = New LDAPContainer(Me.LDAPData.Path)
         Me.ConnectionString = Me.Value
     End Sub
 
-    Private Sub SetNetworkAddressProperties()
-        Dim networkAddress As String = GetResultPropertyValue(Me.LDAPData.Properties("networkAddress"))
-        If Not String.IsNullOrWhiteSpace(networkAddress) Then
-            Dim networkAddresses As String() = networkAddress.Split(",")
-            Me.IPAddress = If(networkAddresses(0), String.Empty)
-            If networkAddresses.Count >= 2 Then
-                Me.MACAddress = If(networkAddresses(1), String.Empty)
-            End If
+    Private Function GetValue(values As ResultPropertyValueCollection) As String
+        If values?.Count() > 0 Then
+            Dim isArray = values(0).GetType().IsArray AndAlso values(0).Count() > 0
+            Return If(isArray, values(0)(0), values(0))
         End If
-    End Sub
-
-    Private Function GetResultPropertyValue(properties As ResultPropertyValueCollection) As String
-        If properties IsNot Nothing AndAlso properties.Count > 0 Then
-            If properties(0).GetType().IsArray Then
-                Return CType(properties(0), String())(0)
-            Else
-                Return CType(properties(0), String)
-            End If
-        End If
-
         Return String.Empty
     End Function
 
