@@ -17,8 +17,7 @@
     Public Sub New(ldapData As SearchResult)
         Me.LDAPData = ldapData
 
-        Dim netAddr As String = Me.GetValue(Me.LDAPData.Properties("networkAddress"))
-        Dim netAddrs = netAddr.Split(",")
+        Dim netAddrs = Me.GetValue(Me.LDAPData.Properties("networkAddress")).Split(",")
         Dim desc = Me.GetValue(Me.LDAPData.Properties("description"))
         Me.IPAddress = netAddrs(0)
         Me.MACAddress = If(netAddrs.Count > 1, netAddrs(1), String.Empty)
