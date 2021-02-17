@@ -127,9 +127,9 @@ Public Class MainForm
         AddHandler Me.Shown, AddressOf RunUpdateMonitor
 
         ' Add event handler to begin background ldap incremental updates
-        AddHandler Me.LDAPWorker.DoWork, AddressOf UpdateLDAPDataBindings
-        AddHandler Me.LDAPWorker.RunWorkerCompleted, Sub(s, e) If Not e.Cancelled Then Me.LDAPWorker.RunWorkerAsync()
-        AddHandler Me.FormClosing, AddressOf LDAPWorker.CancelAsync
+        'AddHandler Me.LDAPWorker.DoWork, AddressOf UpdateLDAPDataBindings
+        'AddHandler Me.LDAPWorker.RunWorkerCompleted, Sub(s, e) If Not e.Cancelled Then Me.LDAPWorker.RunWorkerAsync()
+        'AddHandler Me.FormClosing, AddressOf LDAPWorker.CancelAsync
 
         ' Add event handlers for the import functionality
         AddHandler Me.ImportWorker.DoWork, AddressOf MassImportProcessComputers
@@ -878,7 +878,7 @@ Public Class MainForm
         Next
     End Sub
 
-    Private Sub PerformCustomActionOnSelectedComputerNodes(listView As ListView, ByRef customActionMenuItem As ToolStripMenuItem, e As MouseEventArgs)
+    Private Sub PerformCustomActionOnSelectedComputerNodes(listView As ListView, customActionMenuItem As ToolStripMenuItem, e As MouseEventArgs)
         [Global].SetPsExecBinaryPath()
 
         For Each listViewItem As ListViewItem In listView.SelectedItems
@@ -1208,7 +1208,7 @@ Public Class MainForm
             Try
                 ' Query ldap for a list of all computers that are either new or updated since the last incremental update (or full load)
                 Using searchResults As SearchResultCollection = LDAPSearcher.GetIncrementalUpdateResults(Me.LastChangedLDAPTime)
-                    If searchResults IsNot Nothing AndAlso searchResults.Count > 0 Then
+                    If searchResults?.Count > 0 Then
                         ' At least one computer has been either updated or added to ldap so first set the new last changed time for the next incremental update
                         Me.LastChangedLDAPTime = LDAPSearcher.GetLastChangedTime(searchResults)
 
