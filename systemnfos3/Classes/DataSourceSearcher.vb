@@ -72,7 +72,7 @@ Public Class DataSourceSearcher
                                 searchResults.Add(matchingComputer)
                             Else
                                 ' The ComputerName returned by WMI was NOT a match so don't add it to the search results and instead alert the user
-                                Dim message = "Responded but the requested computer name does not match the resonse from WMI!"
+                                Dim message = "Responded but the requested computer name does not match the response from WMI!"
                                 MsgBox(message, icon:=MessageBoxIcon.Error, caption:=$"Requested: {Me.SearchTerm} Response: {wmiComputerName}")
                             End If
                         End If
