@@ -1155,7 +1155,7 @@ Public Class MainForm
         Dim cts As New CancellationTokenSource()
         Dim token As CancellationToken = cts.Token
 
-        AddHandler Me.FormClosing, Sub() cts.Cancel()
+        AddHandler Me.FormClosing, AddressOf cts.Cancel
 
         While Not cts.IsCancellationRequested
             Await Task.Run(Sub() PingComputerNodes(token)).ConfigureAwait(False)
@@ -1275,7 +1275,7 @@ Public Class MainForm
         ' Start the status strip monitor thread
         Dim cts As New CancellationTokenSource()
         Dim token As CancellationToken = cts.Token
-        AddHandler Me.FormClosing, Sub() cts.Cancel()
+        AddHandler Me.FormClosing, AddressOf cts.Cancel
         While Not cts.IsCancellationRequested
             Await Task.Run(Sub() UpdateStatusStrip(token, proc, cpuCounter, memCounter))
         End While
@@ -1405,7 +1405,7 @@ Public Class MainForm
             ' Start the application update monitor thread
             Dim cts As New CancellationTokenSource()
             Dim token As CancellationToken = cts.Token
-            AddHandler Me.FormClosing, Sub() cts.Cancel()
+            AddHandler Me.FormClosing, AddressOf cts.Cancel
             While Not cts.IsCancellationRequested
                 Await Task.Run(Sub() CheckForAppUpdate(token, apiUri, pkgName:=My.Settings.NuGetPkgName))
             End While
