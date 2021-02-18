@@ -460,7 +460,7 @@ Public Class RemoteTools
                 Dim psExecProcess As New ProcessStartInfo With
                     {
                         .FileName = "cmd.exe",
-                        .Arguments = $" /c '{My.Settings.PsExecPath}' -s \\{Me.ComputerPanel.Computer.ConnectionString} cmd.exe",
+                        .Arguments = $" /c ""{My.Settings.PsExecPath}"" -s \\{Me.ComputerPanel.Computer.ConnectionString} cmd.exe",
                         .Verb = "RunAs",
                         .WorkingDirectory = Path.GetDirectoryName(My.Settings.PsExecPath)
                     }
@@ -839,7 +839,7 @@ Public Class RemoteTools
                     {
                         .UseShellExecute = False,
                         .FileName = "cmd.exe",
-                        .Arguments = $" /k '{My.Settings.PsExecPath}' -s \\{Me.ComputerPanel.Computer.ConnectionString} {parsedCommand}",
+                        .Arguments = $" /k ""{My.Settings.PsExecPath}"" -s \\{Me.ComputerPanel.Computer.ConnectionString} {parsedCommand}",
                         .Verb = "RunAs",
                         .WorkingDirectory = Environment.SystemDirectory
                     }
@@ -1084,7 +1084,7 @@ Public Class RemoteTools
             {
                 .Verb = "RunAs",
                 .FileName = Path.Combine(Environment.SystemDirectory, "rundll32.exe"),
-                .Arguments = $"printui.dll,PrintUIEntry /o /n '\\{Me.ComputerPanel.Computer.ConnectionString}\{Me.WMIObjects(0).Properties("Name").Value}'"
+                .Arguments = $"printui.dll,PrintUIEntry /o /n ""\\{Me.ComputerPanel.Computer.ConnectionString}\{Me.WMIObjects(0).Properties("Name").Value}"""
             }
 
             Process.Start(rundll32Process).WaitForExit()
@@ -1100,7 +1100,7 @@ Public Class RemoteTools
             {
                 .Verb = "RunAs",
                 .FileName = Path.Combine(Environment.SystemDirectory, "rundll32.exe"),
-                .Arguments = $"printui.dll,PrintUIEntry /p /n '\\{Me.ComputerPanel.Computer.ConnectionString}\{Me.WMIObjects(0).Properties("Name").Value}'"
+                .Arguments = $"printui.dll,PrintUIEntry /p /n ""\\{Me.ComputerPanel.Computer.ConnectionString}\{Me.WMIObjects(0).Properties("Name").Value}"""
             }
 
             Process.Start(rundll32ProcessInfo).WaitForExit()
@@ -1243,7 +1243,7 @@ Public Class RemoteTools
             For Each instance As ManagementObject In Me.WMIObjects
                 Dim displayName As String = instance.Properties("DisplayName").Value
                 Dim name As String = instance.Properties("Name").Value
-                TryWriteMessage($"Sending a start request to {displayName}", Color.Blue)
+                TryWriteMessage($"Sending a start request to '{displayName}'", Color.Blue)
 
                 Dim service As New ServiceController(Me.ComputerPanel.WMI)
                 service.Start(name)

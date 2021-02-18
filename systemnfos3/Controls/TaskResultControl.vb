@@ -57,15 +57,15 @@ Public Class TaskResultControl
         End If
 
         If Me.Task.Contains(" ") Then
-            Me.Task = $"'{Me.Task}'"
+            Me.Task = $"""{Me.Task}"""
         End If
 
         If appPath.Contains(" ") Then
-            appPath = $"'{appPath}'"
+            appPath = $"""{appPath}"""
         End If
 
         If fileName.Contains(" ") Then
-            fileName = $"'{fileName}'"
+            fileName = $"""{fileName}"""
         End If
 
         PerformListViewWork(computerName, "Initializing...")
@@ -81,7 +81,7 @@ Public Class TaskResultControl
                     .WindowStyle = ProcessWindowStyle.Hidden
                 }
 
-                If Me.Task.ToUpper().Trim().EndsWith(".PRINTEREXPORT'") OrElse Me.Task.ToUpper().Trim().EndsWith(".PRINTEREXPORT") Then
+                If Me.Task.ToUpper().Trim().EndsWith(".PRINTEREXPORT""") OrElse Me.Task.ToUpper().Trim().EndsWith(".PRINTEREXPORT") Then
                     PerformListViewWork(computerName, "Copying printer export file...")
 
                     If psExec.ExitCode <> 0 AndAlso psExec.ExitCode <> 1 Then
@@ -90,7 +90,7 @@ Public Class TaskResultControl
                     End If
 
                     Thread.Sleep(1000)
-                    Dim filePath = $"'{Path.Combine(ITFolderLocalPath, files(files.Length))}'"
+                    Dim filePath = $"""{Path.Combine(ITFolderLocalPath, files(files.Length))}"""
 
                     psExecProcess.Arguments = $"-s \\{computerName} {Path.Combine(Environment.SystemDirectory, "spool\tools\PrintBrm.exe")} -r -f {filePath} -O FORCE"
                     If Not String.IsNullOrWhiteSpace(Args) Then
