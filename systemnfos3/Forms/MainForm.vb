@@ -127,9 +127,9 @@ Public Class MainForm
         AddHandler Me.Shown, AddressOf RunUpdateMonitor
 
         ' Add event handler to begin background ldap incremental updates
-        'AddHandler Me.LDAPWorker.DoWork, AddressOf UpdateLDAPDataBindings
-        'AddHandler Me.LDAPWorker.RunWorkerCompleted, Sub(s, e) If Not e.Cancelled Then Me.LDAPWorker.RunWorkerAsync()
-        'AddHandler Me.FormClosing, AddressOf LDAPWorker.CancelAsync
+        AddHandler Me.LDAPWorker.DoWork, AddressOf UpdateLDAPDataBindingsTest
+        AddHandler Me.LDAPWorker.RunWorkerCompleted, Sub(s, e) If Not e.Cancelled Then Me.LDAPWorker.RunWorkerAsync()
+        AddHandler Me.FormClosing, AddressOf Me.LDAPWorker.CancelAsync
 
         ' Add event handlers for the import functionality
         AddHandler Me.ImportWorker.DoWork, AddressOf MassImportProcessComputers
@@ -162,7 +162,7 @@ Public Class MainForm
         Dim title As String = Nothing
 
         Try
-            title = $"System Tool 3 - {Environment.UserName}@{Environment.MachineName} - !!! TEST ATTEMPT 9 !!!"
+            title = $"System Tool 3 - {Environment.UserName}@{Environment.MachineName} - !!! TEST ATTEMPT 11 !!!"
         Catch ex As Exception
             LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
@@ -1197,6 +1197,27 @@ Public Class MainForm
 #End Region
 
 #Region " LDAP Monitor "
+
+    Private Sub UpdateLDAPDataBindingsTest(sender As BackgroundWorker, e As DoWorkEventArgs)
+        ' *** This method runs continuously on the thread pool until cancelled on the Me.FormClosing event ***
+        SyncLock ldapLock
+
+            ' Check for newly added computers in ldap every 20 seconds
+            Thread.Sleep(20000)
+
+            Try
+                ' Query ldap for a list of all computers that are either new or updated since the last incremental update (or full load)
+                Using searchResults As SearchResultCollection = LDAPSearcher.GetIncrementalUpdateResults(Me.LastChangedLDAPTime)
+                    If searchResults?.Count > 0 Then
+                        ' At least one computer has been either updated or added to ldap so first set the new last changed time for the next incremental update
+                        Me.LastChangedLDAPTime = LDAPSearcher.GetLastChangedTime(searchResults)
+                    End If
+                End Using
+            Catch ex As Exception
+                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
+            End Try
+        End SyncLock
+    End Sub
 
     Private Sub UpdateLDAPDataBindings(sender As BackgroundWorker, e As DoWorkEventArgs)
         ' *** This method runs continuously on the thread pool until cancelled on the Me.FormClosing event ***
