@@ -30,7 +30,7 @@
 
     Public Function GetOneComputerResult(computerName As String) As SearchResult
         Using entry As DirectoryEntry = NewBaseDirectoryEntry()
-            Dim filter = $"&(name={computerName})"
+            Dim filter = $"(name={computerName})"
             Using searcher As DirectorySearcher = NewBaseDirectorySearcher(filter)
 
                 Return searcher.FindOne()
@@ -40,8 +40,7 @@
 
     Public Function GetIncrementalUpdateResults(timestamp As String) As List(Of SearchResult)
         Using entry As DirectoryEntry = NewBaseDirectoryEntry()
-            Dim convertedTimestamp = ManagementDateTimeConverter.ToDmtfDateTime(Convert.ToDateTime(timestamp)).Split(".")(0)
-            Dim filter = $"&(!whenChanged<={convertedTimestamp}.0Z)"
+            Dim filter = $"(!whenChanged<={timestamp}.0Z)"
             Using searcher As DirectorySearcher = NewBaseDirectorySearcher(filter)
 
                 Return searcher.FindAllSortBy("description")
