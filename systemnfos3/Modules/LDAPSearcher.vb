@@ -1,6 +1,6 @@
 ﻿Public Module LDAPSearcher
 
-    Private Function NewBaseDirectorySearcher(filter As String) As DirectorySearcher
+    Private Function NewBaseDirectorySearcher(Optional filter As String = "") As DirectorySearcher
         Dim baseSearcher As New DirectorySearcher()
         With baseSearcher
             .Filter = $"(&(objectClass=computer){filter})"
@@ -20,7 +20,7 @@
 
     Public Function GetAllComputerResults() As List(Of SearchResult)
         Using entry As DirectoryEntry = NewBaseDirectoryEntry()
-            Using searcher As DirectorySearcher = NewBaseDirectorySearcher(My.Settings.LDAPComputerFilter)
+            Using searcher As DirectorySearcher = NewBaseDirectorySearcher()
 
                 Return searcher.FindAllSortBy("description")
             End Using
@@ -29,7 +29,7 @@
 
     Public Function GetOneComputerResult(computerName As String) As SearchResult
         Using entry As DirectoryEntry = NewBaseDirectoryEntry()
-            Dim filter = $"(&(objectClass=computer)(&(name={computerName})))"
+            Dim filter = $"&(name={computerName})"
             Using searcher As DirectorySearcher = NewBaseDirectorySearcher(filter)
 
                 Return searcher.FindOne()
@@ -39,9 +39,9 @@
 
     Public Function GetIncrementalUpdateResults(timestamp As Date) As List(Of SearchResult)
         Using entry As DirectoryEntry = NewBaseDirectoryEntry()
-            Using searcher As DirectorySearcher = NewBaseDirectorySearcher(My.Settings.LDAPComputerFilter)
-                Dim convertedTimestamp = ManagementDateTimeConverter.ToDmtfDateTime(timestamp).Split(".")(0)
-                searcher.Filter = $"(&(objectClass=computer)(!whenChanged<={convertedTimestamp}.0Z){My.Settings.LDAPComputerFilter})"
+            Dim convertedTimestamp = ManagementDateTimeConverter.ToDmtfDateTime(timestamp).Split(".")(0)
+            Dim filter = $"&(!whenChanged<={convertedTimestamp}.0Z)"
+            Using searcher As DirectorySearcher = NewBaseDirectorySearcher(filter)
 
                 Return searcher.FindAllSortBy("description")
             End Using
@@ -50,12 +50,11 @@
 
     Public Function GetLastChangedTime(results As List(Of SearchResult)) As Date
         ' This date/time value is used to query ldap for incremental updates in MainForm.UpdateLDAPDataBindings()
-        Dim lastChangedResult = results.OfType(Of SearchResult)() _
+        Dim lastChangedTime As Date = results.OfType(Of SearchResult)() _
             .Where(Function(searchResult) searchResult.Properties("whenChanged").Count > 0) _
             .OrderByDescending(Function(searchResult) CType(searchResult.Properties("whenChanged")(0), Date)) _
-            .First()
-
-        Dim lastChangedTime As Date = lastChangedResult.Properties("whenChanged")(0)
+            .First() _
+            .Properties("whenChanged")(0)
 
         Return lastChangedTime
     End Function

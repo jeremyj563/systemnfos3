@@ -5,9 +5,6 @@
     <Setting Name="PsExecPath" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:\ProgramData\chocolatey\lib\psexec\tools\PsExec.exe</Value>
     </Setting>
-    <Setting Name="LDAPComputerFilter" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">(&amp;(!name=DUMMY)(name=*))</Value>
-    </Setting>
     <Setting Name="LDAPEntryPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">LDAP://DC=HBC,DC=local</Value>
     </Setting>
