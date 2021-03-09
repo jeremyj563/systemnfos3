@@ -10,7 +10,7 @@ Imports System.IO
 Public NotInheritable Class LoadForm
 
     Private Property DataSource As New BindingList(Of DataUnit)()
-    Private Property LastChangedLDAPTime As Date
+    Private Property LastChangedLDAPTime As Long
     Private Property MouseDrag As Boolean
     Private Property MouseX As Integer
     Private Property MouseY As Integer

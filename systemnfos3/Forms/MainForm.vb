@@ -5,16 +5,19 @@ Imports System.Text
 Imports System.IO
 Imports Microsoft.Win32
 Imports System.Threading.Tasks
-Imports Newtonsoft.Json
 Imports System.Net
 Imports System.Web
 
 Public Class MainForm
 
+    Delegate Sub bgNoArg()
+    Delegate Sub bgOneArg(Arg As Object)
+    Delegate Function bgFunctionNoArg() As Object
+
     Public Property BindingSource As New BindingSource()
     Private ReadOnly Property DefaultTitle As String = GetDefaultTitle()
     Private Property MouseDownOnListView As Boolean = False
-    Private Property LastChangedLDAPTime As Date
+    Private Property LastChangedLDAPTime As Long
     Private Property ImportWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
     Private Property LDAPWorker As New BackgroundWorker() With {.WorkerSupportsCancellation = True}
     Private Property AppUpdates As NuGetSearchResult
@@ -28,7 +31,7 @@ Public Class MainForm
 
 #Region " Initialization "
 
-    Public Sub New(bindingList As BindingList(Of DataUnit), lastChangedLDAPTime As Date)
+    Public Sub New(bindingList As BindingList(Of DataUnit), lastChangedLDAPTime As Long)
         ' This call is required by the designer
         InitializeComponent()
 
@@ -124,7 +127,7 @@ Public Class MainForm
         AddHandler Me.Shown, AddressOf RunStatusStripMonitor
 
         ' Add event handler to begin monitoring for program version updates
-        AddHandler Me.Shown, AddressOf RunUpdateMonitor
+        'AddHandler Me.Shown, AddressOf RunUpdateMonitor
 
         ' Add event handler to begin background ldap incremental updates
         AddHandler Me.LDAPWorker.DoWork, AddressOf UpdateLDAPDataBindings
@@ -162,7 +165,7 @@ Public Class MainForm
         Dim title As String = Nothing
 
         Try
-            title = $"System Tool 3 - {Environment.UserName}@{Environment.MachineName} - !!! TEST ATTEMPT 11 !!!"
+            title = $"System Tool 3 - {Environment.UserName}@{Environment.MachineName} - !!! TEST ATTEMPT 13 !!!"
         Catch ex As Exception
             LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
         End Try
@@ -1199,62 +1202,191 @@ Public Class MainForm
 #Region " LDAP Monitor "
 
     Private Sub UpdateLDAPDataBindings(sender As BackgroundWorker, e As DoWorkEventArgs)
-        ' *** This method runs continuously on the thread pool until cancelled on the Me.FormClosing event ***
-        SyncLock ldapLock
+        For i = 1 To 20
+            'Because this is a continuous background worker, we need to check if the application is closing so we can terminate the infinite loop
+            If e.Cancel Then Exit Sub
 
-            ' Check for newly added computers in ldap every 20 seconds
-            Thread.Sleep(20000)
+            'Otherwise, count down to the next AD increment check
+            Thread.Sleep(1000)
+        Next
+        Try
+            Dim NewMachineListing As Computer() = Nothing
+            Dim results = LDAPSearcher.GetIncrementalUpdateResults(Me.LastChangedLDAPTime)
+            If results?.Count > 0 Then
+                For Each Result As SearchResult In results
+                    Dim WhenChanged As String
+                    Dim Holder As DateTime = Result.Properties("whenChanged").Item(0)
+                    Dim Month As String
+                    Dim Day As String
+                    Dim Hour As String
+                    Dim Minute As String
+                    Dim Second As String
+                    If e.Cancel Then Exit Sub
+                    If Holder.Month.ToString.Length = 1 Then
+                        Month = 0 & Holder.Month
+                    Else
+                        Month = Holder.Month
+                    End If
+                    If Holder.Day.ToString.Length = 1 Then
+                        Day = 0 & Holder.Day
+                    Else
+                        Day = Holder.Day
+                    End If
+                    If Holder.Hour.ToString.Length = 1 Then
+                        Hour = 0 & Holder.Hour
+                    Else
+                        Hour = Holder.Hour
+                    End If
+                    If Holder.Minute.ToString.Length = 1 Then
+                        Minute = 0 & Holder.Minute
+                    Else
+                        Minute = Holder.Minute
+                    End If
+                    If Holder.Second.ToString.Length = 1 Then
+                        Second = 0 & Holder.Second
+                    Else
+                        Second = Holder.Second
+                    End If
+                    WhenChanged = Holder.Year & Month & Day & Hour & Minute & Second
+                    If Me.LastChangedLDAPTime < CType(WhenChanged, Long) Then Me.LastChangedLDAPTime = CType(WhenChanged, Long)
+                    Dim IExist As Boolean = False
+                    For i = 0 To Me.BindingSource.Count - 1
+                        If e.Cancel Then Exit Sub
+                        If TypeOf (Me.BindingSource(i)) Is Computer Then
+                            Dim csComputer As Computer = Me.BindingSource(i)
+                            If csComputer.Value = Result.Properties("name").Item(0) Then
+                                IExist = True
+                                Dim Value, Display, SN, Username, DisplayName, MAC, IP As String
+                                Value = Result.Properties("name").Item(0)
+                                If Result.Properties("description").Count > 0 Then
+                                    DisplayName = Result.Properties("description").Item(0)
+                                Else
+                                    DisplayName = "Unknown"
+                                End If
+                                If Trim(DisplayName) = "" Then DisplayName = "Unknown"
+                                Display = DisplayName & "  >  " & Value
+                                If Result.Properties("carLicense").Count > 0 Then
+                                    SN = Result.Properties("carLicense").Item(0)
+                                Else
+                                    SN = Nothing
+                                End If
+                                If Result.Properties("uid").Count > 0 Then
+                                    Username = Result.Properties("uid").Item(0)
+                                Else
+                                    Username = Nothing
+                                End If
+                                If Result.Properties("networkAddress").Count > 0 Then
+                                    Dim splNA As String() = Result.Properties("networkAddress").Item(0).ToString.Split(",")
+                                    If splNA.Count > 1 Then
+                                        IP = Trim(splNA(0))
+                                        MAC = Trim(splNA(1))
+                                    ElseIf splNA.Count = 1 Then
+                                        IP = Nothing
+                                        MAC = Result.Properties("networkAddress").Item(0)
+                                    Else
+                                        IP = Nothing
+                                        MAC = Nothing
+                                    End If
+                                Else
+                                    IP = Nothing
+                                    MAC = Nothing
+                                End If
+                                Dim NewMachineValues As New Computer(Value, Display, Username, DisplayName, MAC, IP, Result)
+                                For Each Node As TreeNode In Me.ResourceExplorer.Nodes(0).Nodes(NameOf(Nodes.Computers)).Nodes
+                                    Dim NodeController As ComputerPanel = Node.Tag
+                                    If NodeController.Computer.Value = Me.BindingSource(i).Value Then
+                                        NodeController.Computer = NewMachineValues
+                                        Invoke(Sub() UpdateNodeText(Node, NewMachineValues.Display))
+                                        Exit For
+                                    End If
+                                Next
+                                Me.BindingSource.Item(i).Value = NewMachineValues
+                                Me.BindingSource.Item(i).Display = Display
 
-            Try
-                ' Query ldap for a list of all computers that are either new or updated since the last incremental update (or full load)
-                Dim results = LDAPSearcher.GetIncrementalUpdateResults(Me.LastChangedLDAPTime)
-                If results?.Count > 0 Then
-                    ' At least one computer has been either updated or added to ldap so first set the new last changed time for the next incremental update
-                    Me.LastChangedLDAPTime = LDAPSearcher.GetLastChangedTime(results)
+                                Invoke(New bgOneArg(AddressOf ResetDataBindings), i)
 
-                    ' Begin looping through all of the results returned by the incremental update ldap query
-                    For Each result As SearchResult In results
-                        If sender.CancellationPending Then
-                            e.Cancel = True
-                            Return
-                        End If
-
-                        Dim ldapComputer As New Computer(result)
-                        Dim dataBoundComputer = Me.BindingSource.OfType(Of Computer).SingleOrDefault(Function(c) c.Value = ldapComputer.Value)
-                        Dim index As Integer = Me.BindingSource.IndexOf(dataBoundComputer)
-                        If index <> -1 Then
-                            ' The computer name was found in both ldap and the bound data source
-                            ' Get the collection of loaded computer nodes
-                            Dim computerNodes = Me.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes.Cast(Of TreeNode)()
-
-                            ' See if this computer has been loaded to a node
-                            Dim dataBoundNode = computerNodes.SingleOrDefault(Function(t) t.Tag.Computer.Value = dataBoundComputer.Value)
-                            If dataBoundNode IsNot Nothing Then
-                                ' Computer is loaded to a node, so update it
-                                dataBoundNode.Tag.Computer = ldapComputer
-                                SetNodeText(dataBoundNode, ldapComputer.Display)
                             End If
 
-                            ' Also update the computer object in the binding source
-                            Me.BindingSource(index) = ldapComputer
-                        Else
-                            ' The computer is in ldap but not in the binding source, so add it
-                            Me.BindingSource.Add(ldapComputer)
-                            index = Me.BindingSource.IndexOf(ldapComputer)
                         End If
-
-                        ResetLDAPDataBindings(index)
                     Next
-                End If
-            Catch ex As Exception
-                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
-            End Try
-        End SyncLock
+                    If IExist = False Then
+                        Dim Value, Display, SN, Username, DisplayName, MAC, IP As String
+                        Value = Result.Properties("name").Item(0)
+                        If Result.Properties("description").Count > 0 Then
+                            DisplayName = Result.Properties("description").Item(0)
+                        Else
+                            DisplayName = "Unknown"
+                        End If
+                        If Trim(DisplayName) = "" Then DisplayName = "Unknown"
+                        Display = DisplayName & "  >  " & Value
+                        If Result.Properties("carLicense").Count > 0 Then
+                            SN = Result.Properties("carLicense").Item(0)
+                        Else
+                            SN = Nothing
+                        End If
+                        If Result.Properties("uid").Count > 0 Then
+                            Username = Result.Properties("uid").Item(0)
+                        Else
+                            Username = Nothing
+                        End If
+                        If Result.Properties("networkAddress").Count > 0 Then
+                            Dim splNA As String() = Result.Properties("networkAddress").Item(0).ToString.Split(",")
+                            If splNA.Count > 1 Then
+                                IP = Trim(splNA(0))
+                                MAC = Trim(splNA(1))
+                            ElseIf splNA.Count = 1 Then
+                                IP = Nothing
+                                MAC = Result.Properties("networkAddress").Item(0)
+                            Else
+                                IP = Nothing
+                                MAC = Nothing
+                            End If
+                        Else
+                            IP = Nothing
+                            MAC = Nothing
+                        End If
+                        'Dim DataSource As BindingList(Of sysDataSource) = bsData.DataSource
+                        'cbxUserInput.BindingContext(bsData).AddNew()
+
+
+                        Dim blnFocused As Boolean = Invoke(New bgFunctionNoArg(AddressOf ComboBoxFocused))
+
+                        'Do While blnFocused
+                        '    Threading.Thread.Sleep(1000)
+                        '    blnFocused = Invoke(New bgFunctionNoArg(AddressOf ComboBoxFocused))
+                        'Loop
+
+                        If NewMachineListing Is Nothing Then
+                            ReDim NewMachineListing(0)
+                        Else
+                            ReDim Preserve NewMachineListing(UBound(NewMachineListing) + 1)
+                        End If
+                        NewMachineListing(UBound(NewMachineListing)) = New Computer(Value, Display, Username, DisplayName, MAC, IP, Result)
+                    End If
+                Next
+            End If
+            If NewMachineListing IsNot Nothing Then
+                For Each Machine As Computer In NewMachineListing
+                    Invoke(New bgOneArg(AddressOf Me.BindingSource.Add), Machine)
+                Next
+                Invoke(New bgNoArg(AddressOf Me.BindingSource.EndEdit))
+                Invoke(New bgOneArg(AddressOf Me.BindingSource.ResetBindings), True)
+                NewMachineListing = Nothing
+            End If
+
+        Catch ex As Exception
+        End Try
+
+        If e.Cancel Then Exit Sub
     End Sub
 
-    Private Sub ResetLDAPDataBindings(index As Integer)
-        If index = -1 Then Return
-        Me.UIThread(Sub() Me.BindingSource.ResetItem(index))
+    Sub UpdateNodeText(Node As TreeNode, NewText As String)
+        Node.Text = NewText
+    End Sub
+
+    Sub ResetDataBindings(i As Integer)
+        Me.BindingSource.EndEdit()
+        Me.BindingSource.ResetItem(i)
     End Sub
 
 #End Region
@@ -1417,7 +1549,7 @@ Public Class MainForm
             Try
                 token.ThrowIfCancellationRequested()
 
-                Me.AppUpdates = GetNuGetQueryResult(apiUri, pkgName, prerelease:=True)
+                'Me.AppUpdates = GetNuGetQueryResult(apiUri, pkgName, prerelease:=True)
                 Dim latestVersion As String = Me.AppUpdates.Data.First().Version.Trim()
 
                 If Not latestVersion.Equals([Global].AppVersion) Then
@@ -1450,30 +1582,30 @@ Public Class MainForm
         registry.SetKeyValue(My.Settings.RegistryPath, regEntry, "1", hive:=RegistryHive.LocalMachine)
     End Sub
 
-    Private Function GetNuGetQueryResult(apiUri As Uri, pkgName As String, Optional prerelease As Boolean = False) As NuGetSearchResult
-        Dim result As NuGetSearchResult = Nothing
-        Dim uri As New Uri(apiUri, "query2?q=" & pkgName)
+    'Private Function GetNuGetQueryResult(apiUri As Uri, pkgName As String, Optional prerelease As Boolean = False) As NuGetSearchResult
+    '    Dim result As NuGetSearchResult = Nothing
+    '    Dim uri As New Uri(apiUri, "query2?q=" & pkgName)
 
-        If prerelease Then
-            Dim uriBuilder As New UriBuilder(uri.AbsoluteUri)
-            Dim query = HttpUtility.ParseQueryString(uriBuilder.Query)
-            query("prerelease") = "true"
-            uriBuilder.Query = query.ToString()
-            uri = uriBuilder.Uri
-        End If
+    '    If prerelease Then
+    '        Dim uriBuilder As New UriBuilder(uri.AbsoluteUri)
+    '        Dim query = HttpUtility.ParseQueryString(uriBuilder.Query)
+    '        query("prerelease") = "true"
+    '        uriBuilder.Query = query.ToString()
+    '        uri = uriBuilder.Uri
+    '    End If
 
-        Dim request As HttpWebRequest = WebRequest.Create(uri)
-        request.UseDefaultCredentials = True
+    '    Dim request As HttpWebRequest = WebRequest.Create(uri)
+    '    request.UseDefaultCredentials = True
 
-        Using stream = request.GetResponse().GetResponseStream()
-            Using reader = New StreamReader(stream)
-                Dim jsonText = reader.ReadToEnd()
-                result = JsonConvert.DeserializeObject(Of NuGetSearchResult)(jsonText)
-            End Using
-        End Using
+    '    Using stream = request.GetResponse().GetResponseStream()
+    '        Using reader = New StreamReader(stream)
+    '            Dim jsonText = reader.ReadToEnd()
+    '            result = JsonConvert.DeserializeObject(Of NuGetSearchResult)(jsonText)
+    '        End Using
+    '    End Using
 
-        Return result
-    End Function
+    '    Return result
+    'End Function
 
 #End Region
 
