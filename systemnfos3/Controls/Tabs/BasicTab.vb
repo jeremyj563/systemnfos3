@@ -64,17 +64,17 @@ Public Class BasicTab
         MyBase.AddTabWriterItem("Model:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT Model FROM Win32_ComputerSystem"), "Model"), NameOf(ListViewGroups.lsvgCI))
         MyBase.AddTabWriterItem("Serial Number:", Me.ComputerPanel.WMI.GetPropertyValue(Me.ComputerPanel.WMI.Query("SELECT IdentifyingNumber FROM Win32_ComputerSystemProduct"), "IdentifyingNumber"), NameOf(ListViewGroups.lsvgCI))
 
-        If Me.ComputerPanel.Computer.ActiveDirectoryContainer.LastLogonExtensionAttribute IsNot Nothing Then
-            MyBase.AddTabWriterItem("Last Logon:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.LastLogonExtensionAttribute, NameOf(ListViewGroups.lsvgCI))
+        If Me.ComputerPanel.Computer.LDAPContainer.LastLogonExtensionAttribute IsNot Nothing Then
+            MyBase.AddTabWriterItem("Last Logon:", Me.ComputerPanel.Computer.LDAPContainer.LastLogonExtensionAttribute, NameOf(ListViewGroups.lsvgCI))
         End If
 
-        If Me.ComputerPanel.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName IsNot Nothing Then
-            MyBase.AddTabWriterItem("Location:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName, NameOf(ListViewGroups.lsvgCI))
+        If Me.ComputerPanel.Computer.LDAPContainer.PhysicalDeliveryOfficeName IsNot Nothing Then
+            MyBase.AddTabWriterItem("Location:", Me.ComputerPanel.Computer.LDAPContainer.PhysicalDeliveryOfficeName, NameOf(ListViewGroups.lsvgCI))
         End If
 
-        MyBase.AddTabWriterItem("Distinguished Name:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("distinguishedName"), NameOf(ListViewGroups.lsvgCI))
+        MyBase.AddTabWriterItem("Distinguished Name:", Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("distinguishedName"), NameOf(ListViewGroups.lsvgCI))
 
-        If Convert.ToBoolean(Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("userAccountControl") And 2) Then
+        If Convert.ToBoolean(Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("userAccountControl") And 2) Then
             MyBase.AddTabWriterItem("Container Status:", "Disabled", NameOf(ListViewGroups.lsvgCI))
             If Not Me.RunOnlyOnce Then
                 Dim message = "NOTE: Computer is Disabled. Contact Imaging for assistance."
@@ -92,20 +92,20 @@ Public Class BasicTab
 
     Private Sub LoadOtherStatusComputers()
         ' Code for loading offline/degraded/slow status computers
-        MyBase.AddTabWriterItem("Operating System Name:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("OperatingSystem"), NameOf(ListViewGroups.lsvgOS))
-        MyBase.AddTabWriterItem("Model:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("info"), NameOf(ListViewGroups.lsvgCI))
-        MyBase.AddTabWriterItem("Serial Number:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("carLicense"), NameOf(ListViewGroups.lsvgCI))
+        MyBase.AddTabWriterItem("Operating System Name:", Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("OperatingSystem"), NameOf(ListViewGroups.lsvgOS))
+        MyBase.AddTabWriterItem("Model:", Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("info"), NameOf(ListViewGroups.lsvgCI))
+        MyBase.AddTabWriterItem("Serial Number:", Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("carLicense"), NameOf(ListViewGroups.lsvgCI))
 
-        Dim lastLogon As String = Me.ComputerPanel.Computer.ActiveDirectoryContainer.LastLogonExtensionAttribute
+        Dim lastLogon As String = Me.ComputerPanel.Computer.LDAPContainer.LastLogonExtensionAttribute
         If Not String.IsNullOrWhiteSpace(lastLogon) Then
             MyBase.AddTabWriterItem("Last Logon:", lastLogon, NameOf(ListViewGroups.lsvgCI))
         End If
 
-        If Me.ComputerPanel.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName IsNot Nothing Then
-            MyBase.AddTabWriterItem("Location:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName, NameOf(ListViewGroups.lsvgCI))
+        If Me.ComputerPanel.Computer.LDAPContainer.PhysicalDeliveryOfficeName IsNot Nothing Then
+            MyBase.AddTabWriterItem("Location:", Me.ComputerPanel.Computer.LDAPContainer.PhysicalDeliveryOfficeName, NameOf(ListViewGroups.lsvgCI))
         End If
 
-        If Convert.ToBoolean(Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("userAccountControl") And 2) Then
+        If Convert.ToBoolean(Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("userAccountControl") And 2) Then
             MyBase.AddTabWriterItem("Container Status:", "Disabled", NameOf(ListViewGroups.lsvgCI))
 
             If Not Me.RunOnlyOnce Then
@@ -116,15 +116,15 @@ Public Class BasicTab
             MyBase.AddTabWriterItem("Container Status:", "Enabled", NameOf(ListViewGroups.lsvgCI))
         End If
 
-        MyBase.AddTabWriterItem("Distinguished Name:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("distinguishedName"), NameOf(ListViewGroups.lsvgCI))
+        MyBase.AddTabWriterItem("Distinguished Name:", Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("distinguishedName"), NameOf(ListViewGroups.lsvgCI))
 
-        Dim networkAddresses As String = Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("networkAddress")
+        Dim networkAddresses As String = Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("networkAddress")
         If Not String.IsNullOrWhiteSpace(networkAddresses) AndAlso networkAddresses.Split(",").Length > 0 Then
             MyBase.AddTabWriterItem("IP Address:", networkAddresses.Split(",")(0), NameOf(ListViewGroups.lsvgNI))
             MyBase.AddTabWriterItem("MAC Address:", networkAddresses.Split(",")(1), NameOf(ListViewGroups.lsvgNI))
         End If
 
-        Dim uid As Object = Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("uid")
+        Dim uid As Object = Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("uid")
         If uid IsNot Nothing Then
             Dim user As New LDAPContainer("user", "sAMAccountName", uid)
             MyBase.AddTabWriterItem("Username:", user.GetAttribute("sAMAccountName"), NameOf(ListViewGroups.lsvgUI))
@@ -294,8 +294,8 @@ Public Class BasicTab
                             ' But if the registry says nothing then
                             If String.IsNullOrWhiteSpace(userName) Then
                                 ' I give up... best guess is the last person that logged in is the current user. We can grab that name from AD since we record it there.
-                                If Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("uid") IsNot Nothing Then
-                                    MyBase.AddTabWriterItem("Current User:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("uid"), NameOf(ListViewGroups.lsvgUI))
+                                If Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("uid") IsNot Nothing Then
+                                    MyBase.AddTabWriterItem("Current User:", Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("uid"), NameOf(ListViewGroups.lsvgUI))
                                 End If
                             Else
                                 ' If the registry gives me an answer, then I know who is logged in
@@ -326,7 +326,7 @@ Public Class BasicTab
         Else
             ' OR since a user is not logged in...
             ' Lets get the last logged in username from ldap
-            userName = Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("uid")
+            userName = Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("uid")
 
             If Not String.IsNullOrWhiteSpace(userName) Then
                 MyBase.AddTabWriterItem("Last Logged In User:", userName, NameOf(ListViewGroups.lsvgUI))
@@ -346,7 +346,7 @@ Public Class BasicTab
 
             Dim user As New LDAPContainer("user", "sAMAccountName", userName)
             MyBase.AddTabWriterItem("Display Name:", user.GetAttribute("displayName"), NameOf(ListViewGroups.lsvgUI))
-            MyBase.AddTabWriterItem("Last Logon:", Me.ComputerPanel.Computer.ActiveDirectoryContainer.LastLogonExtensionAttribute, NameOf(ListViewGroups.lsvgUI))
+            MyBase.AddTabWriterItem("Last Logon:", Me.ComputerPanel.Computer.LDAPContainer.LastLogonExtensionAttribute, NameOf(ListViewGroups.lsvgUI))
             MyBase.AddTabWriterItem("Phone Number:", user.GetAttribute("telephoneNumber"), NameOf(ListViewGroups.lsvgUI))
             MyBase.AddTabWriterItem("Location:", user.GetAttribute("streetAddress"), NameOf(ListViewGroups.lsvgUI))
             MyBase.AddTabWriterItem("Office Symbol:", user.GetAttribute("physicalDeliveryOfficeName"), NameOf(ListViewGroups.lsvgUI))

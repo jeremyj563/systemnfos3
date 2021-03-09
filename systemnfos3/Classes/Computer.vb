@@ -9,27 +9,32 @@
     Public Property LastLogon As String
     Public Property MACAddress As String
     Public Property IPAddress As String
-    Public Property ActiveDirectoryPath As String
-    Public Property ActiveDirectoryContainer As LDAPContainer
+    Public Property LDAPContainer As LDAPContainer
     Public Property ConnectionString As String
-    Private Property LDAPData As SearchResult
 
     Public Sub New(ldapData As SearchResult)
-        Me.LDAPData = ldapData
-
-        Dim netAddrs = Me.GetValue(Me.LDAPData.Properties("networkAddress")).Split(",")
-        Dim desc = Me.GetValue(Me.LDAPData.Properties("description"))
+        Dim netAddrs = Me.GetValue(ldapData.Properties("networkAddress")).Split(",")
+        Dim desc = Me.GetValue(ldapData.Properties("description"))
         Me.IPAddress = netAddrs(0)
         Me.MACAddress = If(netAddrs.Count > 1, netAddrs(1), String.Empty)
-        Me.Value = Me.GetValue(Me.LDAPData.Properties("name"))
+        Me.Value = Me.GetValue(ldapData.Properties("name"))
         Me.Description = If(String.IsNullOrWhiteSpace(desc), "Unknown", desc)
         Me.Display = $"{Me.Description}  >  {Me.Value}"
-        Me.UserName = Me.GetValue(Me.LDAPData.Properties("uid"))
-        Me.DisplayName = Me.GetValue(Me.LDAPData.Properties("displayName"))
-        Me.LastLogon = Me.GetValue(Me.LDAPData.Properties("extensionAttribute1"))
-        Me.ActiveDirectoryPath = If(Me.LDAPData.Path, String.Empty)
-        Me.ActiveDirectoryContainer = New LDAPContainer(Me.LDAPData.Path)
+        Me.UserName = Me.GetValue(ldapData.Properties("uid"))
+        Me.DisplayName = Me.GetValue(ldapData.Properties("displayName"))
+        Me.LastLogon = Me.GetValue(ldapData.Properties("extensionAttribute1"))
+        Me.LDAPContainer = New LDAPContainer(ldapData.Path)
         Me.ConnectionString = Me.Value
+    End Sub
+
+    Public Sub New(value As String, display As String, userName As String, displayName As String, macAddress As String, ipAddress As String, ldapData As SearchResult)
+        Me.Value = value
+        Me.Display = display
+        Me.UserName = userName
+        Me.DisplayName = displayName
+        Me.MACAddress = macAddress
+        Me.IPAddress = ipAddress
+        Me.LDAPContainer = New LDAPContainer(ldapData.Path)
     End Sub
 
     Private Function GetValue(values As ResultPropertyValueCollection) As String

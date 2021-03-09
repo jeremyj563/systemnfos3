@@ -495,12 +495,12 @@ Public Class RemoteTools
         Try
             TryWriteMessage($"Initializing Set Description on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
-            Dim oldDescription As String = Me.ComputerPanel.Computer.ActiveDirectoryContainer.GetAttribute("Description")
+            Dim oldDescription As String = Me.ComputerPanel.Computer.LDAPContainer.GetAttribute("Description")
             Dim newDescription As String = InputBox("Enter a new description:", "Set Description", oldDescription)
 
             If newDescription IsNot oldDescription AndAlso Not String.IsNullOrWhiteSpace(newDescription) Then
                 ' Set the ldap 'description' attribute value on the 'computer' class instance
-                Me.ComputerPanel.Computer.ActiveDirectoryContainer.Description = newDescription
+                Me.ComputerPanel.Computer.LDAPContainer.Description = newDescription
 
                 ' Set the WMI 'Description' property value on the 'Win32_OperatingSystem' class instance
                 If Me.ComputerPanel.ConnectionStatus = ComputerPanel.ConnectionStatuses.Online Then
@@ -524,11 +524,11 @@ Public Class RemoteTools
         Try
             TryWriteMessage($"Initializing Set Location on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
-            Dim oldLocation As String = Me.ComputerPanel.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName
+            Dim oldLocation As String = Me.ComputerPanel.Computer.LDAPContainer.PhysicalDeliveryOfficeName
             Dim newLocation As String = InputBox("Enter a new location:", "Set Location", oldLocation)
 
             If newLocation IsNot oldLocation AndAlso Not String.IsNullOrWhiteSpace(newLocation) Then
-                Me.ComputerPanel.Computer.ActiveDirectoryContainer.PhysicalDeliveryOfficeName = newLocation
+                Me.ComputerPanel.Computer.LDAPContainer.PhysicalDeliveryOfficeName = newLocation
 
                 TryWriteMessage($"Location successfully changed from {oldLocation} to {newLocation} on {Me.ComputerPanel.Computer.ConnectionString}", Color.Blue)
 
