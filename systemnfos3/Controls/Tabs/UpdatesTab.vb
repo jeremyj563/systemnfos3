@@ -69,7 +69,7 @@ Public Class UpdatesTab
         Me.UpdatesListView.Items.AddRange(NewBaseListViewItems(Me.UpdatesListView, Me.TabWriterObjects.ToArray()))
         Me.UpdatesListView.Sorting = SortOrder.Descending
 
-        Me.UpdatesListView.ListViewItemSorter = New Comparer(1, True, Comparer.SortTypes.Descending)
+        Me.UpdatesListView.ListViewItemSorter = New ListViewItemComparer(1, True, ListViewItemComparer.SortTypes.Descending)
         Me.UpdatesListView.Sort()
 
         Dim updatePanel As New Panel With

@@ -127,7 +127,7 @@ Public Class MainForm
         AddHandler Me.Shown, AddressOf RunUpdateMonitor
 
         ' Add event handler to begin background ldap incremental updates
-        AddHandler Me.LDAPWorker.DoWork, AddressOf UpdateLDAPDataBindingsTest
+        AddHandler Me.LDAPWorker.DoWork, AddressOf UpdateLDAPDataBindings
         AddHandler Me.LDAPWorker.RunWorkerCompleted, Sub(s, e) If Not e.Cancelled Then Me.LDAPWorker.RunWorkerAsync()
         AddHandler Me.FormClosing, AddressOf Me.LDAPWorker.CancelAsync
 
@@ -525,7 +525,7 @@ Public Class MainForm
     End Sub
 
     Private Sub SortComputerNodes()
-        Me.ResourceExplorer.TreeViewNodeSorter = New Comparer(ResourceExplorer, True)
+        Me.ResourceExplorer.TreeViewNodeSorter = New ListViewItemComparer(ResourceExplorer, True)
         Me.ResourceExplorer.Sort()
     End Sub
 
@@ -1198,27 +1198,6 @@ Public Class MainForm
 
 #Region " LDAP Monitor "
 
-    Private Sub UpdateLDAPDataBindingsTest(sender As BackgroundWorker, e As DoWorkEventArgs)
-        ' *** This method runs continuously on the thread pool until cancelled on the Me.FormClosing event ***
-        SyncLock ldapLock
-
-            ' Check for newly added computers in ldap every 20 seconds
-            Thread.Sleep(20000)
-
-            Try
-                ' Query ldap for a list of all computers that are either new or updated since the last incremental update (or full load)
-                Using searchResults As SearchResultCollection = LDAPSearcher.GetIncrementalUpdateResults(Me.LastChangedLDAPTime)
-                    If searchResults?.Count > 0 Then
-                        ' At least one computer has been either updated or added to ldap so first set the new last changed time for the next incremental update
-                        Me.LastChangedLDAPTime = LDAPSearcher.GetLastChangedTime(searchResults)
-                    End If
-                End Using
-            Catch ex As Exception
-                LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
-            End Try
-        End SyncLock
-    End Sub
-
     Private Sub UpdateLDAPDataBindings(sender As BackgroundWorker, e As DoWorkEventArgs)
         ' *** This method runs continuously on the thread pool until cancelled on the Me.FormClosing event ***
         SyncLock ldapLock
@@ -1228,46 +1207,45 @@ Public Class MainForm
 
             Try
                 ' Query ldap for a list of all computers that are either new or updated since the last incremental update (or full load)
-                Using searchResults As SearchResultCollection = LDAPSearcher.GetIncrementalUpdateResults(Me.LastChangedLDAPTime)
-                    If searchResults?.Count > 0 Then
-                        ' At least one computer has been either updated or added to ldap so first set the new last changed time for the next incremental update
-                        Me.LastChangedLDAPTime = LDAPSearcher.GetLastChangedTime(searchResults)
+                Dim results = LDAPSearcher.GetIncrementalUpdateResults(Me.LastChangedLDAPTime)
+                If results?.Count > 0 Then
+                    ' At least one computer has been either updated or added to ldap so first set the new last changed time for the next incremental update
+                    Me.LastChangedLDAPTime = LDAPSearcher.GetLastChangedTime(results)
 
-                        ' Begin looping through all of the results returned by the incremental update ldap query
-                        For Each result As SearchResult In searchResults
-                            If sender.CancellationPending Then
-                                e.Cancel = True
-                                Return
+                    ' Begin looping through all of the results returned by the incremental update ldap query
+                    For Each result As SearchResult In results
+                        If sender.CancellationPending Then
+                            e.Cancel = True
+                            Return
+                        End If
+
+                        Dim ldapComputer As New Computer(result)
+                        Dim dataBoundComputer = Me.BindingSource.OfType(Of Computer).SingleOrDefault(Function(c) c.Value = ldapComputer.Value)
+                        Dim index As Integer = Me.BindingSource.IndexOf(dataBoundComputer)
+                        If index <> -1 Then
+                            ' The computer name was found in both ldap and the bound data source
+                            ' Get the collection of loaded computer nodes
+                            Dim computerNodes = Me.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes.Cast(Of TreeNode)()
+
+                            ' See if this computer has been loaded to a node
+                            Dim dataBoundNode = computerNodes.SingleOrDefault(Function(t) t.Tag.Computer.Value = dataBoundComputer.Value)
+                            If dataBoundNode IsNot Nothing Then
+                                ' Computer is loaded to a node, so update it
+                                dataBoundNode.Tag.Computer = ldapComputer
+                                SetNodeText(dataBoundNode, ldapComputer.Display)
                             End If
 
-                            Dim ldapComputer As New Computer(result)
-                            Dim dataBoundComputer = Me.BindingSource.OfType(Of Computer).SingleOrDefault(Function(c) c.Value = ldapComputer.Value)
-                            Dim index As Integer = Me.BindingSource.IndexOf(dataBoundComputer)
-                            If index <> -1 Then
-                                ' The computer name was found in both ldap and the bound data source
-                                ' Get the collection of loaded computer nodes
-                                Dim computerNodes = Me.ResourceExplorer.Nodes(NameOf(Nodes.RootNode)).Nodes(NameOf(Nodes.Computers)).Nodes.Cast(Of TreeNode)()
+                            ' Also update the computer object in the binding source
+                            Me.BindingSource(index) = ldapComputer
+                        Else
+                            ' The computer is in ldap but not in the binding source, so add it
+                            Me.BindingSource.Add(ldapComputer)
+                            index = Me.BindingSource.IndexOf(ldapComputer)
+                        End If
 
-                                ' See if this computer has been loaded to a node
-                                Dim dataBoundNode = computerNodes.SingleOrDefault(Function(t) t.Tag.Computer.Value = dataBoundComputer.Value)
-                                If dataBoundNode IsNot Nothing Then
-                                    ' Computer is loaded to a node, so update it
-                                    dataBoundNode.Tag.Computer = ldapComputer
-                                    SetNodeText(dataBoundNode, ldapComputer.Display)
-                                End If
-
-                                ' Also update the computer object in the binding source
-                                Me.BindingSource(index) = ldapComputer
-                            Else
-                                ' The computer is in ldap but not in the binding source, so add it
-                                Me.BindingSource.Add(ldapComputer)
-                                index = Me.BindingSource.IndexOf(ldapComputer)
-                            End If
-
-                            ResetLDAPDataBindings(index)
-                        Next
-                    End If
-                End Using
+                        ResetLDAPDataBindings(index)
+                    Next
+                End If
             Catch ex As Exception
                 LogEvent($"EXCEPTION in {MethodBase.GetCurrentMethod()}: {ex.Message}")
             End Try

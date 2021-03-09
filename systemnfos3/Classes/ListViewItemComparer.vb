@@ -1,4 +1,4 @@
-﻿Public Class Comparer
+﻿Public Class ListViewItemComparer
     Implements IComparer
 
     Private Property ControlType As Type

@@ -5,8 +5,6 @@
         With baseSearcher
             .Filter = $"(&(objectClass=computer){filter})"
             .PropertiesToLoad.AddRange({"name", "description", "uid", "displayName", "extensionAttribute1", "networkAddress", "whenChanged"})
-            .Sort.Direction = SortDirection.Ascending
-            .Sort.PropertyName = "description"
             .PageSize = 1000
         End With
 
@@ -20,11 +18,11 @@
         Return baseEntry
     End Function
 
-    Public Function GetAllComputerResults() As SearchResultCollection
+    Public Function GetAllComputerResults() As List(Of SearchResult)
         Using entry As DirectoryEntry = NewBaseDirectoryEntry()
             Using searcher As DirectorySearcher = NewBaseDirectorySearcher(My.Settings.LDAPComputerFilter)
 
-                Return searcher.FindAll()
+                Return searcher.FindAllSortBy("description")
             End Using
         End Using
     End Function
@@ -39,20 +37,20 @@
         End Using
     End Function
 
-    Public Function GetIncrementalUpdateResults(timestamp As Date) As SearchResultCollection
+    Public Function GetIncrementalUpdateResults(timestamp As Date) As List(Of SearchResult)
         Using entry As DirectoryEntry = NewBaseDirectoryEntry()
             Using searcher As DirectorySearcher = NewBaseDirectorySearcher(My.Settings.LDAPComputerFilter)
                 Dim convertedTimestamp = ManagementDateTimeConverter.ToDmtfDateTime(timestamp).Split(".")(0)
                 searcher.Filter = $"(&(objectClass=computer)(!whenChanged<={convertedTimestamp}.0Z){My.Settings.LDAPComputerFilter})"
 
-                Return searcher.FindAll()
+                Return searcher.FindAllSortBy("description")
             End Using
         End Using
     End Function
 
-    Public Function GetLastChangedTime(results As SearchResultCollection) As Date
+    Public Function GetLastChangedTime(results As List(Of SearchResult)) As Date
         ' This date/time value is used to query ldap for incremental updates in MainForm.UpdateLDAPDataBindings()
-        Dim lastChangedResult = results.Cast(Of SearchResult)() _
+        Dim lastChangedResult = results.OfType(Of SearchResult)() _
             .Where(Function(searchResult) searchResult.Properties("whenChanged").Count > 0) _
             .OrderByDescending(Function(searchResult) CType(searchResult.Properties("whenChanged")(0), Date)) _
             .First()

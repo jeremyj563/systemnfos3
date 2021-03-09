@@ -76,14 +76,14 @@ Public Class ProfileTab
 
     Private Sub OrderByName()
         With Me.CurrentListView
-            .ListViewItemSorter = New Comparer(0, False, Comparer.SortTypes.Ascending)
+            .ListViewItemSorter = New ListViewItemComparer(0, False, ListViewItemComparer.SortTypes.Ascending)
             .Sort()
         End With
     End Sub
 
     Private Sub OrderByDate()
         With Me.CurrentListView
-            .ListViewItemSorter = New Comparer(1, True, Comparer.SortTypes.Descending)
+            .ListViewItemSorter = New ListViewItemComparer(1, True, ListViewItemComparer.SortTypes.Descending)
             .Sort()
         End With
     End Sub

@@ -314,7 +314,7 @@ End Module
 
 #End Region
 
-#Region "ActionExtensions"
+#Region " ActionExtensions "
 Module ActionExtensions
     <Extension()>
     Public Sub SafeInvoke(action As Action, control As Control)
@@ -322,5 +322,27 @@ Module ActionExtensions
             action.Invoke()
         End If
     End Sub
+End Module
+#End Region
+
+#Region " DirectorySearcherExtensions "
+Module DirectorySearcherExtensions
+    <Extension()>
+    Public Function FindAllSortBy(searcher As DirectorySearcher, [property] As String) As List(Of SearchResult)
+        Using resultsCollection = searcher.FindAll()
+            Dim results = resultsCollection.OfType(Of SearchResult).ToList()
+            results.Sort(Function(x, y) x.GetValue([property]).CompareTo(y.GetValue([property])))
+            Return results
+        End Using
+    End Function
+End Module
+#End Region
+
+#Region " SearchResultExtensions "
+Module SearchResultExtensions
+    <Extension()>
+    Public Function GetValue(result As SearchResult, [property] As String) As String
+        Return If(result.Properties([property])?.Count > 0, result.Properties([property])(0), String.Empty)
+    End Function
 End Module
 #End Region

@@ -163,15 +163,14 @@ Public NotInheritable Class LoadForm
     End Sub
 
     Private Sub GetLDAPComputers()
-        Using searchResults = LDAPSearcher.GetAllComputerResults()
-            If searchResults IsNot Nothing Then
-                Me.LastChangedLDAPTime = LDAPSearcher.GetLastChangedTime(searchResults)
+        Dim results = LDAPSearcher.GetAllComputerResults()
+        If results?.Count > 0 Then
+            Me.LastChangedLDAPTime = LDAPSearcher.GetLastChangedTime(results)
 
-                For Each result As SearchResult In searchResults
-                    Me.DataSource.Add(New Computer(result))
-                Next
-            End If
-        End Using
+            For Each result In results
+                Me.DataSource.Add(New Computer(result))
+            Next
+        End If
     End Sub
 
     Private Sub GetRegistryCollections()

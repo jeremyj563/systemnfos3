@@ -146,7 +146,7 @@
     <Compile Include="Controllers\ServiceController.vb" />
     <Compile Include="Controllers\CollectionController.vb" />
     <Compile Include="Classes\LDAPContainer.vb" />
-    <Compile Include="Classes\Comparer.vb" />
+    <Compile Include="Classes\ListViewItemComparer.vb" />
     <Compile Include="Classes\GarbageCollector.vb" />
     <Compile Include="Classes\DataSourceSearcher.vb" />
     <Compile Include="Classes\WMIManagement.vb" />
